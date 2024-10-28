@@ -17,6 +17,10 @@
 		0F28EAE22CCDA52400F16CB4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F28EAB82CCDA51F00F16CB4 /* ContentView.swift */; };
 		0F28EAE32CCDA52400F16CB4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0F28EAB92CCDA52400F16CB4 /* Assets.xcassets */; };
 		0F28EAE42CCDA52400F16CB4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0F28EAB92CCDA52400F16CB4 /* Assets.xcassets */; };
+		0F3B8B492CCF5E4A00775DC7 /* GameContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3B8B452CCF5E4900775DC7 /* GameContext.swift */; };
+		0F3B8B4A2CCF5E4A00775DC7 /* GameModeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3B8B462CCF5E4900775DC7 /* GameModeType.swift */; };
+		0F3B8B4B2CCF5E4A00775DC7 /* GameType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3B8B472CCF5E4A00775DC7 /* GameType.swift */; };
+		0F3B8B4C2CCF5E4A00775DC7 /* Dependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3B8B482CCF5E4A00775DC7 /* Dependencies.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +53,10 @@
 		0F28EAD72CCDA52400F16CB4 /* Tests macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F28EADB2CCDA52400F16CB4 /* Tests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOS.swift; sourceTree = "<group>"; };
 		0F28EADD2CCDA52400F16CB4 /* Tests_macOSLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOSLaunchTests.swift; sourceTree = "<group>"; };
+		0F3B8B452CCF5E4900775DC7 /* GameContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameContext.swift; sourceTree = "<group>"; };
+		0F3B8B462CCF5E4900775DC7 /* GameModeType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameModeType.swift; sourceTree = "<group>"; };
+		0F3B8B472CCF5E4A00775DC7 /* GameType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameType.swift; sourceTree = "<group>"; };
+		0F3B8B482CCF5E4A00775DC7 /* Dependencies.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +94,9 @@
 		0F28EAB12CCDA51F00F16CB4 = {
 			isa = PBXGroup;
 			children = (
+				0F3B8B4F2CCF5E8D00775DC7 /* Base */,
+				0F3B8B4E2CCF5E6D00775DC7 /* Assests */,
+				0F3B8B4D2CCF5E5E00775DC7 /* Code */,
 				0F28EAB62CCDA51F00F16CB4 /* Shared */,
 				0F28EAC52CCDA52400F16CB4 /* macOS */,
 				0F28EACE2CCDA52400F16CB4 /* Tests iOS */,
@@ -99,7 +110,6 @@
 			children = (
 				0F28EAB72CCDA51F00F16CB4 /* Ocean_ExplorerApp.swift */,
 				0F28EAB82CCDA51F00F16CB4 /* ContentView.swift */,
-				0F28EAB92CCDA52400F16CB4 /* Assets.xcassets */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -139,6 +149,32 @@
 				0F28EADD2CCDA52400F16CB4 /* Tests_macOSLaunchTests.swift */,
 			);
 			path = "Tests macOS";
+			sourceTree = "<group>";
+		};
+		0F3B8B4D2CCF5E5E00775DC7 /* Code */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Code;
+			sourceTree = "<group>";
+		};
+		0F3B8B4E2CCF5E6D00775DC7 /* Assests */ = {
+			isa = PBXGroup;
+			children = (
+				0F28EAB92CCDA52400F16CB4 /* Assets.xcassets */,
+			);
+			path = Assests;
+			sourceTree = "<group>";
+		};
+		0F3B8B4F2CCF5E8D00775DC7 /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				0F3B8B452CCF5E4900775DC7 /* GameContext.swift */,
+				0F3B8B482CCF5E4A00775DC7 /* Dependencies.swift */,
+				0F3B8B462CCF5E4900775DC7 /* GameModeType.swift */,
+				0F3B8B472CCF5E4A00775DC7 /* GameType.swift */,
+			);
+			path = Base;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -299,8 +335,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F3B8B4C2CCF5E4A00775DC7 /* Dependencies.swift in Sources */,
 				0F28EAE12CCDA52400F16CB4 /* ContentView.swift in Sources */,
 				0F28EADF2CCDA52400F16CB4 /* Ocean_ExplorerApp.swift in Sources */,
+				0F3B8B4A2CCF5E4A00775DC7 /* GameModeType.swift in Sources */,
+				0F3B8B4B2CCF5E4A00775DC7 /* GameType.swift in Sources */,
+				0F3B8B492CCF5E4A00775DC7 /* GameContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

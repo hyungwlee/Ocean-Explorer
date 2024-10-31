@@ -2,7 +2,7 @@
 //  OEGameInfo.swift
 //  Ocean Explorer (iOS)
 //
-//  Created by Haseeb Garfinkel on 10/28/24.
+//  Created by Alexander Chakmakian on 10/30/24.
 //
 
 import Foundation

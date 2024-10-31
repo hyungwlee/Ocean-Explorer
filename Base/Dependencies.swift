@@ -9,4 +9,3 @@ import UIKit
 
 internal class Dependencies: NSObject, ObservableObject {
 }
-

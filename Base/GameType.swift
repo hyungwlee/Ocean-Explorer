@@ -30,7 +30,7 @@ enum GameType: String, Codable {
         }
     }
     
-    var gameId: String { //[TODO] for now just hard coding game id for creating room and stuff
+    var gameId: String {
         switch self {
         case .none:
             return "none"

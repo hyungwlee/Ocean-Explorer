@@ -12,6 +12,12 @@ struct PhysicsCategory {
     static let enemy: UInt32 = 0b10    // 2
 }
 
+struct Lane {
+    let startPosition: CGPoint
+    let endPosition: CGPoint
+    let direction: CGVector
+}
+
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
     weak var context: OEGameContext?
     var box: OEBoxNode?
@@ -20,11 +26,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     let gridSize = CGSize(width: 50, height: 50)  // Smaller grid for more lines
     var backgroundTiles: [SKSpriteNode] = []
     var lastEnemySpawnPositionY: CGFloat = 0  // Track the last Y position where an enemy spawned
+    
+    var lanes: [Lane] = []
 
     var playableWidthRange: ClosedRange<CGFloat> {
         return (-size.width / 2)...(size.width / 2)
     }
-
+    
     init(context: OEGameContext, size: CGSize) {
         self.context = context
         super.init(size: size)
@@ -32,6 +40,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
         self.camera = cameraNode
+        
+        let numberOfLanes = 5 // Example: three lanes
+        let laneHeight = size.height / CGFloat(numberOfLanes)
+
+        for i in 0..<numberOfLanes {
+            let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+            let leftStart = CGPoint(x: 0, y: yPosition)
+            let rightStart = CGPoint(x: size.width, y: yPosition)
+
+            // Alternate directions for lanes
+            if i % 2 == 0 {
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0)))
+            } else {
+                lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0)))
+            }
+        }
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -44,6 +68,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         setupBackground()
         prepareGameContext()
         prepareStartNodes()
+        startSpawning()
         
         cameraNode.position = CGPoint(x: 0, y: 0)
         context.stateMachine?.enter(OEGameIdleState.self)
@@ -161,6 +186,25 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func spawnEnemy(in lane: Lane) {
+        let enemy = OEEnemyNode()
+        addChild(enemy)
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
+    }
+    
+    func startSpawning() {
+        for lane in lanes {
+            let wait = SKAction.wait(forDuration: 2.0) // Adjust for spawn frequency
+            let spawn = SKAction.run { [weak self] in
+                self?.spawnEnemy(in: lane)
+            }
+            let sequence = SKAction.sequence([spawn, wait])
+            let repeatAction = SKAction.repeatForever(sequence)
+
+            run(repeatAction)
+        }
+    }
+
     // Handle contact between physics bodies
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA

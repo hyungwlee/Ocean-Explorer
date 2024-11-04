@@ -2,7 +2,7 @@
 //  OEEnemyNode.swift
 //  Ocean Explorer
 //
-//  Created by Alexander Chakmakian on 11/4/24.
+//  Created by Alexander Chakmakianon 11/4/24.
 //
 
 import SpriteKit
@@ -25,7 +25,7 @@ class OEEnemyNode: SKSpriteNode {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // Start moving the enemy from right to left
+    // Start moving the enemy
     func startMoving(from startPoint: CGPoint, to endPoint: CGPoint) {
         self.position = startPoint
         

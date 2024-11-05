@@ -33,6 +33,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     // Game state variable
     var isGameOver = false
+    var lanes: [Lane] = []  // Added this line to define lanes
 
     var playableWidthRange: ClosedRange<CGFloat> {
         return (-size.width / 2)...(size.width / 2)

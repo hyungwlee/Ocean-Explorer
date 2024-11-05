@@ -87,7 +87,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
 
         // Start timed enemy spawning
-        startEnemySpawning()
+        startSpawning()
 
         // Initialize and set up score label
         setupScoreLabel()
@@ -225,7 +225,26 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         enemy.startMoving(from: CGPoint(x: startX, y: yPos), to: CGPoint(x: endX, y: yPos))
         addChild(enemy)
     }
-  
+    
+    func spawnEnemy(in lane: Lane) {
+        let enemy = OEEnemyNode(gridSize: gridSize)
+             addChild(enemy)
+             enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
+         }
+
+     func startSpawning() {
+         for lane in lanes {
+             let wait = SKAction.wait(forDuration: 2.0) // Adjust for spawn frequency
+             let spawn = SKAction.run { [weak self] in
+                 self?.spawnEnemy(in: lane)
+             }
+             let sequence = SKAction.sequence([spawn, wait])
+             let repeatAction = SKAction.repeatForever(sequence)
+
+             run(repeatAction)
+         }
+     }
+    
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB

@@ -53,7 +53,6 @@
 		0F28EAB92CCDA52400F16CB4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0F28EABE2CCDA52400F16CB4 /* Ocean Explorer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ocean Explorer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F28EAC42CCDA52400F16CB4 /* Ocean Explorer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ocean Explorer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		0F28EAC62CCDA52400F16CB4 /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macOS.entitlements; sourceTree = "<group>"; };
 		0F28EACB2CCDA52400F16CB4 /* Tests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F28EACF2CCDA52400F16CB4 /* Tests_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_iOS.swift; sourceTree = "<group>"; };
 		0F28EAD12CCDA52400F16CB4 /* Tests_iOSLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_iOSLaunchTests.swift; sourceTree = "<group>"; };
@@ -112,7 +111,6 @@
 				0F3B8B4E2CCF5E6D00775DC7 /* Assests */,
 				0F3B8B4D2CCF5E5E00775DC7 /* Code */,
 				0F28EAB62CCDA51F00F16CB4 /* Shared */,
-				0F28EAC52CCDA52400F16CB4 /* macOS */,
 				0F28EACE2CCDA52400F16CB4 /* Tests iOS */,
 				0F28EADA2CCDA52400F16CB4 /* Tests macOS */,
 				0F28EABF2CCDA52400F16CB4 /* Products */,
@@ -137,14 +135,6 @@
 				0F28EAD72CCDA52400F16CB4 /* Tests macOS.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		0F28EAC52CCDA52400F16CB4 /* macOS */ = {
-			isa = PBXGroup;
-			children = (
-				0F28EAC62CCDA52400F16CB4 /* macOS.entitlements */,
-			);
-			path = macOS;
 			sourceTree = "<group>";
 		};
 		0F28EACE2CCDA52400F16CB4 /* Tests iOS */ = {

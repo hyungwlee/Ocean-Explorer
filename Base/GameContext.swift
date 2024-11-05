@@ -17,30 +17,27 @@ protocol GameContextDelegate: AnyObject {
     func transitionToScore(_ score: Int)
 }
 
-class GameContext {
-    var shouldResetPlayback: Bool = false
-
+class GameContext: ObservableObject {
+    // MARK: - Properties
     @Published var opacity: Double = 0.0
     @Published var isShowingSettings = false
-
-    var subs = Set<AnyCancellable>()
-    
+    var shouldResetPlayback = false
     var scene: SKScene?
-
+    var subs = Set<AnyCancellable>()
     private(set) var dependencies: Dependencies
+    weak var delegate: GameContextDelegate?
     
     var gameType: GameType? {
         delegate?.gameType
     }
 
-    weak var delegate: GameContextDelegate?
-
-    init(dependencies deps: Dependencies) {
-        dependencies = deps
+    // MARK: - Initialization
+    init(dependencies: Dependencies) {
+        self.dependencies = dependencies
     }
-    
+
+    // MARK: - Exit
     func exit() {
+        // Exit code if applicable
     }
 }
-
-extension GameContext: ObservableObject {}

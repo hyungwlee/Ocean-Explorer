@@ -2,7 +2,7 @@
 //  OEEnemyNode.swift
 //  Ocean Explorer
 //
-//  Created by Alexander Chakmakian on 11/4/24.
+//  Created by Alexander Chakmakianon 11/4/24.
 //
 
 import Foundation
@@ -32,6 +32,7 @@ class OEEnemyNode: SKSpriteNode {
         self.position = start
 
         let moveAction = SKAction.move(to: end, duration: 5.0) // Adjust the duration as necessary
+
         let removeAction = SKAction.removeFromParent()
         let sequence = SKAction.sequence([moveAction, removeAction])
         

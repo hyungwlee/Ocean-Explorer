@@ -13,6 +13,12 @@ struct PhysicsCategory {
     static let enemy: UInt32 = 0b10    // 2
 }
 
+struct Lane {
+    let startPosition: CGPoint
+    let endPosition: CGPoint
+    let direction: CGVector
+}
+
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
     weak var context: OEGameContext?
     var box: OEBoxNode?
@@ -20,7 +26,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     let gridSize = CGSize(width: 50, height: 50)
     var backgroundTiles: [SKSpriteNode] = []
-    
+  
     // Score properties
     var score = 0
     var scoreLabel: SKLabelNode!
@@ -31,7 +37,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var playableWidthRange: ClosedRange<CGFloat> {
         return (-size.width / 2)...(size.width / 2)
     }
-
+    
     init(context: OEGameContext, size: CGSize) {
         self.context = context
         super.init(size: size)
@@ -39,6 +45,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
         self.camera = cameraNode
+        
+        let numberOfLanes = 5 // Example: three lanes
+        let laneHeight = size.height / CGFloat(numberOfLanes)
+
+        for i in 0..<numberOfLanes {
+            let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+            let leftStart = CGPoint(x: 0, y: yPosition)
+            let rightStart = CGPoint(x: size.width, y: yPosition)
+
+            // Alternate directions for lanes
+            if i % 2 == 0 {
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0)))
+            } else {
+                lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0)))
+            }
+        }
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -202,7 +224,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         enemy.startMoving(from: CGPoint(x: startX, y: yPos), to: CGPoint(x: endX, y: yPos))
         addChild(enemy)
     }
-    
+  
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB

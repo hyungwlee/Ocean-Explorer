@@ -8,6 +8,7 @@
 import Foundation
 import GameplayKit
 
+
 class OEGameIdleState: GKState {
     weak var scene: OEGameScene?
     weak var context: OEGameContext?
@@ -17,6 +18,7 @@ class OEGameIdleState: GKState {
         self.context = context
         super.init()
     }
+    
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
         return true
     }

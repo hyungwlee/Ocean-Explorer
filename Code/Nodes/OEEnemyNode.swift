@@ -5,35 +5,35 @@
 //  Created by Alexander Chakmakian on 11/4/24.
 //
 
+import Foundation
 import SpriteKit
 
 class OEEnemyNode: SKSpriteNode {
+
+    private let gridSize: CGSize
     
-    init() {
+    init(gridSize: CGSize) {
+        self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Enemy")
-        super.init(texture: texture, color: .clear, size: texture.size())
-        self.name = "enemy"
+        super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width / 2, height: texture.size().height / 2))
         
-        // Set up physics body without gravity
-        self.physicsBody = SKPhysicsBody(texture: texture, size: size)
-        self.physicsBody?.isDynamic = false // No gravity, static movement
+        self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.categoryBitMask = PhysicsCategory.enemy
+        self.physicsBody?.collisionBitMask = PhysicsCategory.box
         self.physicsBody?.contactTestBitMask = PhysicsCategory.box
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    // Start moving the enemy from right to left
-    func startMoving(from startPoint: CGPoint, to endPoint: CGPoint) {
-        self.position = startPoint
-        
-        let moveAction = SKAction.move(to: endPoint, duration: 5.0) // Adjust duration as needed
+
+    func startMoving(from start: CGPoint, to end: CGPoint) {
+        self.position = start
+
+        let moveAction = SKAction.move(to: end, duration: 5.0) // Adjust the duration as necessary
         let removeAction = SKAction.removeFromParent()
         let sequence = SKAction.sequence([moveAction, removeAction])
         
-        self.run(sequence)
+        run(sequence)
     }
 }
-

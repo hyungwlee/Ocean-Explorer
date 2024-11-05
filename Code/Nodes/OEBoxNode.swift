@@ -15,24 +15,19 @@ class OEBoxNode: SKSpriteNode {
     init(gridSize: CGSize) {
         self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Smiley")
-        super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width / 2, height: texture.size().height / 2))  // Scaled down by 50%
-        self.name = "character"
+        super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width / 2, height: texture.size().height / 2))
         
-        // Set up physics body with no gravity
-        self.physicsBody = SKPhysicsBody(texture: texture, size: size)
-        self.physicsBody?.isDynamic = false  // No dynamic movement, only for collision detection
+        self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.categoryBitMask = PhysicsCategory.box
-        self.physicsBody?.contactTestBitMask = PhysicsCategory.enemy
         self.physicsBody?.collisionBitMask = PhysicsCategory.enemy
+        self.physicsBody?.contactTestBitMask = PhysicsCategory.enemy
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    // Moves the character to a specified position
+
     func move(to position: CGPoint) {
-        let moveAction = SKAction.move(to: position, duration: 0.2)
-        self.run(moveAction)
+        self.position = position
     }
 }

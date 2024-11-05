@@ -18,6 +18,7 @@ class OEEnemyNode: SKSpriteNode {
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width / 2, height: texture.size().height / 2))
         
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
+        self.physicsBody?.affectedByGravity = false // Disable gravity for the enemy
         self.physicsBody?.categoryBitMask = PhysicsCategory.enemy
         self.physicsBody?.collisionBitMask = PhysicsCategory.box
         self.physicsBody?.contactTestBitMask = PhysicsCategory.box

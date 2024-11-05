@@ -4,6 +4,7 @@
 //
 //  Created by Alexander Chakmakian on 10/30/24.
 //
+
 import SpriteKit
 
 struct PhysicsCategory {
@@ -46,6 +47,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     override func didMove(to view: SKView) {
         guard let context else { return }
+
+        // Disable gravity in the scene's physics world
+        physicsWorld.gravity = CGVector(dx: 0, dy: 0)
 
         setupBackground()
         prepareGameContext()
@@ -140,7 +144,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func addGestureRecognizers() {
-        // Add swipe gesture recognizers for left, right, down, and up
         let directions: [UISwipeGestureRecognizer.Direction] = [.up, .down, .left, .right]
         for direction in directions {
             let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
@@ -148,19 +151,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             view?.addGestureRecognizer(swipe)
         }
         
-        // Add tap gesture recognizer for moving forward (up)
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         view?.addGestureRecognizer(tap)
     }
     
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
-        
-        // Move the box node up by one grid size
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + gridSize.height)
         box.move(to: nextPosition)
-        
-        // Update score for each forward move
         updateScore()
     }
     
@@ -171,34 +169,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         switch sender.direction {
         case .up:
             nextPosition = CGPoint(x: box.position.x, y: box.position.y + gridSize.height)
-            box.move(to: nextPosition)
-            
-            // Update score when moving forward (upward)
             updateScore()
-            
         case .down:
             nextPosition = CGPoint(x: box.position.x, y: box.position.y - gridSize.height)
-            box.move(to: nextPosition)
-            
         case .left:
             nextPosition = CGPoint(x: max(box.position.x - gridSize.width, playableWidthRange.lowerBound), y: box.position.y)
-            box.move(to: nextPosition)
-            
         case .right:
             nextPosition = CGPoint(x: min(box.position.x + gridSize.width, playableWidthRange.upperBound), y: box.position.y)
-            box.move(to: nextPosition)
-            
         default:
             return
         }
+        box.move(to: nextPosition)
     }
     
     func startEnemySpawning() {
         let spawnAction = SKAction.run { [weak self] in
             self?.spawnRandomEnemy()
         }
-        
-        // Random time interval between 2 to 5 seconds for each spawn
         let waitAction = SKAction.wait(forDuration: Double.random(in: 2...5))
         let sequence = SKAction.sequence([spawnAction, waitAction])
         let repeatAction = SKAction.repeatForever(sequence)
@@ -208,13 +195,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func spawnRandomEnemy() {
         let enemy = OEEnemyNode(gridSize: gridSize)
-        
         let isLeftToRight = Bool.random()
         let startX = isLeftToRight ? -size.width / 2 - enemy.size.width : size.width / 2 + enemy.size.width
         let endX = isLeftToRight ? size.width / 2 + enemy.size.width : -size.width / 2 - enemy.size.width
-        
         let yPos = (box?.position.y ?? 0) + CGFloat.random(in: 3...6) * gridSize.height
-        
         enemy.startMoving(from: CGPoint(x: startX, y: yPos), to: CGPoint(x: endX, y: yPos))
         addChild(enemy)
     }
@@ -222,7 +206,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB
-
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isGameOver {
@@ -232,31 +215,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func gameOver() {
-        // Set the game over flag to true
         isGameOver = true
-
-        // Stop enemy spawning
         removeAction(forKey: "spawnEnemies")
-
-        // Reset score
         score = 0
         scoreLabel.text = "\(score)"
 
-        // Display a game-over message
         let gameOverLabel = SKLabelNode(text: "Game Over!")
         gameOverLabel.fontSize = 48
         gameOverLabel.fontColor = .red
         gameOverLabel.position = CGPoint(x: 0, y: cameraNode.position.y)
         cameraNode.addChild(gameOverLabel)
 
-        // Optionally, restart the game after a delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.restartGame()
         }
     }
 
     func restartGame() {
-        // Reset the scene or reload it
         let newScene = OEGameScene(context: context!, size: size)
         newScene.scaleMode = .aspectFill
         view?.presentScene(newScene, transition: SKTransition.fade(withDuration: 1.0))

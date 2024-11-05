@@ -28,6 +28,8 @@ class OEBoxNode: SKSpriteNode {
     }
 
     func move(to position: CGPoint) {
-        self.position = position
+        // Define a movement animation with a duration
+        let moveAction = SKAction.move(to: position, duration: 0.2)
+        self.run(moveAction)
     }
 }

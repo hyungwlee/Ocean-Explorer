@@ -52,7 +52,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         for i in 0..<numberOfLanes {
             let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-            let leftStart = CGPoint(x: 0, y: yPosition)
+            let leftStart = CGPoint(x: -size.width, y: yPosition)
             let rightStart = CGPoint(x: size.width, y: yPosition)
 
             // Alternate directions for lanes
@@ -240,7 +240,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
              }
              let sequence = SKAction.sequence([spawn, wait])
              let repeatAction = SKAction.repeatForever(sequence)
-
+             
              run(repeatAction)
          }
      }

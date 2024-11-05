@@ -11,7 +11,7 @@ class OEEnemyNode: SKSpriteNode {
     
     init() {
         let texture = SKTexture(imageNamed: "Enemy")
-        super.init(texture: texture, color: .clear, size: texture.size())
+        super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width / 2, height: texture.size().height / 2))
         self.name = "enemy"
         
         // Set up physics body without gravity
@@ -29,7 +29,7 @@ class OEEnemyNode: SKSpriteNode {
     func startMoving(from startPoint: CGPoint, to endPoint: CGPoint) {
         self.position = startPoint
         
-        let moveAction = SKAction.move(to: endPoint, duration: 5.0) // Adjust duration as needed
+        let moveAction = SKAction.move(to: endPoint, duration: 10.0) // Adjust duration as needed
         let removeAction = SKAction.removeFromParent()
         let sequence = SKAction.sequence([moveAction, removeAction])
         

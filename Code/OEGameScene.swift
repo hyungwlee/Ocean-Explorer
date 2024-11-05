@@ -112,7 +112,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         followCharacter()
         updateBackgroundTiles()
-        spawnEnemyIfNeeded()
     }
     
     func followCharacter() {
@@ -167,34 +166,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         box.move(to: nextPosition)
     }
     
-    func spawnEnemyIfNeeded() {
-        guard let box = box else { return }
-        
-        // Check if box has moved 15 tiles since the last enemy spawn
-        if box.position.y - lastEnemySpawnPositionY >= gridSize.height * 15 {
-            lastEnemySpawnPositionY = box.position.y  // Update the last spawn position
-            
-            // Create a new enemy and start its movement
-            let enemy = OEEnemyNode()
-            let startX = size.width / 2 + enemy.size.width  // Start off-screen to the right
-            let yPos = box.position.y + gridSize.height * 5  // 5 grid tiles ahead of the box's current position
-            
-            let endX = -size.width / 2 - enemy.size.width   // End off-screen to the left
-            
-            enemy.startMoving(from: CGPoint(x: startX, y: yPos), to: CGPoint(x: endX, y: yPos))
-            addChild(enemy)
-        }
-    }
-    
+    // Spawns enemies into a lane
     func spawnEnemy(in lane: Lane) {
         let enemy = OEEnemyNode()
         addChild(enemy)
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
     }
     
+    // Populates lanes with enemies
     func startSpawning() {
         for lane in lanes {
-            let wait = SKAction.wait(forDuration: 2.0) // Adjust for spawn frequency
+            let wait = SKAction.wait(forDuration: 3.0) // Adjust for spawn frequency
             let spawn = SKAction.run { [weak self] in
                 self?.spawnEnemy(in: lane)
             }

@@ -2,7 +2,7 @@
 //  OEEnemyNode.swift
 //  Ocean Explorer
 //
-//  Created by Alexander Chakmakianon 11/4/24.
+//  Created by Alexander Chakmakian on 11/4/24.
 //
 
 import Foundation

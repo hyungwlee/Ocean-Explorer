@@ -39,6 +39,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return (-size.width / 2)...(size.width / 2)
     }
     
+    var yPositionLanes: CGFloat = 0
+    
     init(context: OEGameContext, size: CGSize) {
         self.context = context
         super.init(size: size)
@@ -61,6 +63,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             } else {
                 lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0)))
             }
+            yPositionLanes = yPosition
         }
     }
 
@@ -87,7 +90,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
 
         // Start timed enemy spawning
-        startSpawning()
+        startSpawning(lanes: lanes)
 
         // Initialize and set up score label
         setupScoreLabel()
@@ -155,6 +158,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let thresholdY = cameraNode.position.y + size.height / 2
         if let lastTile = backgroundTiles.last, lastTile.position.y < thresholdY {
             addBackgroundTile(at: CGPoint(x: 0, y: lastTile.position.y + size.height))
+            // generate new lanes
+            generateNewLanes(startingAt: yPositionLanes, numberOfLanes: 5)
         }
 
         backgroundTiles = backgroundTiles.filter { tile in
@@ -165,7 +170,31 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             return true
         }
     }
-
+    
+    // generates new lanes when player moves up
+    func generateNewLanes(startingAt yPosition: CGFloat, numberOfLanes: Int) {
+        
+        var newLanes: [Lane] = []
+        let laneHeight = size.height / CGFloat(numberOfLanes)
+        
+        for i in 0..<numberOfLanes {
+            let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
+            let leftStart = CGPoint(x: -size.width, y: newYPosition)
+            let rightStart = CGPoint(x: size.width, y: newYPosition)
+            
+            // Alternate directions for lanes
+            if i % 2 == 0 {
+                let newLane = Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0))
+                newLanes.append(newLane)
+            } else {
+                let newLane = Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0))
+                newLanes.append(newLane)
+            }
+            yPositionLanes = newYPosition
+        }
+        startSpawning(lanes: newLanes)
+    }
+    
     func addGestureRecognizers() {
         let directions: [UISwipeGestureRecognizer.Direction] = [.up, .down, .left, .right]
         for direction in directions {
@@ -232,7 +261,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
              enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
          }
 
-     func startSpawning() {
+    func startSpawning(lanes: [Lane]) {
          for lane in lanes {
              let wait = SKAction.wait(forDuration: 2.0) // Adjust for spawn frequency
              let spawn = SKAction.run { [weak self] in

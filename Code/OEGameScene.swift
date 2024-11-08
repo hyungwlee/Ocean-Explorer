@@ -11,6 +11,7 @@ struct PhysicsCategory {
     static let none: UInt32 = 0
     static let box: UInt32 = 0b1       // 1
     static let enemy: UInt32 = 0b10    // 2
+    static let bubble: UInt32 = 0b100  // 4
 }
 
 struct Lane {
@@ -30,6 +31,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Score properties
     var score = 0
     var scoreLabel: SKLabelNode!
+    
+    // Air properties
+    var airAmount = 100
+    var airLabel: SKLabelNode!
+    var airIcon: SKSpriteNode!
     
     // Game state variable
     var isGameOver = false
@@ -94,6 +100,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Initialize and set up score label
         setupScoreLabel()
+        
+        //Setup air display
+        setupAirDisplay()
+        
+        // Air CountDown
+        airCountDown()
+        
+        // Spawning bubbles
+        includeBubbles()
     }
 
     func setupBackground() {
@@ -274,13 +289,115 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
          }
      }
     
+    func spawnBubble() {
+        let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
+        bubble.size = CGSize(width: 45, height: 45) // Adjust size as needed
+        bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2)
+        bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
+        bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
+        bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
+        bubble.physicsBody?.isDynamic = false
+        
+        // Position the bubble randomly within the scene’s width and above the player’s position
+        let randomX = CGFloat.random(in: playableWidthRange)
+        let randomY = (box?.position.y ?? 0) + size.height * 0.5 + CGFloat.random(in: 0...200)
+        bubble.position = CGPoint(x: randomX, y: randomY)
+        
+        addChild(bubble)
+    }
+    
+    func includeBubbles() {
+        let bubbleSpawnAction = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.run { [weak self] in
+                    self?.spawnBubble()
+                },
+                SKAction.wait(forDuration: Double.random(in: 5...10)) // Adjust spawn frequency
+            ])
+        )
+        run(bubbleSpawnAction, withKey: "spawnBubbles")
+
+    }
+
+    
+    func setupAirDisplay() {
+        // Initialize the air icon
+        airIcon = SKSpriteNode(imageNamed: "Bubble")
+        airIcon.size = CGSize(width: 30, height: 30) // Adjust size as needed
+        airIcon.position = CGPoint(x: size.width / 2 - 60, y: size.height / 2 - 70)
+        airIcon.zPosition = 1
+        cameraNode.addChild(airIcon)
+
+        // Initialize the air label
+        airLabel = SKLabelNode(fontNamed: "SF Mono")
+        airLabel.fontSize = 32
+        airLabel.fontColor = .white
+        airLabel.position = CGPoint(x: airIcon.position.x - 20, y: airIcon.position.y - 10)
+        airLabel.horizontalAlignmentMode = .right
+        airLabel.text = "\(airAmount)"
+        cameraNode.addChild(airLabel)
+    }
+    
+    func airCountDown() {
+        // Decreasing Air
+        let countdownAction = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.run { [weak self] in
+                    self?.decreaseAir()
+                },
+                SKAction.wait(forDuration: 1.0) // Countdown every second
+            ])
+        )
+        run(countdownAction, withKey: "airCountdown")
+    }
+    
+    func decreaseAir() {
+        guard !isGameOver else { return }
+        
+        if airAmount > 0 {
+            airAmount -= 1
+            airLabel.text = "\(airAmount)"
+        } else {
+            gameOver()
+        }
+    }
+    
+    func increaseAir() {
+        guard !isGameOver else { return }
+        
+        if airAmount < 90 {
+            airAmount += 10
+            airLabel.text = "\(airAmount)"
+        }
+        else if airAmount >= 90 && airAmount <= 100 {
+            airAmount = 100
+            airLabel.text = "\(airAmount)"
+        }
+    }
+
+    
     func didBegin(_ contact: SKPhysicsContact) {
+        
+        //Check Enemy Collisions
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isGameOver {
                 gameOver()
+            }
+        }
+        
+        //Check Bubble Collisions
+        if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.bubble) ||
+           (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
+            increaseAir()
+            
+            // Remove the bubble node
+            if bodyA.categoryBitMask == PhysicsCategory.bubble {
+                bodyA.node?.removeFromParent()
+            } else if bodyB.categoryBitMask == PhysicsCategory.bubble {
+                bodyB.node?.removeFromParent()
             }
         }
     }

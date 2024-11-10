@@ -31,7 +31,7 @@ class OEEnemyNode: SKSpriteNode {
     func startMoving(from start: CGPoint, to end: CGPoint) {
         self.position = start
 
-        let moveAction = SKAction.move(to: end, duration: 5.0) // Adjust the duration as necessary
+        let moveAction = SKAction.move(to: end, duration: Double.random(in: 3.0...5.0)) // Adjust the duration as necessary
 
         let removeAction = SKAction.removeFromParent()
         let sequence = SKAction.sequence([moveAction, removeAction])

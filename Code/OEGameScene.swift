@@ -40,7 +40,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Game state variable
     var isGameOver = false
     var lanes: [Lane] = []  // Added this line to define lanes
-
+    var laneDirection = 0
+    
     var playableWidthRange: ClosedRange<CGFloat> {
         return (-size.width / 2)...(size.width / 2)
     }
@@ -63,8 +64,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let leftStart = CGPoint(x: -size.width, y: yPosition)
             let rightStart = CGPoint(x: size.width, y: yPosition)
 
-            // Alternate directions for lanes
-            if i % 2 == 0 {
+            // Random directions for lanes
+            laneDirection = Int.random(in: 0..<2)
+            
+            if laneDirection == 0 {
                 lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0)))
             } else {
                 lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0)))
@@ -197,8 +200,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let leftStart = CGPoint(x: -size.width, y: newYPosition)
             let rightStart = CGPoint(x: size.width, y: newYPosition)
             
-            // Alternate directions for lanes
-            if i % 2 == 0 {
+            // Random directions for lanes
+            laneDirection = Int.random(in: 0..<2)
+            
+            if laneDirection == 0 {
                 let newLane = Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0))
                 newLanes.append(newLane)
             } else {
@@ -278,7 +283,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func startSpawning(lanes: [Lane]) {
          for lane in lanes {
-             let wait = SKAction.wait(forDuration: 2.0) // Adjust for spawn frequency
+             let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
              let spawn = SKAction.run { [weak self] in
                  self?.spawnEnemy(in: lane)
              }
@@ -345,7 +350,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 SKAction.run { [weak self] in
                     self?.decreaseAir()
                 },
-                SKAction.wait(forDuration: 1.0) // Countdown every second
+                SKAction.wait(forDuration: 0.5) // Countdown every half a second
             ])
         )
         run(countdownAction, withKey: "airCountdown")

@@ -170,8 +170,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 pufferfish.checkProximityToPlayer(playerPosition: box?.position ?? .zero)
             }
         }
-    }
-
+        
         // Check if the character goes below the view due to the camera moving up
         if let box = box, box.position.y < cameraNode.position.y - size.height / 2 {
             gameOver()
@@ -321,17 +320,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-         for lane in lanes {
-             let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
-             let spawn = SKAction.run { [weak self] in
-                 self?.spawnEnemy(in: lane)
-             }
-             let sequence = SKAction.sequence([spawn, wait])
-             let repeatAction = SKAction.repeatForever(sequence)
-             
-             run(repeatAction)
-         }
-     }
     
     func spawnPufferfish(at: CGPoint) {
         let pufferfish = OEEnemyNode2(gridSize: gridSize)

@@ -38,7 +38,9 @@ class OEEnemyNode2: SKSpriteNode {
         if distance < detectionRadius {
             if !isPuffed {
                 puff()
-            } else {
+            }
+        } else {
+            if isPuffed {
                 deflate()
             }
         }

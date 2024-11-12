@@ -165,10 +165,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         updateBackgroundTiles()
         
         for child in children {
-                if let pufferfish = child as? OEEnemyNode2 {
-                    pufferfish.checkProximityToPlayer(playerPosition: cameraNode.position)
-                }
+            if let pufferfish = child as? OEEnemyNode2 {
+                pufferfish.checkProximityToPlayer(playerPosition: box?.position ?? .zero)
+            }
         }
+    }
 
     func followCharacter() {
         if let box = box {

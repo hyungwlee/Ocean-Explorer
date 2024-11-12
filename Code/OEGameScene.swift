@@ -106,6 +106,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         setupAirDisplay()
         airCountDown()
         includeBubbles()
+
         startCameraMovement()
     }
 
@@ -113,6 +114,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 25) // Adjust duration as needed CAMERA SPEED GOING UP
         let continuousMove = SKAction.repeatForever(moveUp)
         cameraNode.run(continuousMove)
+
     }
 
     func setupBackground() {
@@ -163,6 +165,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         updateBackgroundTiles()
 
+        for child in children {
+                if let pufferfish = child as? OEEnemyNode2 {
+                    pufferfish.checkProximityToPlayer(playerPosition: cameraNode.position)
+                }
+        }
+
         // Check if the character goes below the view due to the camera moving up
         if let box = box, box.position.y < cameraNode.position.y - size.height / 2 {
             gameOver()
@@ -209,7 +217,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             yPositionLanes = newYPosition
         }
-        startSpawning(lanes: newLanes)
+        let laneType = Int.random(in: 0..<2)
+        if laneType == 0 {
+            startSpawning(lanes: newLanes)
+
+        } else {
+            startSpawningPufferfish(lanes: newLanes)
+        }
     }
 
     func removeAllGestureRecognizers() {
@@ -293,6 +307,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func startSpawning(lanes: [Lane]) {
+      
         for lane in lanes {
             let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
             let spawn = SKAction.run { [weak self] in
@@ -304,6 +319,40 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             run(repeatAction)
         }
     }
+
+         for lane in lanes {
+             let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
+             let spawn = SKAction.run { [weak self] in
+                 self?.spawnEnemy(in: lane)
+             }
+             let sequence = SKAction.sequence([spawn, wait])
+             let repeatAction = SKAction.repeatForever(sequence)
+             
+             run(repeatAction)
+         }
+     }
+    
+    func spawnPufferfish(at: CGPoint) {
+        let pufferfish = OEEnemyNode2(gridSize: gridSize)
+        pufferfish.position = at
+        addChild(pufferfish)
+        pufferfish.puff()
+    }
+    
+    func startSpawningPufferfish(lanes: [Lane]) {
+        for lane in lanes {
+            var xCoordinates = [CGFloat]()
+            for _ in 0..<3 {
+                let randomX = CGFloat.random(in: -size.width...size.width)
+                xCoordinates.append(randomX)
+            }
+            for x in xCoordinates {
+                spawnPufferfish(at: CGPoint(x: x, y: lane.endPosition.y))
+            }
+        }
+        
+    }
+    
 
     func spawnBubble() {
         let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset

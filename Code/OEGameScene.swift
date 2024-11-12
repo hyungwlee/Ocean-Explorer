@@ -103,15 +103,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Initialize and set up score label
         setupScoreLabel()
-        
-        //Setup air display
         setupAirDisplay()
-        
-        // Air CountDown
         airCountDown()
-        
-        // Spawning bubbles
         includeBubbles()
+        startCameraMovement()
+    }
+
+    func startCameraMovement() {
+        let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 25) // Adjust duration as needed CAMERA SPEED GOING UP
+        let continuousMove = SKAction.repeatForever(moveUp)
+        cameraNode.run(continuousMove)
     }
 
     func setupBackground() {
@@ -160,13 +161,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     override func update(_ currentTime: TimeInterval) {
-        followCharacter()
         updateBackgroundTiles()
-    }
 
-    func followCharacter() {
-        if let box = box {
-            cameraNode.position.y = box.position.y
+        // Check if the character goes below the view due to the camera moving up
+        if let box = box, box.position.y < cameraNode.position.y - size.height / 2 {
+            gameOver()
         }
     }
 
@@ -189,9 +188,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // generates new lanes when player moves up
     func generateNewLanes(startingAt yPosition: CGFloat, numberOfLanes: Int) {
-        
         var newLanes: [Lane] = []
         let laneHeight = size.height / CGFloat(numberOfLanes)
         
@@ -214,26 +211,37 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         startSpawning(lanes: newLanes)
     }
-    
+
+    func removeAllGestureRecognizers() {
+        if let gestureRecognizers = view?.gestureRecognizers {
+            for gesture in gestureRecognizers {
+                view?.removeGestureRecognizer(gesture)
+            }
+        }
+    }
+
     func addGestureRecognizers() {
+        // First, remove any existing gesture recognizers to prevent buildup
+        removeAllGestureRecognizers()
+
         let directions: [UISwipeGestureRecognizer.Direction] = [.up, .down, .left, .right]
         for direction in directions {
             let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
             swipe.direction = direction
             view?.addGestureRecognizer(swipe)
         }
-        
+
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         view?.addGestureRecognizer(tap)
     }
-    
+
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + gridSize.height)
-        box.move(to: nextPosition)
+        moveBox(to: nextPosition)
         updateScore()
     }
-    
+
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer) {
         guard let box, !isGameOver else { return }
 
@@ -241,7 +249,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         switch sender.direction {
         case .up:
             nextPosition = CGPoint(x: box.position.x, y: box.position.y + gridSize.height)
-            updateScore()
         case .down:
             nextPosition = CGPoint(x: box.position.x, y: box.position.y - gridSize.height)
         case .left:
@@ -251,9 +258,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         default:
             return
         }
-        box.move(to: nextPosition)
+        moveBox(to: nextPosition)
     }
-    
+
+    func moveBox(to position: CGPoint) {
+        box?.move(to: position)
+    }
+
     func startEnemySpawning() {
         let spawnAction = SKAction.run { [weak self] in
             self?.spawnRandomEnemy()
@@ -274,26 +285,26 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         enemy.startMoving(from: CGPoint(x: startX, y: yPos), to: CGPoint(x: endX, y: yPos))
         addChild(enemy)
     }
-    
+
     func spawnEnemy(in lane: Lane) {
         let enemy = OEEnemyNode(gridSize: gridSize)
-             addChild(enemy)
-             enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
-         }
+        addChild(enemy)
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
+    }
 
     func startSpawning(lanes: [Lane]) {
-         for lane in lanes {
-             let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
-             let spawn = SKAction.run { [weak self] in
-                 self?.spawnEnemy(in: lane)
-             }
-             let sequence = SKAction.sequence([spawn, wait])
-             let repeatAction = SKAction.repeatForever(sequence)
-             
-             run(repeatAction)
-         }
-     }
-    
+        for lane in lanes {
+            let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
+            let spawn = SKAction.run { [weak self] in
+                self?.spawnEnemy(in: lane)
+            }
+            let sequence = SKAction.sequence([spawn, wait])
+            let repeatAction = SKAction.repeatForever(sequence)
+            
+            run(repeatAction)
+        }
+    }
+
     func spawnBubble() {
         let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
         bubble.size = CGSize(width: 45, height: 45) // Adjust size as needed
@@ -303,14 +314,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
         bubble.physicsBody?.isDynamic = false
         
-        // Position the bubble randomly within the scene’s width and above the player’s position
         let randomX = CGFloat.random(in: playableWidthRange)
         let randomY = (box?.position.y ?? 0) + size.height * 0.5 + CGFloat.random(in: 0...200)
         bubble.position = CGPoint(x: randomX, y: randomY)
         
         addChild(bubble)
     }
-    
+
     func includeBubbles() {
         let bubbleSpawnAction = SKAction.repeatForever(
             SKAction.sequence([
@@ -321,19 +331,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             ])
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
-
     }
 
-    
     func setupAirDisplay() {
-        // Initialize the air icon
         airIcon = SKSpriteNode(imageNamed: "Bubble")
-        airIcon.size = CGSize(width: 30, height: 30) // Adjust size as needed
+        airIcon.size = CGSize(width: 30, height: 30)
         airIcon.position = CGPoint(x: size.width / 2 - 60, y: size.height / 2 - 70)
         airIcon.zPosition = 1
         cameraNode.addChild(airIcon)
 
-        // Initialize the air label
         airLabel = SKLabelNode(fontNamed: "SF Mono")
         airLabel.fontSize = 32
         airLabel.fontColor = .white
@@ -342,20 +348,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
     }
-    
+
     func airCountDown() {
-        // Decreasing Air
         let countdownAction = SKAction.repeatForever(
             SKAction.sequence([
                 SKAction.run { [weak self] in
                     self?.decreaseAir()
                 },
-                SKAction.wait(forDuration: 0.5) // Countdown every half a second
+                SKAction.wait(forDuration: 0.5)
             ])
         )
         run(countdownAction, withKey: "airCountdown")
     }
-    
+
     func decreaseAir() {
         guard !isGameOver else { return }
         
@@ -366,24 +371,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             gameOver()
         }
     }
-    
+
     func increaseAir() {
         guard !isGameOver else { return }
         
         if airAmount < 90 {
             airAmount += 10
             airLabel.text = "\(airAmount)"
-        }
-        else if airAmount >= 90 && airAmount <= 100 {
+        } else if airAmount >= 90 && airAmount <= 100 {
             airAmount = 100
             airLabel.text = "\(airAmount)"
         }
     }
 
-    
     func didBegin(_ contact: SKPhysicsContact) {
-        
-        //Check Enemy Collisions
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
@@ -393,12 +394,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
-        //Check Bubble Collisions
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.bubble) ||
            (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
             increaseAir()
-            
-            // Remove the bubble node
             if bodyA.categoryBitMask == PhysicsCategory.bubble {
                 bodyA.node?.removeFromParent()
             } else if bodyB.categoryBitMask == PhysicsCategory.bubble {
@@ -425,6 +423,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func restartGame() {
+        
+            // Remove existing gesture recognizers before restarting the game
+            removeAllGestureRecognizers()
         let newScene = OEGameScene(context: context!, size: size)
         newScene.scaleMode = .aspectFill
         view?.presentScene(newScene, transition: SKTransition.fade(withDuration: 1.0))

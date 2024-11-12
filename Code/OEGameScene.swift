@@ -112,6 +112,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Spawning bubbles
         includeBubbles()
+        
     }
 
     func setupBackground() {
@@ -162,7 +163,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         followCharacter()
         updateBackgroundTiles()
-    }
+        
+        for child in children {
+                if let pufferfish = child as? OEEnemyNode2 {
+                    pufferfish.checkProximityToPlayer(playerPosition: cameraNode.position)
+                }
+        }
 
     func followCharacter() {
         if let box = box {
@@ -212,7 +218,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             yPositionLanes = newYPosition
         }
-        startSpawning(lanes: newLanes)
+        let laneType = Int.random(in: 0..<2)
+        if laneType == 0 {
+            startSpawning(lanes: newLanes)
+
+        } else {
+            startSpawningPufferfish(lanes: newLanes)
+        }
     }
     
     func addGestureRecognizers() {
@@ -293,6 +305,27 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
              run(repeatAction)
          }
      }
+    
+    func spawnPufferfish(at: CGPoint) {
+        let pufferfish = OEEnemyNode2(gridSize: gridSize)
+        pufferfish.position = at
+        addChild(pufferfish)
+        pufferfish.puff()
+    }
+    
+    func startSpawningPufferfish(lanes: [Lane]) {
+        for lane in lanes {
+            var xCoordinates = [CGFloat]()
+            for _ in 0..<3 {
+                let randomX = CGFloat.random(in: -size.width...size.width)
+                xCoordinates.append(randomX)
+            }
+            for x in xCoordinates {
+                spawnPufferfish(at: CGPoint(x: x, y: lane.endPosition.y))
+            }
+        }
+        
+    }
     
     func spawnBubble() {
         let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset

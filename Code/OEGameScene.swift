@@ -47,6 +47,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     var yPositionLanes: CGFloat = 0
+    var numberOfRows: Int = 0
+    var numberOfColumns: Int = 0
+    var cellWidth: CGFloat = 0
+    var cellHeight: CGFloat = 0
     
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -56,10 +60,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         self.cameraNode = SKCameraNode()
         self.camera = cameraNode
         
-        let numberOfLanes = 5 // Example: three lanes
-        let laneHeight = size.height / CGFloat(numberOfLanes)
+        // Creating grid
+        numberOfRows = 11
+        numberOfColumns = 9
+        cellWidth = size.width / CGFloat(numberOfColumns)
+        cellHeight = size.height / CGFloat(numberOfRows)
+        
+        let numberOfLanes = numberOfRows
+        let laneHeight = cellHeight
 
-        for i in 0..<numberOfLanes {
+        for i in 0..<Int(numberOfLanes) {
             let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
             let leftStart = CGPoint(x: -size.width, y: yPosition)
             let rightStart = CGPoint(x: size.width, y: yPosition)
@@ -111,7 +121,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func startCameraMovement() {
-        let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 25) // Adjust duration as needed CAMERA SPEED GOING UP
+        let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 25.0) // Adjust duration as needed CAMERA SPEED GOING UP
         let continuousMove = SKAction.repeatForever(moveUp)
         cameraNode.run(continuousMove)
 
@@ -141,7 +151,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func prepareStartNodes() {
         let center = CGPoint(x: 0, y: 0)
         box = OEBoxNode(gridSize: gridSize)
-        box?.position = center
+        box?.position = positionFor(row: 0, column: 0)
         if let box = box {
             addChild(box)
         }
@@ -184,7 +194,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let lastTile = backgroundTiles.last, lastTile.position.y < thresholdY {
             addBackgroundTile(at: CGPoint(x: 0, y: lastTile.position.y + size.height))
             // generate new lanes
-            generateNewLanes(startingAt: yPositionLanes, numberOfLanes: 5)
+            generateNewLanes(startingAt: yPositionLanes, numberOfLanes: numberOfRows)
         }
 
         backgroundTiles = backgroundTiles.filter { tile in
@@ -196,12 +206,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func positionFor(row: Int, column: Int) -> CGPoint {
+        let x = CGFloat(column) * cellWidth + cellWidth / 2
+        let y = CGFloat(row) * cellHeight + cellHeight / 2
+        return CGPoint(x: x, y: y)
+    }
+
+    func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
+        let row = Int(position.y / cellHeight)
+        let column = Int(position.x / cellWidth)
+        return (row, column)
+    }
+    
     func generateNewLanes(startingAt yPosition: CGFloat, numberOfLanes: Int) {
         var newLanes: [Lane] = []
-        let laneHeight = size.height / CGFloat(numberOfLanes)
+        let laneHeight = cellHeight
         
         for i in 0..<numberOfLanes {
-            let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
+            let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
             let leftStart = CGPoint(x: -size.width, y: newYPosition)
             let rightStart = CGPoint(x: size.width, y: newYPosition)
             
@@ -215,7 +237,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let newLane = Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0))
                 newLanes.append(newLane)
             }
-            yPositionLanes = newYPosition
+            yPositionLanes = newYPosition + laneHeight - laneHeight / 2
         }
         let laneType = Int.random(in: 0..<2)
         if laneType == 0 {
@@ -251,7 +273,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
-        let nextPosition = CGPoint(x: box.position.x, y: box.position.y + gridSize.height)
+        let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
         moveBox(to: nextPosition)
         updateScore()
     }
@@ -262,13 +284,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let nextPosition: CGPoint
         switch sender.direction {
         case .up:
-            nextPosition = CGPoint(x: box.position.x, y: box.position.y + gridSize.height)
+            nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
         case .down:
-            nextPosition = CGPoint(x: box.position.x, y: box.position.y - gridSize.height)
+            nextPosition = CGPoint(x: box.position.x, y: box.position.y - cellHeight)
         case .left:
-            nextPosition = CGPoint(x: max(box.position.x - gridSize.width, playableWidthRange.lowerBound), y: box.position.y)
+            nextPosition = CGPoint(x: max(box.position.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
         case .right:
-            nextPosition = CGPoint(x: min(box.position.x + gridSize.width, playableWidthRange.upperBound), y: box.position.y)
+            nextPosition = CGPoint(x: min(box.position.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
         default:
             return
         }
@@ -309,14 +331,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func startSpawning(lanes: [Lane]) {
       
         for lane in lanes {
-            let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
-            let spawn = SKAction.run { [weak self] in
-                self?.spawnEnemy(in: lane)
-            }
-            let sequence = SKAction.sequence([spawn, wait])
-            let repeatAction = SKAction.repeatForever(sequence)
+            let laneType = Int.random(in: 0..<3) // Randomly choose if lane will have enemies or be empty
             
-            run(repeatAction)
+            if laneType == 2 {
+                let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
+                let spawn = SKAction.run { [weak self] in
+                    self?.spawnEnemy(in: lane)
+                }
+                let sequence = SKAction.sequence([spawn, wait])
+                let repeatAction = SKAction.repeatForever(sequence)
+                
+                run(repeatAction)
+            }
         }
     }
 
@@ -331,12 +357,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func startSpawningPufferfish(lanes: [Lane]) {
         for lane in lanes {
             var xCoordinates = [CGFloat]()
-            for _ in 0..<3 {
-                let randomX = CGFloat.random(in: -size.width...size.width)
-                xCoordinates.append(randomX)
+            for _ in 0..<2 {
+                let randomX = Int.random(in: -numberOfColumns...numberOfColumns)
+                xCoordinates.append(CGFloat(randomX) * cellWidth + cellWidth / 2)
             }
             for x in xCoordinates {
-                spawnPufferfish(at: CGPoint(x: x, y: lane.endPosition.y))
+                spawnPufferfish(at: CGPoint(x: x, y: lane.endPosition.y - cellHeight / 2))
             }
         }
         

@@ -33,7 +33,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     
     // Air properties
-    var airAmount = 100
+    var airAmount = 26
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
     
@@ -44,6 +44,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     var playableWidthRange: ClosedRange<CGFloat> {
         return (-size.width / 2)...(size.width / 2)
+    }
+    
+    var viewableHeightRange: ClosedRange<CGFloat> {
+        guard let boxPositionY = box?.position.y else { return 0...0 }
+        return (boxPositionY - cellHeight * 3)...(boxPositionY + cellHeight * 3)
     }
     
     var yPositionLanes: CGFloat = 0
@@ -379,7 +384,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         bubble.physicsBody?.isDynamic = false
         
         let randomX = CGFloat.random(in: playableWidthRange)
-        let randomY = (box?.position.y ?? 0) + size.height * 0.5 + CGFloat.random(in: 0...200)
+        let randomY = CGFloat.random(in: viewableHeightRange)
+        
         bubble.position = CGPoint(x: randomX, y: randomY)
         
         addChild(bubble)
@@ -391,7 +397,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 SKAction.run { [weak self] in
                     self?.spawnBubble()
                 },
-                SKAction.wait(forDuration: Double.random(in: 5...10)) // Adjust spawn frequency
+                SKAction.wait(forDuration: 5) // Adjust spawn frequency
             ])
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
@@ -419,7 +425,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 SKAction.run { [weak self] in
                     self?.decreaseAir()
                 },
-                SKAction.wait(forDuration: 0.5)
+                SKAction.wait(forDuration: 1)
             ])
         )
         run(countdownAction, withKey: "airCountdown")
@@ -439,11 +445,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func increaseAir() {
         guard !isGameOver else { return }
         
-        if airAmount < 90 {
-            airAmount += 10
+        if airAmount < 20 {
+            airAmount += 5
             airLabel.text = "\(airAmount)"
-        } else if airAmount >= 90 && airAmount <= 100 {
-            airAmount = 100
+        } else if airAmount >= 20 && airAmount <= 25 {
+            airAmount = 25
             airLabel.text = "\(airAmount)"
         }
     }

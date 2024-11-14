@@ -52,6 +52,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var cellWidth: CGFloat = 0
     var cellHeight: CGFloat = 0
     
+    var highestRowDrawn: Int = 11  // Track the highest row drawn for grid
+
     init(context: OEGameContext, size: CGSize) {
         self.context = context
         super.init(size: size)
@@ -65,6 +67,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         numberOfColumns = 9
         cellWidth = size.width / CGFloat(numberOfColumns)
         cellHeight = size.height / CGFloat(numberOfRows)
+        
         
         let numberOfLanes = numberOfRows
         let laneHeight = cellHeight
@@ -95,7 +98,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Disable gravity in the scene's physics world
         physicsWorld.gravity = CGVector(dx: 0, dy: 0)
-
+                
         setupBackground()
         prepareGameContext()
         prepareStartNodes()
@@ -107,7 +110,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Set up physics world contact delegate
         physicsWorld.contactDelegate = self
-
+        
+        drawGridLines()
+        
         // Start timed enemy spawning
         startSpawning(lanes: lanes)
 
@@ -118,6 +123,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         includeBubbles()
 
         startCameraMovement()
+        
     }
 
     func startCameraMovement() {
@@ -171,10 +177,21 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         score += 1
         scoreLabel.text = "\(score)"
     }
-
+    
+    func updateHighestRowDrawn() {
+        highestRowDrawn += 11
+    }
+    
     override func update(_ currentTime: TimeInterval) {
-        updateBackgroundTiles()
 
+            // If the camera has moved beyond the highest drawn row, draw additional rows
+        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4  {
+            drawNewGridRows()
+            updateHighestRowDrawn()
+        }
+        
+        updateBackgroundTiles()
+        
         for child in children {
             if let pufferfish = child as? OEEnemyNode2 {
                 pufferfish.checkProximityToPlayer(playerPosition: box?.position ?? .zero)
@@ -212,6 +229,75 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return CGPoint(x: x, y: y)
     }
 
+    func drawGridLines() {
+        // Horizontal lines
+        for row in 0...numberOfRows {
+            let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
+            let startPoint = CGPoint(x: -size.width, y: yPosition)
+            let endPoint = CGPoint(x: size.width, y: yPosition)
+            
+            let horizontalLine = SKShapeNode()
+            let path = CGMutablePath()
+            path.move(to: startPoint)
+            path.addLine(to: endPoint)
+            horizontalLine.path = path
+            horizontalLine.strokeColor = .gray  // Set color of grid lines
+            horizontalLine.lineWidth = 1.0
+            
+            addChild(horizontalLine)
+        }
+        
+        // Vertical lines
+        for column in 0...numberOfColumns {
+            let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
+            let startPoint = CGPoint(x: xPosition, y: -size.height)
+            let endPoint = CGPoint(x: xPosition, y: size.height)
+            
+            let verticalLine = SKShapeNode()
+            let path = CGMutablePath()
+            path.move(to: startPoint)
+            path.addLine(to: endPoint)
+            verticalLine.path = path
+            verticalLine.strokeColor = .gray  // Set color of grid lines
+            verticalLine.lineWidth = 1.0
+            
+            addChild(verticalLine)
+        }
+    }
+    
+    func drawNewGridRows() {
+        // Draw new horizontal lines for rows above the current grid
+        for row in (highestRowDrawn)...(highestRowDrawn + 11) {
+            let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
+            let horizontalLine = SKShapeNode()
+            let path = CGMutablePath()
+            path.move(to: CGPoint(x: -size.width, y: yPosition))
+            path.addLine(to: CGPoint(x: size.width, y: yPosition))
+            horizontalLine.path = path
+            horizontalLine.strokeColor = .gray
+            horizontalLine.lineWidth = 1.0
+            
+            addChild(horizontalLine)
+        }
+
+        // Extend the vertical lines for the new height of the grid
+        for column in 0...numberOfColumns {
+            let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
+            let startPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn) * cellHeight)
+            let endPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn + 11) * cellHeight)
+            
+            let verticalLine = SKShapeNode()
+            let path = CGMutablePath()
+            path.move(to: startPoint)
+            path.addLine(to: endPoint)
+            verticalLine.path = path
+            verticalLine.strokeColor = .gray
+            verticalLine.lineWidth = 1.0
+
+            addChild(verticalLine)
+        }
+    }
+    
     func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
         let row = Int(position.y / cellHeight)
         let column = Int(position.x / cellWidth)
@@ -327,21 +413,52 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         addChild(enemy)
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
     }
-
+    
+    func spawnLongEnemy(in lane: Lane) {
+        let enemy = OEEnemyNode3(gridSize: gridSize)
+        addChild(enemy)
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
+    }
+    
+    func warn(in lane: Lane) {
+        let warningLabel = SKLabelNode()
+        warningLabel.fontColor = .red
+        warningLabel.text = "WARNING"
+        warningLabel.fontSize = 30
+        warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
+        addChild(warningLabel)
+        SKAction.wait(forDuration: Double.random(in: 10.0...20.0))
+    }
+    
     func startSpawning(lanes: [Lane]) {
       
         for lane in lanes {
-            let laneType = Int.random(in: 0..<3) // Randomly choose if lane will have enemies or be empty
+            let laneType = Int.random(in: 0..<4) // Randomly choose if lane will have enemies or be empty
             
-            if laneType == 2 {
-                let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
-                let spawn = SKAction.run { [weak self] in
-                    self?.spawnEnemy(in: lane)
-                }
-                let sequence = SKAction.sequence([spawn, wait])
-                let repeatAction = SKAction.repeatForever(sequence)
+            if laneType > 0 {
                 
-                run(repeatAction)
+                // Spawn eel
+                if laneType == 2 {
+                    let wait = SKAction.wait(forDuration: Double.random(in: 10.0...20.0))
+                    let spawn = SKAction.run { [weak self] in
+                        self?.spawnLongEnemy(in: lane)
+                    }
+                    let sequence = SKAction.sequence([wait, spawn])
+                    let repeatAction = SKAction.repeatForever(sequence)
+                    
+                    run(repeatAction)
+                }
+                // Spawn sharks
+                else {
+                    let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
+                    let spawn = SKAction.run { [weak self] in
+                        self?.spawnEnemy(in: lane)
+                    }
+                    let sequence = SKAction.sequence([spawn, wait])
+                    let repeatAction = SKAction.repeatForever(sequence)
+                    
+                    run(repeatAction)
+                }
             }
         }
     }
@@ -365,7 +482,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 spawnPufferfish(at: CGPoint(x: x, y: lane.endPosition.y - cellHeight / 2))
             }
         }
-        
     }
     
 

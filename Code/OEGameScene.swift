@@ -183,23 +183,37 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func update(_ currentTime: TimeInterval) {
+        guard let box = box else { return }
 
-            // If the camera has moved beyond the highest drawn row, draw additional rows
-        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4  {
+        // 1. Continuous upward movement for the camera
+        cameraNode.position.y += 0 // Adjust this value for camera speed
+
+        // 2. Check if the character is above a certain threshold relative to the camera's view
+        let characterAboveThreshold = box.position.y > cameraNode.position.y + size.height / 4 // Adjust threshold as desired
+
+        if characterAboveThreshold {
+            // Move the camera up to match the character's y position while maintaining continuous movement
+            cameraNode.position.y = box.position.y - size.height / 4
+        }
+
+        // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
+        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
             drawNewGridRows()
             updateHighestRowDrawn()
         }
-        
+
+        // 4. Update background tiles
         updateBackgroundTiles()
-        
+
+        // 5. Check for proximity to player for each pufferfish enemy
         for child in children {
             if let pufferfish = child as? OEEnemyNode2 {
-                pufferfish.checkProximityToPlayer(playerPosition: box?.position ?? .zero)
+                pufferfish.checkProximityToPlayer(playerPosition: box.position)
             }
         }
-        
-        // Check if the character goes below the view due to the camera moving up
-        if let box = box, box.position.y < cameraNode.position.y - size.height / 2 {
+
+        // 6. Game over if the character falls below the camera's view
+        if box.position.y < cameraNode.position.y - size.height / 2 {
             gameOver()
         }
     }
@@ -241,7 +255,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             path.move(to: startPoint)
             path.addLine(to: endPoint)
             horizontalLine.path = path
-            horizontalLine.strokeColor = .gray  // Set color of grid lines
+            horizontalLine.strokeColor = .white  // Set color of grid lines
             horizontalLine.lineWidth = 1.0
             
             addChild(horizontalLine)
@@ -258,7 +272,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             path.move(to: startPoint)
             path.addLine(to: endPoint)
             verticalLine.path = path
-            verticalLine.strokeColor = .gray  // Set color of grid lines
+            verticalLine.strokeColor = .white  // Set color of grid lines
             verticalLine.lineWidth = 1.0
             
             addChild(verticalLine)
@@ -274,7 +288,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             path.move(to: CGPoint(x: -size.width, y: yPosition))
             path.addLine(to: CGPoint(x: size.width, y: yPosition))
             horizontalLine.path = path
-            horizontalLine.strokeColor = .gray
+            horizontalLine.strokeColor = .white
             horizontalLine.lineWidth = 1.0
             
             addChild(horizontalLine)
@@ -291,7 +305,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             path.move(to: startPoint)
             path.addLine(to: endPoint)
             verticalLine.path = path
-            verticalLine.strokeColor = .gray
+            verticalLine.strokeColor = .white
             verticalLine.lineWidth = 1.0
 
             addChild(verticalLine)

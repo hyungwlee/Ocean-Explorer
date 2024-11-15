@@ -28,10 +28,10 @@ class OEEnemyNode: SKSpriteNode {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func startMoving(from start: CGPoint, to end: CGPoint) {
+    func startMoving(from start: CGPoint, to end: CGPoint, speed: CGFloat) {
         self.position = start
 
-        let moveAction = SKAction.move(to: end, duration: Double.random(in: 3.0...5.0)) // Adjust the duration as necessary
+        let moveAction = SKAction.move(to: end, duration: speed)
 
         let removeAction = SKAction.removeFromParent()
         let sequence = SKAction.sequence([moveAction, removeAction])

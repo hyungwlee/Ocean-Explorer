@@ -18,6 +18,9 @@ struct Lane {
     let startPosition: CGPoint
     let endPosition: CGPoint
     let direction: CGVector
+    let speed: CGFloat
+    let spawnRate: CGFloat
+    let laneType: String // Empty, Normal, or Eel
 }
 
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
@@ -33,7 +36,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     
     // Air properties
-    var airAmount = 26
+    var airAmount = 25
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
     
@@ -57,7 +60,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var cellWidth: CGFloat = 0
     var cellHeight: CGFloat = 0
     
-    var highestRowDrawn: Int = 11  // Track the highest row drawn for grid
+    var highestRowDrawn: Int = 13 // Track the highest row drawn for grid
 
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -68,7 +71,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         self.camera = cameraNode
         
         // Creating grid
-        numberOfRows = 11
+        numberOfRows = 13
         numberOfColumns = 9
         cellWidth = size.width / CGFloat(numberOfColumns)
         cellHeight = size.height / CGFloat(numberOfRows)
@@ -76,21 +79,45 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         let numberOfLanes = numberOfRows
         let laneHeight = cellHeight
-
-        for i in 0..<Int(numberOfLanes) {
-            let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-            let leftStart = CGPoint(x: -size.width, y: yPosition)
-            let rightStart = CGPoint(x: size.width, y: yPosition)
-
-            // Random directions for lanes
-            laneDirection = Int.random(in: 0..<2)
-            
-            if laneDirection == 0 {
-                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0)))
-            } else {
-                lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0)))
+        
+        var i = 0
+        while i < numberOfRows {
+            if i < 3 {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, spawnRate: 0, laneType: "Empty"))
+                yPositionLanes = yPosition
+                i += 1
             }
-            yPositionLanes = yPosition
+            
+            // Number of lanes in a row with enemies
+            let numberOfEnemyRows = Int.random(in: 2...5)
+            
+            for _ in i...i + numberOfEnemyRows {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                let leftStart = CGPoint(x: -size.width, y: yPosition)
+                let rightStart = CGPoint(x: size.width, y: yPosition)
+
+                // Random directions for lanes
+                laneDirection = Int.random(in: 0..<2)
+                
+                if laneDirection == 0 {
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 4..<6), spawnRate: CGFloat.random(in: 2..<4), laneType: "Normal"))
+                } else {
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 4..<6), spawnRate: CGFloat.random(in: 2..<4), laneType: "Normal"))
+                }
+                yPositionLanes = yPosition
+                i += 1
+            }
+            
+            // Number of empty lanes in a row
+            let numberOfEmptyRows = Int.random(in: 1...3)
+            
+            for _ in i...i + numberOfEmptyRows {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, spawnRate: 0, laneType: "Empty"))
+                yPositionLanes = yPosition
+                i += 1
+            }
         }
     }
 
@@ -184,27 +211,41 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func updateHighestRowDrawn() {
-        highestRowDrawn += 11
+        highestRowDrawn += numberOfRows
     }
     
     override func update(_ currentTime: TimeInterval) {
+        guard let box = box else { return }
 
-            // If the camera has moved beyond the highest drawn row, draw additional rows
-        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4  {
+        // 1. Continuous upward movement for the camera
+        cameraNode.position.y += 0 // Adjust this value for camera speed
+
+        // 2. Check if the character is above a certain threshold relative to the camera's view
+        let characterAboveThreshold = box.position.y > cameraNode.position.y + size.height / 4 // Adjust threshold as desired
+
+        if characterAboveThreshold {
+            // Move the camera up to match the character's y position while maintaining continuous movement
+            cameraNode.position.y = box.position.y - size.height / 4
+        }
+
+        // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
+        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
             drawNewGridRows()
             updateHighestRowDrawn()
         }
-        
+
+        // 4. Update background tiles
         updateBackgroundTiles()
-        
+
+        // 5. Check for proximity to player for each pufferfish enemy
         for child in children {
             if let pufferfish = child as? OEEnemyNode2 {
-                pufferfish.checkProximityToPlayer(playerPosition: box?.position ?? .zero)
+                pufferfish.checkProximityToPlayer(playerPosition: box.position)
             }
         }
-        
-        // Check if the character goes below the view due to the camera moving up
-        if let box = box, box.position.y < cameraNode.position.y - size.height / 2 {
+
+        // 6. Game over if the character falls below the camera's view
+        if box.position.y < cameraNode.position.y - size.height / 2 {
             gameOver()
         }
     }
@@ -246,7 +287,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             path.move(to: startPoint)
             path.addLine(to: endPoint)
             horizontalLine.path = path
-            horizontalLine.strokeColor = .gray  // Set color of grid lines
+            horizontalLine.strokeColor = .white  // Set color of grid lines
             horizontalLine.lineWidth = 1.0
             
             addChild(horizontalLine)
@@ -263,7 +304,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             path.move(to: startPoint)
             path.addLine(to: endPoint)
             verticalLine.path = path
-            verticalLine.strokeColor = .gray  // Set color of grid lines
+            verticalLine.strokeColor = .white  // Set color of grid lines
             verticalLine.lineWidth = 1.0
             
             addChild(verticalLine)
@@ -272,14 +313,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func drawNewGridRows() {
         // Draw new horizontal lines for rows above the current grid
-        for row in (highestRowDrawn)...(highestRowDrawn + 11) {
+        for row in (highestRowDrawn)...(highestRowDrawn + numberOfRows) {
             let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
             let horizontalLine = SKShapeNode()
             let path = CGMutablePath()
             path.move(to: CGPoint(x: -size.width, y: yPosition))
             path.addLine(to: CGPoint(x: size.width, y: yPosition))
             horizontalLine.path = path
-            horizontalLine.strokeColor = .gray
+            horizontalLine.strokeColor = .white
             horizontalLine.lineWidth = 1.0
             
             addChild(horizontalLine)
@@ -289,14 +330,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         for column in 0...numberOfColumns {
             let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
             let startPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn) * cellHeight)
-            let endPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn + 11) * cellHeight)
+            let endPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn + numberOfRows) * cellHeight)
             
             let verticalLine = SKShapeNode()
             let path = CGMutablePath()
             path.move(to: startPoint)
             path.addLine(to: endPoint)
             verticalLine.path = path
-            verticalLine.strokeColor = .gray
+            verticalLine.strokeColor = .white
             verticalLine.lineWidth = 1.0
 
             addChild(verticalLine)
@@ -313,30 +354,40 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         var newLanes: [Lane] = []
         let laneHeight = cellHeight
         
-        for i in 0..<numberOfLanes {
-            let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
-            let leftStart = CGPoint(x: -size.width, y: newYPosition)
-            let rightStart = CGPoint(x: size.width, y: newYPosition)
+        var i = 0
+        while i < numberOfRows {
             
-            // Random directions for lanes
-            laneDirection = Int.random(in: 0..<2)
+            // Number of lanes in a row with enemies
+            let numberOfEnemyRows = Int.random(in: 2...5)
             
-            if laneDirection == 0 {
-                let newLane = Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0))
-                newLanes.append(newLane)
-            } else {
-                let newLane = Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0))
-                newLanes.append(newLane)
-            }
-            yPositionLanes = newYPosition + laneHeight - laneHeight / 2
-        }
-        let laneType = Int.random(in: 0..<2)
-        if laneType == 0 {
-            startSpawning(lanes: newLanes)
+            for _ in i...i + numberOfEnemyRows {
+                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
+                let leftStart = CGPoint(x: -size.width, y: newYPosition + cellHeight / 2)
+                let rightStart = CGPoint(x: size.width, y: newYPosition + cellHeight / 2)
 
-        } else {
-            startSpawningPufferfish(lanes: newLanes)
+                // Random directions for lanes
+                laneDirection = Int.random(in: 0..<2)
+                
+                if laneDirection == 0 {
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 4..<6) - CGFloat(score) / 20, spawnRate: CGFloat.random(in: 2..<4), laneType: "Normal"))
+                } else {
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 4..<6) - CGFloat(score) / 20, spawnRate: CGFloat.random(in: 2..<4), laneType: "Normal"))
+                }
+                yPositionLanes = newYPosition + laneHeight / 2
+                i += 1
+            }
+            
+            // Number of empty lanes in a row
+            let numberOfEmptyRows = Int.random(in: 1...3)
+            
+            for _ in i...i + numberOfEmptyRows {
+                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
+                newLanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, spawnRate: 0, laneType: "Empty"))
+                yPositionLanes = newYPosition + laneHeight / 2
+                i += 1
+            }
         }
+        startSpawning(lanes: newLanes)
     }
 
     func removeAllGestureRecognizers() {
@@ -392,33 +443,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         box?.move(to: position)
     }
 
-    func startEnemySpawning() {
-        let spawnAction = SKAction.run { [weak self] in
-            self?.spawnRandomEnemy()
-        }
-        let waitAction = SKAction.wait(forDuration: Double.random(in: 2...5))
-        let sequence = SKAction.sequence([spawnAction, waitAction])
-        let repeatAction = SKAction.repeatForever(sequence)
-        
-        run(repeatAction, withKey: "spawnEnemies")
-    }
-
-    func spawnRandomEnemy() {
-        let enemy = OEEnemyNode(gridSize: gridSize)
-        let isLeftToRight = Bool.random()
-        let startX = isLeftToRight ? -size.width / 2 - enemy.size.width : size.width / 2 + enemy.size.width
-        let endX = isLeftToRight ? size.width / 2 + enemy.size.width : -size.width / 2 - enemy.size.width
-        let yPos = (box?.position.y ?? 0) + CGFloat.random(in: 3...6) * gridSize.height
-        enemy.startMoving(from: CGPoint(x: startX, y: yPos), to: CGPoint(x: endX, y: yPos))
-        addChild(enemy)
-    }
-
     func spawnEnemy(in lane: Lane) {
         let enemy = OEEnemyNode(gridSize: gridSize)
         addChild(enemy)
-        enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
     }
     
+    func spawnPufferfish(in lane: Lane) {
+        let enemy = OEEnemyNode2(gridSize: gridSize)
+        addChild(enemy)
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+    }
+
     func spawnLongEnemy(in lane: Lane) {
         let enemy = OEEnemyNode3(gridSize: gridSize)
         addChild(enemy)
@@ -432,41 +468,34 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         warningLabel.fontSize = 30
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
         addChild(warningLabel)
-        SKAction.wait(forDuration: Double.random(in: 10.0...20.0))
+        let wait = SKAction.wait(forDuration: 3.0)
+        let removeWarning = SKAction.removeFromParent()
+        warningLabel.run(SKAction.sequence([wait, removeWarning]))
     }
     
     func startSpawning(lanes: [Lane]) {
       
         for lane in lanes {
-            let laneType = Int.random(in: 0..<4) // Randomly choose if lane will have enemies or be empty
             
-            if laneType > 0 {
-                
-                // Spawn eel
-                if laneType == 2 {
-                    let wait = SKAction.wait(forDuration: Double.random(in: 10.0...20.0))
-                    let spawn = SKAction.run { [weak self] in
-                        self?.spawnLongEnemy(in: lane)
-                    }
-                    let sequence = SKAction.sequence([wait, spawn])
-                    let repeatAction = SKAction.repeatForever(sequence)
-                    
-                    run(repeatAction)
-                }
-                // Spawn sharks
-                else {
-                    let wait = SKAction.wait(forDuration: Double.random(in: 1.5...3.0)) // Adjust for spawn frequency
-                    let spawn = SKAction.run { [weak self] in
+            if lane.laneType == "Normal" {
+                let wait = SKAction.wait(forDuration: lane.spawnRate)
+                let spawn = SKAction.run { [weak self] in
+                    let enemyType = Int.random(in: 0..<8)
+                    if enemyType == 7 {
+                        self?.spawnPufferfish(in: lane)
+                    } else {
                         self?.spawnEnemy(in: lane)
                     }
-                    let sequence = SKAction.sequence([spawn, wait])
-                    let repeatAction = SKAction.repeatForever(sequence)
-                    
-                    run(repeatAction)
                 }
+                let sequence = SKAction.sequence([spawn, wait])
+                let repeatAction = SKAction.repeatForever(sequence)
+                
+                run(repeatAction)
             }
         }
     }
+        
+    
 
     
     func spawnPufferfish(at: CGPoint) {
@@ -484,7 +513,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 xCoordinates.append(CGFloat(randomX) * cellWidth + cellWidth / 2)
             }
             for x in xCoordinates {
-                spawnPufferfish(at: CGPoint(x: x, y: lane.endPosition.y - cellHeight / 2))
+                spawnPufferfish(at: CGPoint(x: x, y: lane.endPosition.y))
             }
         }
     }

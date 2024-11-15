@@ -36,7 +36,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     
     // Air properties
-    var airAmount = 20
+    var airAmount = 26
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
     
@@ -349,6 +349,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+
     func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
         let row = Int(position.y / cellHeight)
         let column = Int(position.x / cellWidth)
@@ -521,8 +522,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-
+    // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {
+        
+        // Create the bubble asset
         let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
         bubble.size = CGSize(width: 45, height: 45) // Adjust size as needed
         bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2)
@@ -531,10 +534,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
         bubble.physicsBody?.isDynamic = false
         
-        let randomX = CGFloat.random(in: playableWidthRange)
-        let randomY = CGFloat.random(in: viewableHeightRange)
+        // Used to find the column range to place the bubble in randomly
+        let columns = Int(size.width / cellWidth)
+        let playableColumnRange = (-columns / 2)...(columns / 2)
         
-        bubble.position = CGPoint(x: randomX, y: randomY)
+        // Used to find the row range to place the bubble in randomly
+        guard let box = box else { return }
+        
+        // Getting the curr row and column of the box/player using gridPosition funct
+        let currPosition = gridPosition(for: box.position)
+        let currRow = currPosition.row  // This is the curr row the player is on
+        
+        // Create a row range for bubble to be placed randomly
+        let min = currRow - 2
+        let max = currRow + 4
+        let playableRowRange = min...max
+        
+        // Now get a random row and column for the bubble to spawn in
+        let randomRow = Int.random(in: playableRowRange)
+        let randomColumn = Int.random(in: playableColumnRange)
+        
+        // Set the bubble position
+        bubble.position = positionFor(row: randomRow, column: randomColumn)
         
         addChild(bubble)
     }
@@ -567,6 +588,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.addChild(airLabel)
     }
 
+    // Continuously decreases air during game
     func airCountDown() {
         let countdownAction = SKAction.repeatForever(
             SKAction.sequence([
@@ -579,6 +601,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         run(countdownAction, withKey: "airCountdown")
     }
 
+    // Function to decrease air by 1 (called in aircountdown)
     func decreaseAir() {
         guard !isGameOver else { return }
         
@@ -595,7 +618,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             gameOver()
         }
     }
-
+    
+    // Function to increase air by 5 when player gets bubble
     func increaseAir() {
         guard !isGameOver else { return }
         
@@ -607,7 +631,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airLabel.text = "\(airAmount)"
         }
     }
-
+    
+    // Handles player contact with bubbles and enemies
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB

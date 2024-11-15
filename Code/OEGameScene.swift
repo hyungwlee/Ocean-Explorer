@@ -36,7 +36,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     
     // Air properties
-    var airAmount = 20
+    var airAmount = 21 //
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
     
@@ -625,16 +625,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func gameOver() {
         isGameOver = true
+        cameraNode.removeAllActions() // STOPS CAMERA
         removeAction(forKey: "spawnEnemies")
+        
+        // Save the current score before resetting
+        let finalScore = score
+        
+        // Reset the score
         score = 0
         scoreLabel.text = "\(score)"
-
+        
         let gameOverLabel = SKLabelNode(text: "Game Over!")
         gameOverLabel.fontSize = 48
         gameOverLabel.fontColor = .red
-        gameOverLabel.position = CGPoint(x: 0, y: cameraNode.position.y)
+        gameOverLabel.position = CGPoint(x: 0, y: cameraNode.position.y + 50) // Adjust position as needed
         cameraNode.addChild(gameOverLabel)
-
+        
+        let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
+        finalScoreLabel.fontSize = 32
+        finalScoreLabel.fontColor = .white
+        finalScoreLabel.position = CGPoint(x: 0, y: cameraNode.position.y) // Adjust position as needed
+        cameraNode.addChild(finalScoreLabel)
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.restartGame()
         }

@@ -36,7 +36,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     
     // Air properties
-    var airAmount = 25
+    var airAmount = 20
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
     
@@ -71,7 +71,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cellWidth = size.width / CGFloat(numberOfColumns)
         cellHeight = size.height / CGFloat(numberOfRows)
         
-        
+
         let numberOfLanes = numberOfRows
         let laneHeight = cellHeight
         
@@ -202,6 +202,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func updateScore() {
         score += 1
+        if score % 10 == 0 {
+                    scoreLabel.fontColor = .yellow
+                } else {
+                    scoreLabel.fontColor = .white
+                }
         scoreLabel.text = "\(score)"
     }
     
@@ -490,9 +495,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
         
-    
 
-    
     func spawnPufferfish(at: CGPoint) {
         let pufferfish = OEEnemyNode2(gridSize: gridSize)
         pufferfish.position = at
@@ -572,6 +575,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func decreaseAir() {
         guard !isGameOver else { return }
+        
+        if airAmount < 7 {
+            airLabel.fontColor = .red
+            } else {
+                airLabel.fontColor = .white
+            }
         
         if airAmount > 0 {
             airAmount -= 1

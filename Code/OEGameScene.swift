@@ -33,7 +33,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     
     // Air properties
-    var airAmount = 100
+    var airAmount = 25
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
     
@@ -554,7 +554,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 SKAction.run { [weak self] in
                     self?.decreaseAir()
                 },
-                SKAction.wait(forDuration: 0.5)
+                SKAction.wait(forDuration: 1)
             ])
         )
         run(countdownAction, withKey: "airCountdown")

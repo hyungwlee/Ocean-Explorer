@@ -9,7 +9,7 @@ import Foundation
 import SpriteKit
 
 class OEEnemyNode2: SKSpriteNode {
-
+    
     private let gridSize: CGSize
     
     private let detectionRadius: CGFloat = 100.0
@@ -26,11 +26,11 @@ class OEEnemyNode2: SKSpriteNode {
         self.physicsBody?.collisionBitMask = PhysicsCategory.box
         self.physicsBody?.contactTestBitMask = PhysicsCategory.box
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     // Determine if player is close to pufferfish
     func checkProximityToPlayer(playerPosition:CGPoint) {
         let distance = hypot(playerPosition.x - position.x, playerPosition.y - position.y)
@@ -51,7 +51,7 @@ class OEEnemyNode2: SKSpriteNode {
     func puff() {
         isPuffed = true
         
-        let puffUp = SKAction.scale(to: CGFloat(2.0), duration: 1)
+        let puffUp = SKAction.scale(to: CGFloat(2.0), duration: 0.4)
         run(puffUp)
     }
     
@@ -61,5 +61,16 @@ class OEEnemyNode2: SKSpriteNode {
         
         let deflate = SKAction.scale(to: CGFloat(1.0), duration: 1)
         run(deflate)
+    }
+    
+    func startMoving(from start: CGPoint, to end: CGPoint, speed: CGFloat) {
+        self.position = start
+        
+        let moveAction = SKAction.move(to: end, duration: speed)
+        
+        let removeAction = SKAction.removeFromParent()
+        let sequence = SKAction.sequence([moveAction, removeAction])
+        
+        run(sequence)
     }
 }

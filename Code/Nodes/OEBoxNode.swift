@@ -16,7 +16,7 @@ class OEBoxNode: SKSpriteNode {
         self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Smiley")
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width / 2, height: texture.size().height / 2))
-        
+        self.zPosition = 1
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.categoryBitMask = PhysicsCategory.box
         self.physicsBody?.collisionBitMask = PhysicsCategory.enemy

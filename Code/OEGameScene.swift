@@ -344,6 +344,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             horizontalLine.path = path
             horizontalLine.strokeColor = .white  // Set color of grid lines
             horizontalLine.lineWidth = 1.0
+            horizontalLine.alpha = 0.55 // OPACITY OF LINES
             
             addChild(horizontalLine)
         }
@@ -361,6 +362,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             verticalLine.path = path
             verticalLine.strokeColor = .white  // Set color of grid lines
             verticalLine.lineWidth = 1.0
+            verticalLine.alpha = 0.55 // OPACITY OF LINES
             
             addChild(verticalLine)
         }
@@ -753,39 +755,64 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func gameOver() {
         isGameOver = true
-        cameraNode.removeAllActions() // STOPS CAMERA
-        removeAction(forKey: "spawnEnemies")
+        cameraNode.removeAllActions() // Stop camera movement
+        removeAction(forKey: "spawnEnemies") // Stop spawning enemies
         
-        // Save the current score before resetting
+        // Save the current score
         let finalScore = score
         
-        // Reset the score
-        score = 0
+        // Reset the score display (but keep the score variable intact for now)
         scoreLabel.text = "\(score)"
         
         let gameOverLabel = SKLabelNode(text: "Game Over!")
         gameOverLabel.fontSize = 48
         gameOverLabel.fontColor = .red
-        gameOverLabel.position = CGPoint(x: 0, y: cameraNode.position.y + 50) // Adjust position as needed
+        gameOverLabel.fontName = "Arial-BoldMT" // Use bold font
+        gameOverLabel.position = CGPoint(x: 0, y: 100) // Center on screen
         cameraNode.addChild(gameOverLabel)
-        
+
+        // Display Final Score
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
         finalScoreLabel.fontSize = 32
         finalScoreLabel.fontColor = .white
-        finalScoreLabel.position = CGPoint(x: 0, y: cameraNode.position.y) // Adjust position as needed
+        finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
+        finalScoreLabel.position = CGPoint(x: 0, y: 50) // Positioned just below the "Game Over" text
         cameraNode.addChild(finalScoreLabel)
+
+        // Display "Tap to Restart" message
+        let restartLabel = SKLabelNode(text: "Tap to Restart")
+        restartLabel.fontSize = 28
+        restartLabel.fontColor = .yellow
+        restartLabel.fontName = "Arial" // Use bold font
+        restartLabel.position = CGPoint(x: 0, y: 0) // Positioned below the final score
+        cameraNode.addChild(restartLabel)
+
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.restartGame()
+        // Pause the scene to stop further actions
+        self.isPaused = true
+    }
+
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if isGameOver {
+            restartGame()
         }
     }
 
     func restartGame() {
+        // Clear all nodes and actions from the current scene
+        removeAllActions()
+        removeAllChildren()
         
-            // Remove existing gesture recognizers before restarting the game
-            removeAllGestureRecognizers()
+        // Reset the game state
+        isGameOver = false
+        score = 0
+        airAmount = 26
+
+        // Load a new instance of the scene
         let newScene = OEGameScene(context: context!, size: size)
         newScene.scaleMode = .aspectFill
         view?.presentScene(newScene, transition: SKTransition.fade(withDuration: 1.0))
     }
+
 }

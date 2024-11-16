@@ -416,13 +416,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         var i = 0
         while i < numberOfRows {
             
+            // Number of empty lanes in a row
+            let numberOfEmptyRows = Int.random(in: 1...3)
+            
+            for _ in i...i + numberOfEmptyRows {
+                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
+                newLanes.append(Lane(startPosition: CGPoint(x: 0, y: newYPosition), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                yPositionLanes = newYPosition
+                i += 1
+            }
+            
             // Number of lanes in a row with enemies
             let numberOfEnemyRows = Int.random(in: 2...5)
             
             for _ in i...i + numberOfEnemyRows {
-                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
-                let leftStart = CGPoint(x: -size.width, y: newYPosition + cellHeight / 2)
-                let rightStart = CGPoint(x: size.width, y: newYPosition + cellHeight / 2)
+                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight 
+                let leftStart = CGPoint(x: -size.width, y: newYPosition)
+                let rightStart = CGPoint(x: size.width, y: newYPosition)
                 
                 // 1/20 chance to spawn eel
                 let eelSpawn = Int.random(in: 0..<21)
@@ -438,21 +448,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7..<10) - CGFloat(score) / 20, laneType: laneType))
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7..<10) - 2 * CGFloat(score) / 5, laneType: laneType))
                 } else {
-                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7..<10) - CGFloat(score) / 20, laneType: laneType))
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7..<10) - 2 * CGFloat(score) / 5, laneType: laneType))
                 }
-                yPositionLanes = newYPosition + laneHeight / 2
-                i += 1
-            }
-            
-            // Number of empty lanes in a row
-            let numberOfEmptyRows = Int.random(in: 1...3)
-            
-            for _ in i...i + numberOfEmptyRows {
-                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
-                newLanes.append(Lane(startPosition: CGPoint(x: 0, y: newYPosition + cellHeight / 2), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
-                yPositionLanes = newYPosition + laneHeight / 2
+                yPositionLanes = newYPosition
                 i += 1
             }
         }

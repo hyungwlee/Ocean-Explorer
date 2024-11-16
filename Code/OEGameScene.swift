@@ -759,6 +759,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
         
+        // Add the game logo
+        let logoTexture = SKTexture(imageNamed: "Logo")
+        let logoSprite = SKSpriteNode(texture: logoTexture)
+        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the "Game Over" text
+        logoSprite.zPosition = 1000 // Make logo be top visible layer
+        logoSprite.xScale = 0.6 // Scale width to 40%
+        logoSprite.yScale = 0.6 // Scale height to 40%
+        cameraNode.addChild(logoSprite)
+        
         // Save the current score
         let finalScore = score
         
@@ -770,7 +779,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         gameOverLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
         gameOverLabel.fontColor = .red
         gameOverLabel.fontName = "Arial-BoldMT" // Use bold font
-        gameOverLabel.position = CGPoint(x: 0, y: 100) // Center on screen
+        gameOverLabel.position = CGPoint(x: 0, y: 90) // Center on screen
         cameraNode.addChild(gameOverLabel)
 
         // Display Final Score
@@ -779,7 +788,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         finalScoreLabel.fontColor = .white
         finalScoreLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
         finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
-        finalScoreLabel.position = CGPoint(x: 0, y: 50) // Positioned just below the "Game Over" text
+        finalScoreLabel.position = CGPoint(x: 0, y: 58) // Positioned just below the "Game Over" text
         cameraNode.addChild(finalScoreLabel)
 
         // Display "Tap to Restart" message
@@ -788,7 +797,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         restartLabel.fontColor = .yellow
         restartLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
         restartLabel.fontName = "Arial" // Use bold font
-        restartLabel.position = CGPoint(x: 0, y: 0) // Positioned below the final score
+        restartLabel.position = CGPoint(x: 0, y: -10) // Positioned below the final score
         cameraNode.addChild(restartLabel)
 
         

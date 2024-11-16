@@ -249,6 +249,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel = SKLabelNode(fontNamed: "SF Mono")
         scoreLabel.fontSize = 32
         scoreLabel.fontColor = .white
+        scoreLabel.zPosition = 1000
         scoreLabel.position = CGPoint(x: -size.width / 2 + 20, y: size.height / 2 - 75)
         scoreLabel.horizontalAlignmentMode = .left
         scoreLabel.text = "\(score)"
@@ -614,7 +615,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             laneColor.fillColor = .yellow
         }
         laneColor.alpha = 0.5
-        laneColor.zPosition = 0
+        laneColor.zPosition = -1
         addChild(laneColor)
         print("Lane position: \(lane.startPosition.y)")
     }
@@ -674,12 +675,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airIcon = SKSpriteNode(imageNamed: "Bubble")
         airIcon.size = CGSize(width: 30, height: 30)
         airIcon.position = CGPoint(x: size.width / 2 - 60, y: size.height / 2 - 70)
-        airIcon.zPosition = 1
+        airIcon.zPosition = 1000
         cameraNode.addChild(airIcon)
 
         airLabel = SKLabelNode(fontNamed: "SF Mono")
         airLabel.fontSize = 32
         airLabel.fontColor = .white
+        airLabel.zPosition = 1000
         airLabel.position = CGPoint(x: airIcon.position.x - 20, y: airIcon.position.y - 10)
         airLabel.horizontalAlignmentMode = .right
         airLabel.text = "\(airAmount)"
@@ -765,6 +767,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         let gameOverLabel = SKLabelNode(text: "Game Over!")
         gameOverLabel.fontSize = 48
+        gameOverLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
         gameOverLabel.fontColor = .red
         gameOverLabel.fontName = "Arial-BoldMT" // Use bold font
         gameOverLabel.position = CGPoint(x: 0, y: 100) // Center on screen
@@ -774,6 +777,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
         finalScoreLabel.fontSize = 32
         finalScoreLabel.fontColor = .white
+        finalScoreLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
         finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
         finalScoreLabel.position = CGPoint(x: 0, y: 50) // Positioned just below the "Game Over" text
         cameraNode.addChild(finalScoreLabel)
@@ -782,6 +786,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let restartLabel = SKLabelNode(text: "Tap to Restart")
         restartLabel.fontSize = 28
         restartLabel.fontColor = .yellow
+        restartLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
         restartLabel.fontName = "Arial" // Use bold font
         restartLabel.position = CGPoint(x: 0, y: 0) // Positioned below the final score
         cameraNode.addChild(restartLabel)

@@ -240,7 +240,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func setupReef() {
         let reef = SKSpriteNode(imageNamed: "Reef")
         
-        reef.position = CGPoint(x: size.width / 300, y: reef.size.height / 300)
+        reef.position = CGPoint(x: size.width / 500, y: reef.size.height / 750)
         reef.zPosition = 10
         addChild(reef)
 

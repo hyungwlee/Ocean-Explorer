@@ -11,6 +11,8 @@ import SpriteKit
 class OEBoxNode: SKSpriteNode {
     
     private let gridSize: CGSize
+    private var lastClickTime: TimeInterval = 0
+    private var isMoving = false
 
     init(gridSize: CGSize) {
         self.gridSize = gridSize
@@ -28,8 +30,29 @@ class OEBoxNode: SKSpriteNode {
     }
 
     func move(to position: CGPoint) {
+        guard !isMoving else { return } // Prevents new movement while already moving
+        isMoving = true
+        
         // Define a movement animation with a duration
         let moveAction = SKAction.move(to: position, duration: 0.2)
-        self.run(moveAction)
+        
+        // Run the movement action and set up the completion block
+        self.run(moveAction) {
+            // Movement completed, allow the next move
+            self.isMoving = false
+        }
+    }
+    
+    // Call this function for handling double-clicks
+    func handleDoubleClick(to position: CGPoint) {
+        let currentTime = CACurrentMediaTime()
+        let timeDifference = currentTime - lastClickTime
+        
+        if timeDifference <= 0.3 {  // Considered a double-click if within 0.3 seconds
+            // If a double-click is detected, execute the second movement
+            move(to: position)
+        }
+        
+        lastClickTime = currentTime
     }
 }

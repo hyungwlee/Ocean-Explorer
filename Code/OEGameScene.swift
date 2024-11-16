@@ -46,7 +46,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var laneDirection = 0
     
     var playableWidthRange: ClosedRange<CGFloat> {
-        return (-size.width / 2)...(size.width / 2)
+        return ((-size.width / 2) + cellWidth)...((size.width / 2) - cellWidth)
     }
     
     var viewableHeightRange: ClosedRange<CGFloat> {
@@ -82,7 +82,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         while i < numberOfRows {
             while i < 4 {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                lanes.append(Lane(startPosition: CGPoint(x: 0, y: yPosition), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -100,7 +100,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Gap
             if i == 5 {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                lanes.append(Lane(startPosition: CGPoint(x: 0, y: yPosition), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -123,7 +123,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             while i < 10 {
                 for _ in i...i + 1 {
                     let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-                    lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                    lanes.append(Lane(startPosition: CGPoint(x: 0, y: yPosition), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
                     yPositionLanes = yPosition
                     i += 1
                 }
@@ -144,7 +144,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             for _ in i...i + numberOfEmptyRows {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                lanes.append(Lane(startPosition: CGPoint(x: 0, y: yPosition), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -448,7 +448,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             for _ in i...i + numberOfEmptyRows {
                 let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
-                newLanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                newLanes.append(Lane(startPosition: CGPoint(x: 0, y: newYPosition + cellHeight / 2), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
                 yPositionLanes = newYPosition + laneHeight / 2
                 i += 1
             }
@@ -543,6 +543,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
       
         for lane in lanes {
             
+            if lane.laneType == "Empty" {
+                colorLane(in: lane)
+            }
+            
             if lane.laneType == "Tutorial" {
                 let wait = SKAction.wait(forDuration: 5.0)
                 let spawn = SKAction.run { [weak self] in
@@ -555,6 +559,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Eel" {
+                colorLane(in: lane)
                 let wait = SKAction.wait(forDuration: CGFloat.random(in: 12...20))
                 let warn = SKAction.run { [weak self] in
                     self?.warn(in: lane)
@@ -596,26 +601,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
-        
-
-    func spawnPufferfish(at: CGPoint) {
-        let pufferfish = OEEnemyNode2(gridSize: gridSize)
-        pufferfish.position = at
-        addChild(pufferfish)
-        pufferfish.puff()
-    }
-    
-    func startSpawningPufferfish(lanes: [Lane]) {
-        for lane in lanes {
-            var xCoordinates = [CGFloat]()
-            for _ in 0..<2 {
-                let randomX = Int.random(in: -numberOfColumns...numberOfColumns)
-                xCoordinates.append(CGFloat(randomX) * cellWidth + cellWidth / 2)
-            }
-            for x in xCoordinates {
-                spawnPufferfish(at: CGPoint(x: x, y: lane.endPosition.y))
-            }
+      
+    // Color lanes that are empty or eel type
+    func colorLane(in lane: Lane) {
+        let laneColor = SKShapeNode(rect: CGRect(x: -size.width, y: lane.startPosition.y - cellHeight / 2, width: size.width * 2, height: cellHeight))
+        if lane.laneType == "Empty" {
+            laneColor.fillColor = .cyan
         }
+        else {
+            laneColor.fillColor = .yellow
+        }
+        laneColor.alpha = 0.5
+        laneColor.zPosition = 0
+        addChild(laneColor)
+        print("Lane position: \(lane.startPosition.y)")
     }
     
     // Function to spawn the bubbles randomly in grid spaces
@@ -632,7 +631,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Used to find the column range to place the bubble in randomly
         let columns = Int(size.width / cellWidth)
-        let playableColumnRange = (-columns / 2)...(columns / 2)
+        let playableColumnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
         
         // Used to find the row range to place the bubble in randomly
         guard let box = box else { return }

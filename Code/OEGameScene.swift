@@ -624,6 +624,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create the bubble asset
         let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
         bubble.size = CGSize(width: 45, height: 45) // Adjust size as needed
+        bubble.alpha = 0.6 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
         bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
         bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
@@ -701,7 +702,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func decreaseAir() {
         guard !isGameOver else { return }
         
-        if airAmount < 7 {
+        if airAmount < 17 {
             airLabel.fontColor = .red
             } else {
                 airLabel.fontColor = .white

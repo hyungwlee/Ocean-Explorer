@@ -205,14 +205,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         includeBubbles()
 
         startCameraMovement()
-        
     }
 
     func startCameraMovement() {
         let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 25.0) // Adjust duration as needed CAMERA SPEED GOING UP
         let continuousMove = SKAction.repeatForever(moveUp)
         cameraNode.run(continuousMove)
-
     }
 
     func setupBackground() {
@@ -234,6 +232,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         context.scene = self
         context.updateLayoutInfo(withScreenSize: size)
         context.configureStates()
+
+        // Add reef to the scene
+        setupReef()
+    }
+
+    func setupReef() {
+        let reef = SKSpriteNode(imageNamed: "Reef")
+        
+        reef.position = CGPoint(x: size.width / 300, y: reef.size.height / 300)
+        reef.zPosition = 10
+        addChild(reef)
+
+        // Create a fade-out action
+        let fadeOut = SKAction.fadeOut(withDuration: 2.0)
+        let remove = SKAction.removeFromParent()
+        let sequence = SKAction.sequence([SKAction.wait(forDuration: 4.0), fadeOut, remove])
+        reef.run(sequence)
     }
 
     func prepareStartNodes() {
@@ -788,7 +803,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         finalScoreLabel.fontColor = .white
         finalScoreLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
         finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
-        finalScoreLabel.position = CGPoint(x: 0, y: 58) // Positioned just below the "Game Over" text
+        finalScoreLabel.position = CGPoint(x: 0, y: 60) // Positioned just below the "Game Over" text
         cameraNode.addChild(finalScoreLabel)
 
         // Display "Tap to Restart" message

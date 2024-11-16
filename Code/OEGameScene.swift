@@ -37,6 +37,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     // Air properties
     var airAmount = 26
+  
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
     
@@ -76,8 +77,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cellWidth = size.width / CGFloat(numberOfColumns)
         cellHeight = size.height / CGFloat(numberOfRows)
         
-
-        let numberOfLanes = numberOfRows
         let laneHeight = cellHeight
         
         var i = 0
@@ -90,7 +89,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             // Number of lanes in a row with enemies
-            let numberOfEnemyRows = Int.random(in: 2...5)
+            let numberOfEnemyRows = Int.random(in: 1...5)
             
             for _ in i...i + numberOfEnemyRows {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
@@ -101,9 +100,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 4..<6), spawnRate: CGFloat.random(in: 2..<4), laneType: "Normal"))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 4..<6), spawnRate: CGFloat.random(in: 3.5..<5.5), laneType: "Normal"))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 4..<6), spawnRate: CGFloat.random(in: 2..<4), laneType: "Normal"))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 4..<6), spawnRate: CGFloat.random(in: 3.5..<5.5), laneType: "Normal"))
                 }
                 yPositionLanes = yPosition
                 i += 1
@@ -375,9 +374,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 4..<6) - CGFloat(score) / 20, spawnRate: CGFloat.random(in: 2..<4), laneType: "Normal"))
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 4..<6) - CGFloat(score) / 20, spawnRate: CGFloat.random(in: 3.5..<5.5) - CGFloat(score) / 20, laneType: "Normal"))
                 } else {
-                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 4..<6) - CGFloat(score) / 20, spawnRate: CGFloat.random(in: 2..<4), laneType: "Normal"))
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 4..<6) - CGFloat(score) / 20, spawnRate: CGFloat.random(in: 3.5..<5.5) - CGFloat(score) / 20, laneType: "Normal"))
                 }
                 yPositionLanes = newYPosition + laneHeight / 2
                 i += 1
@@ -656,16 +655,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func gameOver() {
         isGameOver = true
+        cameraNode.removeAllActions() // STOPS CAMERA
         removeAction(forKey: "spawnEnemies")
+        
+        // Save the current score before resetting
+        let finalScore = score
+        
+        // Reset the score
         score = 0
         scoreLabel.text = "\(score)"
-
+        
         let gameOverLabel = SKLabelNode(text: "Game Over!")
         gameOverLabel.fontSize = 48
         gameOverLabel.fontColor = .red
-        gameOverLabel.position = CGPoint(x: 0, y: cameraNode.position.y)
+        gameOverLabel.position = CGPoint(x: 0, y: cameraNode.position.y + 50) // Adjust position as needed
         cameraNode.addChild(gameOverLabel)
-
+        
+        let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
+        finalScoreLabel.fontSize = 32
+        finalScoreLabel.fontColor = .white
+        finalScoreLabel.position = CGPoint(x: 0, y: cameraNode.position.y) // Adjust position as needed
+        cameraNode.addChild(finalScoreLabel)
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.restartGame()
         }

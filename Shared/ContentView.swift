@@ -8,7 +8,6 @@ import SwiftUI
 import SpriteKit
 import GameplayKit // If you’re using GameplayKit for the state machine
 
-
 struct ContentView: View {
     let context = OEGameContext(dependencies: .init(),
                                 gameMode: .single)

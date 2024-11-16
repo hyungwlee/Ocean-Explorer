@@ -615,7 +615,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             laneColor.fillColor = .yellow
         }
         laneColor.alpha = 0.5
-        laneColor.zPosition = -1
+        laneColor.zPosition = 0
         addChild(laneColor)
         print("Lane position: \(lane.startPosition.y)")
     }

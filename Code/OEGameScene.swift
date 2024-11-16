@@ -19,8 +19,7 @@ struct Lane {
     let endPosition: CGPoint
     let direction: CGVector
     let speed: CGFloat
-    let spawnRate: CGFloat
-    let laneType: String // Empty, Normal, or Eel
+    let laneType: String // Empty, Normal, Tutorial, Eel, or Pufferfish
 }
 
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
@@ -73,7 +72,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Creating grid
         numberOfRows = 13
-        numberOfColumns = 9
+        numberOfColumns = 7
         cellWidth = size.width / CGFloat(numberOfColumns)
         cellHeight = size.height / CGFloat(numberOfRows)
         
@@ -81,13 +80,75 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         var i = 0
         while i < numberOfRows {
-            if i < 3 {
+            while i < 4 {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, spawnRate: 0, laneType: "Empty"))
+                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                yPositionLanes = yPosition
+                i += 1
+            }
+                    
+            // 1 enemy at a time
+            if i == 4 {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                let leftStart = CGPoint(x: -size.width, y: yPosition)
+                let rightStart = CGPoint(x: size.width, y: yPosition)
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Tutorial"))
                 yPositionLanes = yPosition
                 i += 1
             }
             
+            // Gap
+            if i == 5 {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                yPositionLanes = yPosition
+                i += 1
+            }
+
+            // 2 enemies at a time
+            while i < 8 {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                let leftStart = CGPoint(x: -size.width, y: yPosition)
+                let rightStart = CGPoint(x: size.width, y: yPosition)
+                if i == 6 {
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Tutorial"))
+                } else {
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Tutorial"))
+                }
+                yPositionLanes = yPosition
+                i += 1
+            }
+            
+            // Gap
+            while i < 10 {
+                for _ in i...i + 1 {
+                    let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                    lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                    yPositionLanes = yPosition
+                    i += 1
+                }
+            }
+            
+            // Pufferfish
+            while i == 10 {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                let leftStart = CGPoint(x: -size.width, y: yPosition)
+                let rightStart = CGPoint(x: size.width, y: yPosition)
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 5.0, laneType: "Pufferfish"))
+                yPositionLanes = yPosition
+                i += 1
+            }
+            
+            // Number of empty lanes in a row
+            let numberOfEmptyRows = Int.random(in: 1...3)
+            
+            for _ in i...i + numberOfEmptyRows {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
+                yPositionLanes = yPosition
+                i += 1
+            }
+
             // Number of lanes in a row with enemies
             let numberOfEnemyRows = Int.random(in: 1...5)
             
@@ -100,20 +161,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 4..<6), spawnRate: CGFloat.random(in: 3.5..<5.5), laneType: "Normal"))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7..<10), laneType: "Normal"))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 4..<6), spawnRate: CGFloat.random(in: 3.5..<5.5), laneType: "Normal"))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7..<10), laneType: "Normal"))
                 }
-                yPositionLanes = yPosition
-                i += 1
-            }
-            
-            // Number of empty lanes in a row
-            let numberOfEmptyRows = Int.random(in: 1...3)
-            
-            for _ in i...i + numberOfEmptyRows {
-                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-                lanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, spawnRate: 0, laneType: "Empty"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -374,9 +425,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 4..<6) - CGFloat(score) / 20, spawnRate: CGFloat.random(in: 3.5..<5.5) - CGFloat(score) / 20, laneType: "Normal"))
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7..<10) - CGFloat(score) / 20, laneType: "Normal"))
                 } else {
-                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 4..<6) - CGFloat(score) / 20, spawnRate: CGFloat.random(in: 3.5..<5.5) - CGFloat(score) / 20, laneType: "Normal"))
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7..<10) - CGFloat(score) / 20, laneType: "Normal"))
                 }
                 yPositionLanes = newYPosition + laneHeight / 2
                 i += 1
@@ -387,7 +438,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             for _ in i...i + numberOfEmptyRows {
                 let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
-                newLanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, spawnRate: 0, laneType: "Empty"))
+                newLanes.append(Lane(startPosition: CGPoint(x: 0, y: 0), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
                 yPositionLanes = newYPosition + laneHeight / 2
                 i += 1
             }
@@ -482,8 +533,30 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
       
         for lane in lanes {
             
+            if lane.laneType == "Tutorial" {
+                let wait = SKAction.wait(forDuration: 5.0)
+                let spawn = SKAction.run { [weak self] in
+                    self?.spawnEnemy(in: lane)
+                }
+                let sequence = SKAction.sequence([spawn, wait])
+                let repeatAction = SKAction.repeatForever(sequence)
+                
+                run(repeatAction)
+            }
+            
+            if lane.laneType == "Pufferfish" {
+                let wait = SKAction.wait(forDuration: 4.0)
+                let spawn = SKAction.run { [weak self] in
+                    self?.spawnPufferfish(in: lane)
+                }
+                let sequence = SKAction.sequence([spawn, wait])
+                let repeatAction = SKAction.repeatForever(sequence)
+                
+                run(repeatAction)
+            }
+            
             if lane.laneType == "Normal" {
-                let wait = SKAction.wait(forDuration: lane.spawnRate)
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3.5..<5.5) - CGFloat(score) / 20)
                 let spawn = SKAction.run { [weak self] in
                     let enemyType = Int.random(in: 0..<8)
                     if enemyType == 7 {

@@ -420,14 +420,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let newYPosition = yPosition + CGFloat(i + 1) * laneHeight + laneHeight / 2
                 let leftStart = CGPoint(x: -size.width, y: newYPosition + cellHeight / 2)
                 let rightStart = CGPoint(x: size.width, y: newYPosition + cellHeight / 2)
-
+                
+                // 1/20 chance to spawn eel
+                let eelSpawn = Int.random(in: 0..<21)
+                let laneType: String
+                
+                if eelSpawn == 20 {
+                    laneType = "Eel"
+                } else {
+                    laneType = "Normal"
+                }
+                
                 // Random directions for lanes
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7..<10) - CGFloat(score) / 20, laneType: "Normal"))
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7..<10) - CGFloat(score) / 20, laneType: laneType))
                 } else {
-                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7..<10) - CGFloat(score) / 20, laneType: "Normal"))
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7..<10) - CGFloat(score) / 20, laneType: laneType))
                 }
                 yPositionLanes = newYPosition + laneHeight / 2
                 i += 1
@@ -539,6 +549,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     self?.spawnEnemy(in: lane)
                 }
                 let sequence = SKAction.sequence([spawn, wait])
+                let repeatAction = SKAction.repeatForever(sequence)
+                
+                run(repeatAction)
+            }
+            
+            if lane.laneType == "Eel" {
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 12...20))
+                let warn = SKAction.run { [weak self] in
+                    self?.warn(in: lane)
+                }
+                let spawn = SKAction.run { [weak self] in
+                    self?.spawnLongEnemy(in: lane)
+                }
+                let sequence = SKAction.sequence([wait, warn, spawn])
                 let repeatAction = SKAction.repeatForever(sequence)
                 
                 run(repeatAction)

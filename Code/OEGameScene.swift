@@ -427,7 +427,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             // Number of lanes in a row with enemies
-            let numberOfEnemyRows = Int.random(in: 2...5)
+            let numberOfEnemyRows = Int.random(in: 1...5)
             
             for _ in i...i + numberOfEnemyRows {
                 let newYPosition = yPosition + CGFloat(i + 1) * laneHeight 

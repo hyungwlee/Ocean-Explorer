@@ -527,7 +527,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create the bubble asset
         let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
         bubble.size = CGSize(width: 45, height: 45) // Adjust size as needed
-        bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2)
+        bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
         bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
         bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none

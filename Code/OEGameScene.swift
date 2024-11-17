@@ -463,9 +463,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7..<10) - 2 * CGFloat(score) / 5, laneType: laneType))
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: max(CGFloat.random(in: 7..<10) - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
                 } else {
-                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7..<10) - 2 * CGFloat(score) / 5, laneType: laneType))
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: max(CGFloat.random(in: 7..<10) - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
                 }
                 yPositionLanes = newYPosition
                 i += 1

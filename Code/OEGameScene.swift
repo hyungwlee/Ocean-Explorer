@@ -32,6 +32,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
   
     // Score properties
     var score = 0
+    var scoreDisplayed = 0
     var scoreLabel: SKLabelNode!
     
     // Air properties
@@ -273,12 +274,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func updateScore() {
         score += 1
+        if score >= scoreDisplayed + 1 {
+            scoreDisplayed += 1
+        }
         if score % 10 == 0 {
                     scoreLabel.fontColor = .yellow
                 } else {
                     scoreLabel.fontColor = .white
                 }
-        scoreLabel.text = "\(score)"
+        scoreLabel.text = "\(max(score, scoreDisplayed))"
     }
     
     func updateHighestRowDrawn() {
@@ -513,6 +517,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
         case .down:
             nextPosition = CGPoint(x: box.position.x, y: box.position.y - cellHeight)
+            score -= 1
         case .left:
             nextPosition = CGPoint(x: max(box.position.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
         case .right:

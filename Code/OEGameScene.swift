@@ -685,7 +685,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
     }
-
+    
     func setupAirDisplay() {
         airIcon = SKSpriteNode(imageNamed: "Bubble")
         airIcon.size = CGSize(width: 30, height: 30)
@@ -719,7 +719,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Function to decrease air by 1 (called in aircountdown)
     func decreaseAir() {
         guard !isGameOver else { return }
-        
+        airLabel.text = "\(airAmount)"
         if airAmount < 17 {
             airLabel.fontColor = .red
             } else {

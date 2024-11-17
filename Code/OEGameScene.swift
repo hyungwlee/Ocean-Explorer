@@ -240,7 +240,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func setupReef() {
         let reef = SKSpriteNode(imageNamed: "Reef")
         
-        reef.position = CGPoint(x: size.width / 500, y: reef.size.height / 750)
+        reef.position = CGPoint(x: size.width / 500, y: reef.size.height / 20 - 75)
         reef.zPosition = 10
         addChild(reef)
 
@@ -687,8 +687,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupAirDisplay() {
-        airIcon = SKSpriteNode(imageNamed: "Bubble")
-        airIcon.size = CGSize(width: 30, height: 30)
+        airIcon = SKSpriteNode(imageNamed: "AirMeter")
+        airIcon.size = CGSize(width: 35, height: 50)
         airIcon.position = CGPoint(x: size.width / 2 - 60, y: size.height / 2 - 70)
         airIcon.zPosition = 1000
         cameraNode.addChild(airIcon)

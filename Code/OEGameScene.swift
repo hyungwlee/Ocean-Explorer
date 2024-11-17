@@ -37,9 +37,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     // Air properties
     var airAmount = 26
-  
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
+    var firstBubble: SKSpriteNode? = nil
+    var arrow: SKSpriteNode?
+    var bubbleText: SKLabelNode?
+
     
     // Game state variable
     var isGameOver = false
@@ -204,6 +207,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         setupAirDisplay()
         airCountDown()
         includeBubbles()
+        spawnTemporaryArrow()
 
         startCameraMovement()
     }
@@ -653,32 +657,58 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
         bubble.physicsBody?.isDynamic = false
         
-        // Used to find the column range to place the bubble in randomly
-        let columns = Int(size.width / cellWidth)
-        let playableColumnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
-        
-        // Used to find the row range to place the bubble in randomly
-        guard let box = box else { return }
-        
-        // Getting the curr row and column of the box/player using gridPosition funct
-        let currPosition = gridPosition(for: box.position)
-        let currRow = currPosition.row  // This is the curr row the player is on
-        
-        // Create a row range for bubble to be placed randomly
-        let min = currRow - 2
-        let max = currRow + 4
-        let playableRowRange = min...max
-        
-        // Now get a random row and column for the bubble to spawn in
-        let randomRow = Int.random(in: playableRowRange)
-        let randomColumn = Int.random(in: playableColumnRange)
-        
-        // Set the bubble position
-        bubble.position = positionFor(row: randomRow, column: randomColumn)
+        // If this is the first bubble, set a fixed position
+        if firstBubble == nil {
+            let fixedRow = 3
+            let fixedColumn = 0
+            bubble.position = positionFor(row: fixedRow, column: fixedColumn)
+            firstBubble = bubble
+            addArrowAndText(to: bubble)
+        } else {
+            // Used to find the column range to place the bubble in randomly
+            let columns = Int(size.width / cellWidth)
+            let playableColumnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
+            
+            // Used to find the row range to place the bubble in randomly
+            guard let box = box else { return }
+            
+            // Getting the current row and column of the box/player using gridPosition function
+            let currPosition = gridPosition(for: box.position)
+            let currRow = currPosition.row // This is the current row the player is on
+            
+            // Create a row range for bubble to be placed randomly
+            let min = currRow - 2
+            let max = currRow + 4
+            let playableRowRange = min...max
+            
+            // Now get a random row and column for the bubble to spawn in
+            let randomRow = Int.random(in: playableRowRange)
+            let randomColumn = Int.random(in: playableColumnRange)
+            
+            // Set the bubble position
+            bubble.position = positionFor(row: randomRow, column: randomColumn)
+        }
         
         addChild(bubble)
     }
-
+    
+    func addArrowAndText(to bubble: SKSpriteNode) {
+        // Create the arrow
+        arrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
+        arrow?.position = CGPoint(x: bubble.position.x - 35, y: bubble.position.y - 35) // Adjust position
+        arrow?.zPosition = 1
+        addChild(arrow!)
+        
+        // Create the text label
+        bubbleText = SKLabelNode(text: "Collect bubbles to increase air!")
+        bubbleText?.fontName = "SF Mono"
+        bubbleText?.fontSize = 25
+        bubbleText?.fontColor = .red
+        bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 70)
+        bubbleText?.zPosition = 1
+        addChild(bubbleText!)
+    }
+    
     func includeBubbles() {
         let bubbleSpawnAction = SKAction.repeatForever(
             SKAction.sequence([
@@ -690,7 +720,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
     }
-    
+
     func setupAirDisplay() {
         airIcon = SKSpriteNode(imageNamed: "AirMeter")
         airIcon.size = CGSize(width: 35, height: 50)
@@ -752,6 +782,26 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func spawnTemporaryArrow() {
+        // Create the temporary arrow
+        let temporaryArrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
+        temporaryArrow.size = CGSize(width: 50, height: 50) // Adjust size as needed
+        temporaryArrow.position = CGPoint(x: airIcon.position.x - 50, y: airIcon.position.y - 50)
+        
+        // Add the arrow to the scene
+        cameraNode.addChild(temporaryArrow)
+        
+        // Create a fade-out action sequence to remove the arrow after a few seconds
+        let delay = SKAction.wait(forDuration: 4.5) // Arrow stays for 3 seconds
+        let fadeOut = SKAction.fadeOut(withDuration: 0.5)
+        let remove = SKAction.removeFromParent()
+        let sequence = SKAction.sequence([delay, fadeOut, remove])
+        
+        // Run the sequence on the arrow
+        temporaryArrow.run(sequence)
+    }
+
+    
     // Handles player contact with bubbles and enemies
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
@@ -764,15 +814,29 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.bubble) ||
-           (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
+            (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
             increaseAir()
+            
+            // Check which body is the bubble
+            let bubbleNode: SKNode
             if bodyA.categoryBitMask == PhysicsCategory.bubble {
-                bodyA.node?.removeFromParent()
-            } else if bodyB.categoryBitMask == PhysicsCategory.bubble {
-                bodyB.node?.removeFromParent()
+                bubbleNode = bodyA.node!
+            } else {
+                bubbleNode = bodyB.node!
+            }
+            
+            // Remove the bubble from the scene
+            bubbleNode.removeFromParent()
+            
+            // Check if this was the first bubble
+            if bubbleNode == firstBubble {
+                // Remove the arrow and text
+                arrow?.removeFromParent()
+                bubbleText?.removeFromParent()
             }
         }
     }
+
 
     func gameOver() {
         isGameOver = true

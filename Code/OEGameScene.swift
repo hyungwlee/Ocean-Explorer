@@ -267,10 +267,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func setupScoreLabel() {
         scoreLabel = SKLabelNode(fontNamed: "SF Mono")
-        scoreLabel.fontSize = 32
+        scoreLabel.fontSize = 75
         scoreLabel.fontColor = .white
         scoreLabel.zPosition = 1000
-        scoreLabel.position = CGPoint(x: -size.width / 2 + 20, y: size.height / 2 - 75)
+        scoreLabel.position = CGPoint(x: -size.width / 2 + 170, y: size.height / 2 - 125)
         scoreLabel.horizontalAlignmentMode = .left
         scoreLabel.text = "\(score)"
         cameraNode.addChild(scoreLabel)

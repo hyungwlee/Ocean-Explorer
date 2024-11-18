@@ -637,14 +637,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             // Mark the current action as completed
             self.isActionInProgress = false
-            
-            // Update the score
-            updateScore()
+
             
             // If there are more actions in the queue, execute the next one
             if let nextPosition = self.tapQueue.first {
                 self.tapQueue.removeFirst()
                 self.moveBox(to: nextPosition)
+                // Update the score
+                updateScore()
             }
         }
     }

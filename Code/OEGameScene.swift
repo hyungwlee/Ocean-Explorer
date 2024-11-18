@@ -42,6 +42,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var firstBubble: SKSpriteNode? = nil
     var arrow: SKSpriteNode?
     var bubbleText: SKLabelNode?
+    
+    // Tapping properties
+    var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
+    var isActionInProgress = false // Flag to indicate if a movement is in progress
 
     
     // Game state variable
@@ -227,7 +231,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func startCameraMovement() {
-        let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 20.0) // Adjust duration as needed CAMERA SPEED GOING UP (lower the quicker)
+      
+        let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 15.0) // Adjust duration as needed CAMERA SPEED GOING UP
+
         let continuousMove = SKAction.repeatForever(moveUp)
         cameraNode.run(continuousMove)
     }
@@ -327,11 +333,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.position.y += 0 // Adjust this value for camera speed
 
         // 2. Check if the character is above a certain threshold relative to the camera's view
-        let characterAboveThreshold = box.position.y > cameraNode.position.y + size.height / 6 // Adjust threshold as desired
+
+        let characterAboveThreshold = box.position.y > cameraNode.position.y  // Adjust threshold as desired
 
         if characterAboveThreshold {
             // Move the camera up to match the character's y position while maintaining continuous movement
-            cameraNode.position.y = box.position.y - size.height / 6
+            cameraNode.position.y = box.position.y 
         }
 
         // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
@@ -543,7 +550,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
-        moveBox(to: nextPosition)
+        
+        // If an action is already in progress, queue the next tap position
+        if isActionInProgress {
+            tapQueue.append(nextPosition)
+        } else {
+            // Execute immediately if no action is in progress
+            moveBox(to: nextPosition)
+        }
     }
 
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer) {
@@ -566,14 +580,42 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         moveBox(to: nextPosition)
     }
 
+//    func moveBox(to position: CGPoint) {
+//        if position.y > box?.position.y ?? 0 {
+//            if box?.move(to: position) == 1 {
+//                updateScore()
+//            }
+//        }
+//        else {
+//            box?.move(to: position)
+//        }
+//    }
+    
+    
+    
     func moveBox(to position: CGPoint) {
-        if position.y > box?.position.y ?? 0 {
-            if box?.move(to: position) == 1 {
-                updateScore()
+        guard let box else { return }
+        
+        // Set the flag to indicate movement in progress
+        isActionInProgress = true
+        
+        // Example movement logic using an animation
+        UIView.animate(withDuration: 0.3, animations: {
+            box.position = position
+        }) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Mark the current action as completed
+            self.isActionInProgress = false
+            
+            // Update the score
+            updateScore()
+            
+            // If there are more actions in the queue, execute the next one
+            if let nextPosition = self.tapQueue.first {
+                self.tapQueue.removeFirst()
+                self.moveBox(to: nextPosition)
             }
-        }
-        else {
-            box?.move(to: position)
         }
     }
 

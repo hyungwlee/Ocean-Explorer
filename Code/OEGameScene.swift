@@ -19,7 +19,7 @@ struct Lane {
     let endPosition: CGPoint
     let direction: CGVector
     let speed: CGFloat
-    let laneType: String // Empty, Normal, Tutorial, Eel, or Pufferfish
+    let laneType: String // Empty, Normal, Tutorial, Eel, Pufferfish, or Long
 }
 
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
@@ -164,10 +164,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 // Random directions for lanes
                 laneDirection = Int.random(in: 0..<2)
                 
+                // Random chance for longer enemies
+                let enemySize: String
+                let enemySpeed: CGFloat
+                
+                let enemySizeChance = Int.random(in: 0...3)
+                if enemySizeChance == 0 {
+                    enemySize = "Long"
+                    enemySpeed = CGFloat.random(in: 10..<13)
+                }
+                else {
+                    enemySize = "Normal"
+                    enemySpeed = CGFloat.random(in: 7..<10)
+                }
+                
                 if laneDirection == 0 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7..<10), laneType: "Normal"))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: enemySpeed, laneType: enemySize))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7..<10), laneType: "Normal"))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: enemySpeed, laneType: enemySize))
                 }
                 yPositionLanes = yPosition
                 i += 1
@@ -473,20 +487,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 // 1/20 chance to spawn eel
                 let eelSpawn = Int.random(in: 0..<21)
                 let laneType: String
+                let laneSpeed: CGFloat
                 
                 if eelSpawn == 20 {
                     laneType = "Eel"
-                } else {
+                    laneSpeed = 0.0
+                }
+                else if eelSpawn > 15{
+                    laneType = "Long"
+                    laneSpeed = CGFloat.random(in: 10..<13)
+                }
+                else {
                     laneType = "Normal"
+                    laneSpeed = CGFloat.random(in: 7..<10)
                 }
                 
                 // Random directions for lanes
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: max(CGFloat.random(in: 7..<10) - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: max(laneSpeed - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
                 } else {
-                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: max(CGFloat.random(in: 7..<10) - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: max(laneSpeed - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
                 }
                 yPositionLanes = newYPosition
                 i += 1
@@ -555,13 +577,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
     }
     
+    func spawnLongEnemy(in lane: Lane) {
+        let enemy = OEEnemyNode4(gridSize: gridSize)
+        addChild(enemy)
+        if lane.direction == CGVector(dx: 1, dy: 0) {
+            enemy.xScale = -1
+        }
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+    }
+    
     func spawnPufferfish(in lane: Lane) {
         let enemy = OEEnemyNode2(gridSize: gridSize)
         addChild(enemy)
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
     }
 
-    func spawnLongEnemy(in lane: Lane) {
+    func spawnEel(in lane: Lane) {
         let enemy = OEEnemyNode3(gridSize: gridSize)
         addChild(enemy)
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
@@ -605,7 +636,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     self?.warn(in: lane)
                 }
                 let spawn = SKAction.run { [weak self] in
-                    self?.spawnLongEnemy(in: lane)
+                    self?.spawnEel(in: lane)
                 }
                 let sequence = SKAction.sequence([wait, warn, spawn])
                 let repeatAction = SKAction.repeatForever(sequence)
@@ -633,6 +664,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     } else {
                         self?.spawnEnemy(in: lane)
                     }
+                }
+                let sequence = SKAction.sequence([spawn, wait])
+                let repeatAction = SKAction.repeatForever(sequence)
+                
+                run(repeatAction)
+            }
+            
+            if lane.laneType == "Long" {
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4.5..<6.5) - CGFloat(score) / 20)
+                let spawn = SKAction.run { [weak self] in
+                    self?.spawnLongEnemy(in: lane)
                 }
                 let sequence = SKAction.sequence([spawn, wait])
                 let repeatAction = SKAction.repeatForever(sequence)

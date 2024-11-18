@@ -149,8 +149,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             // Number of empty lanes in a row
-            let numberOfEmptyRows = Int.random(in: 1...3)
+            let chanceOfEmptyRows = Int.random(in: 1...10)
+            var numberOfEmptyRows: Int = 0
             
+            if chanceOfEmptyRows > 3 {
+                numberOfEmptyRows = 1
+            }
+            else {
+                numberOfEmptyRows = 2
+            }
+
             for _ in i...i + numberOfEmptyRows {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 lanes.append(Lane(startPosition: CGPoint(x: 0, y: yPosition), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
@@ -159,7 +167,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
 
             // Number of lanes in a row with enemies
-            let numberOfEnemyRows = Int.random(in: 1...5)
+            let chanceOfEnemyRows = Int.random(in: 1...20)
+            var numberOfEnemyRows: Int = 0
+            
+            if chanceOfEnemyRows > 13 {
+                numberOfEnemyRows = 3
+            }
+            else if chanceOfEnemyRows > 4 {
+                numberOfEnemyRows = 2
+            }
+            else if chanceOfEnemyRows > 2 {
+                numberOfEnemyRows = 1
+            }
+            else if chanceOfEnemyRows == 2 {
+                numberOfEnemyRows = 4
+            }
+            else {
+                numberOfEnemyRows = 5
+            }
             
             for _ in i...i + numberOfEnemyRows {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
@@ -506,7 +531,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         while i < numberOfRows {
             
             // Number of empty lanes in a row
-            let numberOfEmptyRows = Int.random(in: 1...3)
+            let chanceOfEmptyRows = Int.random(in: 1...10)
+            var numberOfEmptyRows: Int = 0
+            
+            if chanceOfEmptyRows > 3 {
+                numberOfEmptyRows = 1
+            }
+            else {
+                numberOfEmptyRows = 2
+            }
             
             for _ in i...i + numberOfEmptyRows {
                 let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
@@ -516,7 +549,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             // Number of lanes in a row with enemies
-            let numberOfEnemyRows = Int.random(in: 1...5)
+            let chanceOfEnemyRows = Int.random(in: 1...20)
+            var numberOfEnemyRows: Int = 0
+            
+            if chanceOfEnemyRows > 13 {
+                numberOfEnemyRows = 3
+            }
+            else if chanceOfEnemyRows > 4 {
+                numberOfEnemyRows = 2
+            }
+            else if chanceOfEnemyRows > 2 {
+                numberOfEnemyRows = 1
+            }
+            else if chanceOfEnemyRows == 2 {
+                numberOfEnemyRows = 4
+            }
+            else {
+                numberOfEnemyRows = 5
+            }
             
             for _ in i...i + numberOfEnemyRows {
                 let newYPosition = yPosition + CGFloat(i + 1) * laneHeight 
@@ -689,7 +739,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let removeWarning = SKAction.removeFromParent()
         warningLabel.run(SKAction.sequence([wait, removeWarning]))
     }
-    
+        
     func startSpawning(lanes: [Lane]) {
       
         for lane in lanes {
@@ -736,7 +786,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Normal" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3.5..<5.5) - CGFloat(score) / 20)
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3.5..<5.5))
                 let spawn = SKAction.run { [weak self] in
                     let enemyType = Int.random(in: 0..<8)
                     if enemyType == 7 {
@@ -752,7 +802,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Long" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4.5..<6.5) - CGFloat(score) / 20)
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4.5..<5.5) - CGFloat(score) / 20)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnLongEnemy(in: lane)
                 }

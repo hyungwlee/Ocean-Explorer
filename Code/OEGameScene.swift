@@ -36,7 +36,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     
     // Air properties
-    var airAmount = 26
+    var airAmount = 21
     var airLabel: SKLabelNode!
     var airIcon: SKSpriteNode!
     var firstBubble: SKSpriteNode? = nil
@@ -854,16 +854,40 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         run(countdownAction, withKey: "airCountdown")
     }
 
-    // Function to decrease air by 1 (called in aircountdown)
+    // Function to decrease air by 1 (called in aircountdown) // Air Meter Animation for Low Air
     func decreaseAir() {
         guard !isGameOver else { return }
+
+        // Update air label
         airLabel.text = "\(airAmount)"
+
+        // Change air label color when air is low
         if airAmount < 17 {
             airLabel.fontColor = .red
-            } else {
-                airLabel.fontColor = .white
-            }
-        
+        } else {
+            airLabel.fontColor = .white
+        }
+
+        // Enlarge the AirMeter asset (airIcon) when low air and pulsate red
+        if airAmount < 17 {
+            let enlargeAction = SKAction.scale(to: CGSize(width: 52.5, height: 75), duration: 0.2) // Scale up by 1.5x
+            airIcon.run(enlargeAction)
+
+            // Add pulsating red effect
+            let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
+            let normalAction = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
+            let pulsateAction = SKAction.sequence([redAction, normalAction])
+            airIcon.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
+        } else {
+            let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 50), duration: 0.2) // Reset to original size
+            airIcon.run(shrinkAction)
+
+            // Remove the pulsating effect if air is 10 or more
+            airIcon.removeAction(forKey: "pulsateRed")
+            airIcon.colorBlendFactor = 0.0 // Reset to normal color
+        }
+
+        // Decrease air amount
         if airAmount > 0 {
             airAmount -= 1
             airLabel.text = "\(airAmount)"
@@ -872,15 +896,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // Function to increase air by 5 when player gets bubble
+    // Function to increase air by 10 when player gets bubble
     func increaseAir() {
         guard !isGameOver else { return }
         
-        if airAmount < 20 {
+        if airAmount < 30 {
             airAmount += 5
-            airLabel.text = "\(airAmount)"
-        } else if airAmount >= 20 && airAmount <= 25 {
-            airAmount = 25
+            if airAmount > 30 {
+                airAmount = 30 // Cap the air at 30
+            }
             airLabel.text = "\(airAmount)"
         }
     }

@@ -42,6 +42,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var firstBubble: SKSpriteNode? = nil
     var arrow: SKSpriteNode?
     var bubbleText: SKLabelNode?
+    
+    // Tapping properties
+    var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
+    var isActionInProgress = false // Flag to indicate if a movement is in progress
 
     
     // Game state variable
@@ -543,7 +547,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
-        moveBox(to: nextPosition)
+        
+        // If an action is already in progress, queue the next tap position
+        if isActionInProgress {
+            tapQueue.append(nextPosition)
+        } else {
+            // Execute immediately if no action is in progress
+            moveBox(to: nextPosition)
+        }
     }
 
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer) {
@@ -566,14 +577,42 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         moveBox(to: nextPosition)
     }
 
+//    func moveBox(to position: CGPoint) {
+//        if position.y > box?.position.y ?? 0 {
+//            if box?.move(to: position) == 1 {
+//                updateScore()
+//            }
+//        }
+//        else {
+//            box?.move(to: position)
+//        }
+//    }
+    
+    
+    
     func moveBox(to position: CGPoint) {
-        if position.y > box?.position.y ?? 0 {
-            if box?.move(to: position) == 1 {
-                updateScore()
+        guard let box else { return }
+        
+        // Set the flag to indicate movement in progress
+        isActionInProgress = true
+        
+        // Example movement logic using an animation
+        UIView.animate(withDuration: 0.3, animations: {
+            box.position = position
+        }) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Mark the current action as completed
+            self.isActionInProgress = false
+            
+            // Update the score
+            updateScore()
+            
+            // If there are more actions in the queue, execute the next one
+            if let nextPosition = self.tapQueue.first {
+                self.tapQueue.removeFirst()
+                self.moveBox(to: nextPosition)
             }
-        }
-        else {
-            box?.move(to: position)
         }
     }
 

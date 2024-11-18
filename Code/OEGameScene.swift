@@ -366,12 +366,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         guard let box = box else { return }
 
-        // Smoothly move the camera towards the box's position if above the threshold
-        let targetY = box.position.y > cameraNode.position.y ? box.position.y : cameraNode.position.y
-        let lerpFactor: CGFloat = 0.1 // Adjust for speed of interpolation (0.1 = smooth, 1.0 = instant)
-        cameraNode.position.y = cameraNode.position.y + (targetY - cameraNode.position.y) * lerpFactor
+        // Smoothly move the camera towards the box's position with slower forward movement
+        let lerpFactor: CGFloat = 0.01 // Smaller value for slower camera movement
+        let targetY = max(cameraNode.position.y, box.position.y) // Ensure the camera only moves forward
+        cameraNode.position.y += (targetY - cameraNode.position.y) * lerpFactor
 
-        // Existing functionality: Draw new rows if the camera has moved past the highest drawn row
+        // Draw new rows if the camera has moved past the highest drawn row
         if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
             drawNewGridRows()
             updateHighestRowDrawn()

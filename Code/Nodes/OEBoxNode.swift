@@ -29,8 +29,8 @@ class OEBoxNode: SKSpriteNode {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func move(to position: CGPoint) {
-        guard !isMoving else { return } // Prevents new movement while already moving
+    func move(to position: CGPoint) -> Int {
+        guard !isMoving else { return 0} // Prevents new movement while already moving
         isMoving = true
         
         // Define a movement animation with a duration
@@ -41,6 +41,7 @@ class OEBoxNode: SKSpriteNode {
             // Movement completed, allow the next move
             self.isMoving = false
         }
+        return 1
     }
     
     // Call this function for handling double-clicks

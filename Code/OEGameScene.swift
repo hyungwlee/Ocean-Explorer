@@ -531,7 +531,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box, !isGameOver else { return }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
         moveBox(to: nextPosition)
-        updateScore()
     }
 
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer) {
@@ -555,7 +554,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func moveBox(to position: CGPoint) {
-        box?.move(to: position)
+        if position.y > box?.position.y ?? 0 {
+            if box?.move(to: position) == 1 {
+                updateScore()
+            }
+        }
+        else {
+            box?.move(to: position)
+        }
     }
 
     func spawnEnemy(in lane: Lane) {

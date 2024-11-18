@@ -12,6 +12,7 @@ struct PhysicsCategory {
     static let box: UInt32 = 0b1       // 1
     static let enemy: UInt32 = 0b10    // 2
     static let bubble: UInt32 = 0b100  // 4
+    static let shell: UInt32 = 0b1000
 }
 
 struct Lane {
@@ -225,6 +226,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         setupAirDisplay()
         airCountDown()
         includeBubbles()
+        includeShells()
         spawnTemporaryArrow()
 
         startCameraMovement()
@@ -367,7 +369,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box = box else { return }
 
         // Smoothly move the camera towards the box's position with slower forward movement
-        let lerpFactor: CGFloat = 0.01 // Smaller value for slower camera movement
+        let lerpFactor: CGFloat = 0.018 // Smaller value for slower camera movement
         let targetY = max(cameraNode.position.y, box.position.y) // Ensure the camera only moves forward
         cameraNode.position.y += (targetY - cameraNode.position.y) * lerpFactor
 
@@ -777,13 +779,81 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         print("Lane position: \(lane.startPosition.y)")
     }
     
+    // Function to spawn the shells randomly in grid spaces
+    func spawnShell() {
+        let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
+        shell.size = CGSize(width: 45, height: 45) // Adjust size as needed
+        shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
+        shell.physicsBody = SKPhysicsBody(circleOfRadius: shell.size.width / 2.2)
+        shell.physicsBody?.categoryBitMask = PhysicsCategory.shell
+        shell.physicsBody?.contactTestBitMask = PhysicsCategory.box
+        shell.physicsBody?.collisionBitMask = PhysicsCategory.none
+        shell.physicsBody?.isDynamic = false
+
+        let columns = Int(size.width / cellWidth)
+        let playableColumnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
+
+        guard let box = box else { return }
+
+        let currPosition = gridPosition(for: box.position)
+        let currRow = currPosition.row
+
+        let min = currRow - 2
+        let max = currRow + 4
+        let playableRowRange = min...max
+
+        let randomRow = Int.random(in: playableRowRange)
+        let randomColumn = Int.random(in: playableColumnRange)
+
+        shell.position = positionFor(row: randomRow, column: randomColumn)
+        addChild(shell)
+    }
+
+    // Function to add shells periodically
+    func includeShells() {
+        let initialDelay = SKAction.wait(forDuration: 10) // Add an initial delay of 30 seconds
+        let shellSpawnAction = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.run { [weak self] in
+                    self?.spawnShell()
+                },
+                SKAction.wait(forDuration: 15) // Shells spawn less frequently
+            ])
+        )
+        let sequence = SKAction.sequence([initialDelay, shellSpawnAction])
+        run(sequence, withKey: "spawnShells")
+    }
+
+    // Function to increase score by 5 when player collects a shell
+    func increaseScoreFromShell() {
+        guard !isGameOver else { return }
+        
+        score += 5 // Increase score by 5
+        scoreLabel.text = "\(score)" // Update the score label
+    }
+
+    func didBeginShellContact(_ contact: SKPhysicsContact) {
+        let bodyA = contact.bodyA
+        let bodyB = contact.bodyB
+        
+        print("Contact: \(bodyA.categoryBitMask) <-> \(bodyB.categoryBitMask)")  // Debugging collision
+        
+        if bodyA.categoryBitMask == PhysicsCategory.shell {
+            bodyA.node?.removeFromParent()
+        } else {
+            bodyB.node?.removeFromParent()
+        }
+
+        increaseScoreFromShell()  // Increase score by 5 when shell is collected
+    }
+
     // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {
         
         // Create the bubble asset
         let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
         bubble.size = CGSize(width: 45, height: 45) // Adjust size as needed
-        bubble.alpha = 0.6 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
+        bubble.alpha = 0.75 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
         bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
         bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
@@ -959,10 +1029,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     
-    // Handles player contact with bubbles and enemies
+    // Handles player contact with bubbles, enemies, and shells
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB
+        
+        // Handle contact with enemies
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isGameOver {
@@ -970,8 +1042,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
+        // Handle contact with bubbles
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.bubble) ||
-            (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
+           (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
             increaseAir()
             
             // Check which body is the bubble
@@ -991,6 +1064,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 arrow?.removeFromParent()
                 bubbleText?.removeFromParent()
             }
+        }
+        
+        // Handle contact with shells
+        if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.shell) ||
+           (bodyA.categoryBitMask == PhysicsCategory.shell && bodyB.categoryBitMask == PhysicsCategory.box) {
+            didBeginShellContact(contact)
         }
     }
 

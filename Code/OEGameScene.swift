@@ -326,38 +326,68 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         highestRowDrawn += numberOfRows
     }
     
+//    override func update(_ currentTime: TimeInterval) {
+//        guard let box = box else { return }
+//
+//        // 1. Continuous upward movement for the camera
+//        cameraNode.position.y += 0 // Adjust this value for camera speed
+//
+//        // 2. Check if the character is above a certain threshold relative to the camera's view
+//
+//        let characterAboveThreshold = box.position.y > cameraNode.position.y  // Adjust threshold as desired
+//
+//        if characterAboveThreshold {
+//            // Move the camera up to match the character's y position while maintaining continuous movement
+//            cameraNode.position.y = box.position.y 
+//        }
+//
+//        // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
+//        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
+//            drawNewGridRows()
+//            updateHighestRowDrawn()
+//        }
+//
+//        // 4. Update background tiles
+//        updateBackgroundTiles()
+//
+//        // 5. Check for proximity to player for each pufferfish enemy
+//        for child in children {
+//            if let pufferfish = child as? OEEnemyNode2 {
+//                pufferfish.checkProximityToPlayer(playerPosition: box.position)
+//            }
+//        }
+//
+//        // 6. Game over if the character falls below the camera's view
+//        if box.position.y < cameraNode.position.y - size.height / 2 {
+//            gameOver()
+//        }
+//    }
+    
     override func update(_ currentTime: TimeInterval) {
         guard let box = box else { return }
 
-        // 1. Continuous upward movement for the camera
-        cameraNode.position.y += 0 // Adjust this value for camera speed
+        // Smoothly move the camera towards the box's position with slower forward movement
+        let lerpFactor: CGFloat = 0.01 // Smaller value for slower camera movement
+        let targetY = max(cameraNode.position.y, box.position.y) // Ensure the camera only moves forward
+        cameraNode.position.y += (targetY - cameraNode.position.y) * lerpFactor
 
-        // 2. Check if the character is above a certain threshold relative to the camera's view
-
-        let characterAboveThreshold = box.position.y > cameraNode.position.y  // Adjust threshold as desired
-
-        if characterAboveThreshold {
-            // Move the camera up to match the character's y position while maintaining continuous movement
-            cameraNode.position.y = box.position.y 
-        }
-
-        // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
+        // Draw new rows if the camera has moved past the highest drawn row
         if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
             drawNewGridRows()
             updateHighestRowDrawn()
         }
 
-        // 4. Update background tiles
+        // Update background tiles
         updateBackgroundTiles()
 
-        // 5. Check for proximity to player for each pufferfish enemy
+        // Check for proximity to player for each pufferfish enemy
         for child in children {
             if let pufferfish = child as? OEEnemyNode2 {
                 pufferfish.checkProximityToPlayer(playerPosition: box.position)
             }
         }
 
-        // 6. Game over if the character falls below the camera's view
+        // Game over if the character falls below the camera's view
         if box.position.y < cameraNode.position.y - size.height / 2 {
             gameOver()
         }
@@ -550,7 +580,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
-        
+        moveBox(to: nextPosition)
         // If an action is already in progress, queue the next tap position
         if isActionInProgress {
             tapQueue.append(nextPosition)
@@ -607,14 +637,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             // Mark the current action as completed
             self.isActionInProgress = false
-            
-            // Update the score
-            updateScore()
+
             
             // If there are more actions in the queue, execute the next one
             if let nextPosition = self.tapQueue.first {
                 self.tapQueue.removeFirst()
                 self.moveBox(to: nextPosition)
+                // Update the score
+                updateScore()
             }
         }
     }

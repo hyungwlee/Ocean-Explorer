@@ -369,7 +369,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box = box else { return }
 
         // Smoothly move the camera towards the box's position with slower forward movement
-        let lerpFactor: CGFloat = 0.01 // Smaller value for slower camera movement
+        let lerpFactor: CGFloat = 0.018 // Smaller value for slower camera movement
         let targetY = max(cameraNode.position.y, box.position.y) // Ensure the camera only moves forward
         cameraNode.position.y += (targetY - cameraNode.position.y) * lerpFactor
 

@@ -227,7 +227,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func startCameraMovement() {
-        let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 20.0) // Adjust duration as needed CAMERA SPEED GOING UP (lower the quicker)
+      
+        let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 15.0) // Adjust duration as needed CAMERA SPEED GOING UP
+
         let continuousMove = SKAction.repeatForever(moveUp)
         cameraNode.run(continuousMove)
     }
@@ -327,11 +329,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.position.y += 0 // Adjust this value for camera speed
 
         // 2. Check if the character is above a certain threshold relative to the camera's view
-        let characterAboveThreshold = box.position.y > cameraNode.position.y + size.height / 6 // Adjust threshold as desired
+
+        let characterAboveThreshold = box.position.y > cameraNode.position.y  // Adjust threshold as desired
 
         if characterAboveThreshold {
             // Move the camera up to match the character's y position while maintaining continuous movement
-            cameraNode.position.y = box.position.y - size.height / 6
+            cameraNode.position.y = box.position.y 
         }
 
         // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row

@@ -167,19 +167,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
 
             // Number of lanes in a row with enemies
-            let chanceOfEnemyRows = Int.random(in: 1...10)
+            let chanceOfEnemyRows = Int.random(in: 1...20)
             var numberOfEnemyRows: Int = 0
             
-            if chanceOfEnemyRows > 7 {
+            if chanceOfEnemyRows > 13 {
                 numberOfEnemyRows = 3
             }
-            else if chanceOfEnemyRows > 3 {
+            else if chanceOfEnemyRows > 4 {
                 numberOfEnemyRows = 2
             }
-            else if chanceOfEnemyRows == 2 {
+            else if chanceOfEnemyRows > 2 {
                 numberOfEnemyRows = 1
             }
-            else if chanceOfEnemyRows == 1 {
+            else if chanceOfEnemyRows == 2 {
                 numberOfEnemyRows = 4
             }
             else {
@@ -549,19 +549,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             // Number of lanes in a row with enemies
-            let chanceOfEnemyRows = Int.random(in: 1...10)
+            let chanceOfEnemyRows = Int.random(in: 1...20)
             var numberOfEnemyRows: Int = 0
             
-            if chanceOfEnemyRows > 7 {
+            if chanceOfEnemyRows > 13 {
                 numberOfEnemyRows = 3
             }
-            else if chanceOfEnemyRows > 3 {
+            else if chanceOfEnemyRows > 4 {
                 numberOfEnemyRows = 2
             }
-            else if chanceOfEnemyRows == 2 {
+            else if chanceOfEnemyRows > 2 {
                 numberOfEnemyRows = 1
             }
-            else if chanceOfEnemyRows == 1 {
+            else if chanceOfEnemyRows == 2 {
                 numberOfEnemyRows = 4
             }
             else {

@@ -227,7 +227,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func startCameraMovement() {
+      
         let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 15.0) // Adjust duration as needed CAMERA SPEED GOING UP
+
         let continuousMove = SKAction.repeatForever(moveUp)
         cameraNode.run(continuousMove)
     }
@@ -281,26 +283,39 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     func setupScoreLabel() {
         scoreLabel = SKLabelNode(fontNamed: "SF Mono")
-        scoreLabel.fontSize = 32
+        scoreLabel.fontSize = 75
         scoreLabel.fontColor = .white
         scoreLabel.zPosition = 1000
-        scoreLabel.position = CGPoint(x: -size.width / 2 + 20, y: size.height / 2 - 75)
+        scoreLabel.position = CGPoint(x: -size.width / 2 + 170, y: size.height / 2 - 125)
         scoreLabel.horizontalAlignmentMode = .left
         scoreLabel.text = "\(score)"
         cameraNode.addChild(scoreLabel)
     }
 
+    let goldColor = UIColor(red: 255/255.0, green: 223/255.0, blue: 87/255.0, alpha: 1.0) // Lighter gold
+    
     func updateScore() {
         score += 1
         if score >= scoreDisplayed + 1 {
             scoreDisplayed += 1
         }
-        if score % 10 == 0 {
-                    scoreLabel.fontColor = .yellow
-                } else {
-                    scoreLabel.fontColor = .white
-                }
+        
+        if score % 100 == 0 {
+            scoreLabel.fontColor = .red // Gold color
+        } else if score % 10 == 0 {
+            scoreLabel.fontColor = goldColor
+            scoreLabel.run(createPopOutAction()) // Apply the popping effect on multiples of 10
+        } else {
+            scoreLabel.fontColor = .white
+        }
         scoreLabel.text = "\(max(score, scoreDisplayed))"
+    }
+
+    func createPopOutAction() -> SKAction {
+        let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
+        let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
+        let sequence = SKAction.sequence([scaleUp, scaleDown])
+        return sequence
     }
     
     func updateHighestRowDrawn() {
@@ -314,6 +329,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.position.y += 0 // Adjust this value for camera speed
 
         // 2. Check if the character is above a certain threshold relative to the camera's view
+
         let characterAboveThreshold = box.position.y > cameraNode.position.y  // Adjust threshold as desired
 
         if characterAboveThreshold {
@@ -885,19 +901,26 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-
     func gameOver() {
         isGameOver = true
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
+        
+        // Create semi-transparent black box
+        let backgroundBox = SKShapeNode(rectOf: CGSize(width: size.width, height: 85))
+        backgroundBox.position = CGPoint(x: 0, y: 92) // Adjust position as needed
+        backgroundBox.fillColor = .black
+        backgroundBox.alpha = 0.20 // Set transparency
+        backgroundBox.zPosition = 999 // Ensure it is behind the text but above other nodes
+        cameraNode.addChild(backgroundBox)
         
         // Add the game logo
         let logoTexture = SKTexture(imageNamed: "Logo")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the "Game Over" text
         logoSprite.zPosition = 1000 // Make logo be top visible layer
-        logoSprite.xScale = 0.6 // Scale width to 40%
-        logoSprite.yScale = 0.6 // Scale height to 40%
+        logoSprite.xScale = 0.6 // Scale width to 60%
+        logoSprite.yScale = 0.6 // Scale height to 60%
         cameraNode.addChild(logoSprite)
         
         // Save the current score
@@ -906,9 +929,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Reset the score display (but keep the score variable intact for now)
         scoreLabel.text = "\(score)"
         
+        // Add Game Over text
         let gameOverLabel = SKLabelNode(text: "Game Over!")
         gameOverLabel.fontSize = 48
-        gameOverLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
+        gameOverLabel.zPosition = 1000 // Make text be top visible layer
         gameOverLabel.fontColor = .red
         gameOverLabel.fontName = "Arial-BoldMT" // Use bold font
         gameOverLabel.position = CGPoint(x: 0, y: 90) // Center on screen
@@ -918,7 +942,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
         finalScoreLabel.fontSize = 32
         finalScoreLabel.fontColor = .white
-        finalScoreLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
+        finalScoreLabel.zPosition = 1000 // Make text be top visible layer
         finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
         finalScoreLabel.position = CGPoint(x: 0, y: 60) // Positioned just below the "Game Over" text
         cameraNode.addChild(finalScoreLabel)
@@ -927,16 +951,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let restartLabel = SKLabelNode(text: "Tap to Restart")
         restartLabel.fontSize = 28
         restartLabel.fontColor = .yellow
-        restartLabel.zPosition = 1000 //MAKE TEXT BE TOP VISIBLE LAYER
+        restartLabel.zPosition = 1000 // Make text be top visible layer
         restartLabel.fontName = "Arial" // Use bold font
         restartLabel.position = CGPoint(x: 0, y: -10) // Positioned below the final score
         cameraNode.addChild(restartLabel)
 
-        
         // Pause the scene to stop further actions
         self.isPaused = true
     }
-
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if isGameOver {

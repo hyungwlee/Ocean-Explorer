@@ -69,7 +69,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var cellWidth: CGFloat = 0
     var cellHeight: CGFloat = 0
     
-    var highestRowDrawn: Int = 13 // Track the highest row drawn for grid
+    var highestRowDrawn: Int = 15 // Track the highest row drawn for grid
 
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -80,8 +80,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         self.camera = cameraNode
         
         // Creating grid
-        numberOfRows = 13
-        numberOfColumns = 7
+        numberOfRows = 15
+        numberOfColumns = 9
         cellWidth = size.width / CGFloat(numberOfColumns)
         cellHeight = size.height / CGFloat(numberOfRows)
         
@@ -167,19 +167,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
 
             // Number of lanes in a row with enemies
-            let chanceOfEnemyRows = Int.random(in: 1...10)
+            let chanceOfEnemyRows = Int.random(in: 1...20)
             var numberOfEnemyRows: Int = 0
             
-            if chanceOfEnemyRows > 7 {
+            if chanceOfEnemyRows > 13 {
                 numberOfEnemyRows = 3
             }
-            else if chanceOfEnemyRows > 3 {
+            else if chanceOfEnemyRows > 4 {
                 numberOfEnemyRows = 2
             }
-            else if chanceOfEnemyRows == 2 {
+            else if chanceOfEnemyRows > 2 {
                 numberOfEnemyRows = 1
             }
-            else if chanceOfEnemyRows == 1 {
+            else if chanceOfEnemyRows == 2 {
                 numberOfEnemyRows = 4
             }
             else {
@@ -549,19 +549,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             // Number of lanes in a row with enemies
-            let chanceOfEnemyRows = Int.random(in: 1...10)
+            let chanceOfEnemyRows = Int.random(in: 1...20)
             var numberOfEnemyRows: Int = 0
             
-            if chanceOfEnemyRows > 7 {
+            if chanceOfEnemyRows > 13 {
                 numberOfEnemyRows = 3
             }
-            else if chanceOfEnemyRows > 3 {
+            else if chanceOfEnemyRows > 4 {
                 numberOfEnemyRows = 2
             }
-            else if chanceOfEnemyRows == 2 {
+            else if chanceOfEnemyRows > 2 {
                 numberOfEnemyRows = 1
             }
-            else if chanceOfEnemyRows == 1 {
+            else if chanceOfEnemyRows == 2 {
                 numberOfEnemyRows = 4
             }
             else {
@@ -832,7 +832,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
         let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
-        shell.size = CGSize(width: 45, height: 45) // Adjust size as needed
+        shell.size = CGSize(width: 35, height: 35) // Adjust size as needed
         shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         shell.physicsBody = SKPhysicsBody(circleOfRadius: shell.size.width / 2.2)
         shell.physicsBody?.categoryBitMask = PhysicsCategory.shell
@@ -902,7 +902,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Create the bubble asset
         let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
-        bubble.size = CGSize(width: 45, height: 45) // Adjust size as needed
+        bubble.size = CGSize(width: 35, height: 35) // Adjust size as needed
         bubble.alpha = 0.75 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
         bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble

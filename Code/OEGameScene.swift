@@ -861,13 +861,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     // Function to add shells periodically
     func includeShells() {
-        let initialDelay = SKAction.wait(forDuration: 10) // Add an initial delay of 30 seconds
+        let initialDelay = SKAction.wait(forDuration: 8) // Add an initial delay of 30 seconds
         let shellSpawnAction = SKAction.repeatForever(
             SKAction.sequence([
                 SKAction.run { [weak self] in
                     self?.spawnShell()
                 },
-                SKAction.wait(forDuration: 15) // Shells spawn less frequently
+                SKAction.wait(forDuration: 13) // Shells spawn less frequently
             ])
         )
         let sequence = SKAction.sequence([initialDelay, shellSpawnAction])
@@ -881,6 +881,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         score += 5 // Increase score by 5
         scoreLabel.text = "\(score)" // Update the score label
     }
+    
+    func showShellNextToScore() {
+        let newShell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
+        newShell.size = CGSize(width: 35, height: 35) // Initial size
+        newShell.alpha = 0 // Start fully transparent
+        newShell.position = CGPoint(x: scoreLabel.position.x - 40, y: scoreLabel.position.y) // Adjust position next to the score
+        newShell.zPosition = scoreLabel.zPosition
+
+        let fadeInAction = SKAction.fadeAlpha(to: 1.0, duration: 0.5) // Fade in over 0.5 seconds
+        let enlargeAction = SKAction.scale(to: 1.5, duration: 0.5) // Enlarge over 0.5 seconds
+        let moveToScoreAction = SKAction.move(to: scoreLabel.position, duration: 1.0) // Move to the score position over 1 second
+        let shrinkAction = SKAction.scale(to: 0.1, duration: 1.0) // Shrink over 1 second
+        let fadeOutAction = SKAction.fadeOut(withDuration: 1.0) // Fade out over 1 second
+
+        let appearAction = SKAction.group([fadeInAction, enlargeAction])
+        let moveAndFadeAction = SKAction.group([moveToScoreAction, shrinkAction, fadeOutAction])
+        let removeAction = SKAction.removeFromParent()
+        let sequenceAction = SKAction.sequence([appearAction, moveAndFadeAction, removeAction])
+        
+        newShell.run(sequenceAction)
+        cameraNode.addChild(newShell)
+    }
 
     func didBeginShellContact(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
@@ -888,14 +910,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         print("Contact: \(bodyA.categoryBitMask) <-> \(bodyB.categoryBitMask)")  // Debugging collision
         
+        let shellNode: SKNode
         if bodyA.categoryBitMask == PhysicsCategory.shell {
-            bodyA.node?.removeFromParent()
+            shellNode = bodyA.node!
         } else {
-            bodyB.node?.removeFromParent()
+            shellNode = bodyB.node!
         }
 
-        increaseScoreFromShell()  // Increase score by 5 when shell is collected
+        // Remove the shell from the scene
+        shellNode.removeFromParent()
+        
+        // Show a new shell next to the score
+        showShellNextToScore()
+
+        // Increase the score
+        increaseScoreFromShell()
     }
+
 
     // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {

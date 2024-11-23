@@ -14,7 +14,7 @@ class OEEnemyNode4: SKSpriteNode {
     
     init(gridSize: CGSize) {
         self.gridSize = gridSize
-        let texture = SKTexture(imageNamed: "LongEnemy")
+        let texture = SKTexture(imageNamed: "Shark")
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.4, height: texture.size().height * 0.4))
         
         self.physicsBody = SKPhysicsBody(rectangleOf: size)

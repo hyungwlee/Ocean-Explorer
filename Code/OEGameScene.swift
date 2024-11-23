@@ -292,10 +292,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func setupReef() {
         let reef = SKSpriteNode(imageNamed: "Reef")
         
-        reef.position = CGPoint(x: size.width / 500, y: reef.size.height / 20 - 75)
+        // Adjust position as needed
+        reef.position = CGPoint(x: size.width / 350, y: reef.size.height / 20 - 100)
         reef.zPosition = 10
+        
+        // Scale the width by increasing xScale
+        reef.xScale = 1.15 // Adjust the scale factor as needed for more width
+        
         addChild(reef)
-
         // Create a fade-out action
         let fadeOut = SKAction.fadeOut(withDuration: 2.0)
         let remove = SKAction.removeFromParent()
@@ -673,8 +677,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 //        }
 //    }
     
-    
-    
     func moveBox(to position: CGPoint) {
         guard let box else { return }
         
@@ -883,6 +885,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         score += 5 // Increase score by 5
         scoreLabel.text = "\(score)" // Update the score label
+        
+        // Change the score label color to yellow
+        let orangeAction = SKAction.colorize(with: .orange, colorBlendFactor: 1.0, duration: 0.0)
+        let waitAction = SKAction.wait(forDuration: 0.5) // X.X SECONDS LONG YELLOW STAYS UPON SHELL COLLECTED
+        // Change the score label color back to white
+        let whiteAction = SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 1.0)
+        // Create a sequence of actions
+        let colorSequence = SKAction.sequence([orangeAction, waitAction, whiteAction])
+        
+        // Run the sequence on the score label
+        scoreLabel.run(colorSequence)
     }
     
     func showShellNextToScore() {
@@ -929,7 +942,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Increase the score
         increaseScoreFromShell()
     }
-
 
     // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {

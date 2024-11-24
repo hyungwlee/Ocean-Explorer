@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Open Back Arrow.png",
+      "filename" : "Arrow.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Open Back Arrow 1.png",
+      "filename" : "Arrow 2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Open Back Arrow 2.png",
+      "filename" : "Arrow 1.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

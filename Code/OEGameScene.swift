@@ -837,13 +837,21 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
         let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
-        shell.size = CGSize(width: 35, height: 35) // Adjust size as needed
+        shell.size = CGSize(width: 45, height: 45) // Adjust size as needed
         shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         shell.physicsBody = SKPhysicsBody(circleOfRadius: shell.size.width / 2.2)
         shell.physicsBody?.categoryBitMask = PhysicsCategory.shell
         shell.physicsBody?.contactTestBitMask = PhysicsCategory.box
         shell.physicsBody?.collisionBitMask = PhysicsCategory.none
         shell.physicsBody?.isDynamic = false
+
+        // Create the pulsating effect with a pause
+        let scaleUp = SKAction.scale(to: 1.2, duration: 0.5)
+        let scaleDown = SKAction.scale(to: 1.0, duration: 0.5)
+        let wait = SKAction.wait(forDuration: 3.0) // Wait for x seconds before animation
+        let pulsate = SKAction.sequence([scaleUp, scaleDown, wait])
+        let repeatPulsate = SKAction.repeatForever(pulsate)
+        shell.run(repeatPulsate)
 
         let columns = Int(size.width / cellWidth)
         let playableColumnRange = ((-columns / 2) + 1)...((columns / 2) - 1)

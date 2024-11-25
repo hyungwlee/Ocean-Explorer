@@ -26,6 +26,7 @@
 		85C1D3222CE319120025A3F1 /* OEEnemyNode2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3212CE319060025A3F1 /* OEEnemyNode2.swift */; };
 		85C1D3242CE54FC50025A3F1 /* OEEnemyNode3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3232CE54FC10025A3F1 /* OEEnemyNode3.swift */; };
 		85C1D3262CEABD830025A3F1 /* OEEnemyNode4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3252CEABD7B0025A3F1 /* OEEnemyNode4.swift */; };
+		85C1D3282CF45B5F0025A3F1 /* OEEnemyNode5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3272CF45B5A0025A3F1 /* OEEnemyNode5.swift */; };
 		FA02F5982CD347BC00E05631 /* OEGameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA02F5972CD347BC00E05631 /* OEGameScene.swift */; };
 		FA02F59A2CD347D200E05631 /* OEGameContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA02F5992CD347D200E05631 /* OEGameContext.swift */; };
 		FA2E04152CD34CE1001DB9FB /* OEGameIdleState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2E04142CD34CE1001DB9FB /* OEGameIdleState.swift */; };
@@ -71,6 +72,7 @@
 		85C1D3212CE319060025A3F1 /* OEEnemyNode2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode2.swift; sourceTree = "<group>"; };
 		85C1D3232CE54FC10025A3F1 /* OEEnemyNode3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode3.swift; sourceTree = "<group>"; };
 		85C1D3252CEABD7B0025A3F1 /* OEEnemyNode4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode4.swift; sourceTree = "<group>"; };
+		85C1D3272CF45B5A0025A3F1 /* OEEnemyNode5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode5.swift; sourceTree = "<group>"; };
 		FA02F5972CD347BC00E05631 /* OEGameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OEGameScene.swift; path = Code/OEGameScene.swift; sourceTree = SOURCE_ROOT; };
 		FA02F5992CD347D200E05631 /* OEGameContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEGameContext.swift; sourceTree = "<group>"; };
 		FA2E04142CD34CE1001DB9FB /* OEGameIdleState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEGameIdleState.swift; sourceTree = "<group>"; };
@@ -212,6 +214,7 @@
 		FA2E04182CD34D77001DB9FB /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
+				85C1D3272CF45B5A0025A3F1 /* OEEnemyNode5.swift */,
 				85C1D3252CEABD7B0025A3F1 /* OEEnemyNode4.swift */,
 				85C1D3232CE54FC10025A3F1 /* OEEnemyNode3.swift */,
 				85C1D3212CE319060025A3F1 /* OEEnemyNode2.swift */,
@@ -394,6 +397,7 @@
 				0F3B8B492CCF5E4A00775DC7 /* GameContext.swift in Sources */,
 				FA2E04172CD34D6D001DB9FB /* OEBoxNode.swift in Sources */,
 				FA2E04152CD34CE1001DB9FB /* OEGameIdleState.swift in Sources */,
+				85C1D3282CF45B5F0025A3F1 /* OEEnemyNode5.swift in Sources */,
 				FA02F59A2CD347D200E05631 /* OEGameContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -20,7 +20,7 @@ struct Lane {
     let endPosition: CGPoint
     let direction: CGVector
     let speed: CGFloat
-    let laneType: String // Empty, Normal, Tutorial, Eel, Pufferfish, or Long
+    let laneType: String // Empty, Normal, Tutorial, Eel, Pufferfish, Long, or Jellyfish
 }
 
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
@@ -198,10 +198,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let enemySize: String
                 let enemySpeed: CGFloat
                 
-                let enemySizeChance = Int.random(in: 0...3)
+                let enemySizeChance = Int.random(in: 0...4)
                 if enemySizeChance == 0 {
                     enemySize = "Long"
                     enemySpeed = CGFloat.random(in: 10..<13)
+                }
+                else if enemySizeChance == 1 {
+                    enemySize = "Jellyfish"
+                    enemySpeed = CGFloat.random(in: 8.5..<11.5)
                 }
                 else {
                     enemySize = "Normal"
@@ -586,9 +590,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     laneType = "Eel"
                     laneSpeed = 0.0
                 }
-                else if eelSpawn > 15{
+                else if eelSpawn > 16 {
                     laneType = "Long"
                     laneSpeed = CGFloat.random(in: 10..<13)
+                }
+                else if eelSpawn > 12 {
+                    laneType = "Jellyfish"
+                    laneSpeed = CGFloat.random(in: 8.5..<11.5)
                 }
                 else {
                     laneType = "Normal"
@@ -709,6 +717,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
     }
     
+    func spawnJellyfish(in lane: Lane) {
+        let enemy = OEEnemyNode5(gridSize: gridSize)
+        addChild(enemy)
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+    }
+    
     func spawnLongEnemy(in lane: Lane) {
         let enemy = OEEnemyNode4(gridSize: gridSize)
         addChild(enemy)
@@ -806,6 +820,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
             
+            if lane.laneType == "Jellyfish" {
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4..<5.5) - CGFloat(score) / 20)
+                let spawn = SKAction.run { [weak self] in
+                    self?.spawnJellyfish(in: lane)
+                }
+                let sequence = SKAction.sequence([spawn, wait])
+                let repeatAction = SKAction.repeatForever(sequence)
+                
+                run(repeatAction)
+            }
+
             if lane.laneType == "Long" {
                 let wait = SKAction.wait(forDuration: CGFloat.random(in: 4.5..<5.5) - CGFloat(score) / 20)
                 let spawn = SKAction.run { [weak self] in

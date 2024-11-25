@@ -712,7 +712,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func spawnLongEnemy(in lane: Lane) {
         let enemy = OEEnemyNode4(gridSize: gridSize)
         addChild(enemy)
-        if lane.direction == CGVector(dx: 1, dy: 0) {
+        if lane.direction == CGVector(dx: -1, dy: 0) {
             enemy.xScale = -1
         }
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)

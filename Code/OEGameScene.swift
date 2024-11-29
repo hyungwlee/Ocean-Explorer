@@ -245,7 +245,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Set up physics world contact delegate
         physicsWorld.contactDelegate = self
         
-        drawGridLines()
+        //drawGridLines()
         
         // Start timed enemy spawning
         startSpawning(lanes: lanes)
@@ -408,7 +408,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Draw new rows if the camera has moved past the highest drawn row
         if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
-            drawNewGridRows()
+            //drawNewGridRows()
             updateHighestRowDrawn()
         }
 
@@ -452,7 +452,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let y = CGFloat(row) * cellHeight + cellHeight / 2
         return CGPoint(x: x, y: y)
     }
-
+/*
     func drawGridLines() {
         // Horizontal lines
         for row in 0...numberOfRows {
@@ -524,7 +524,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-
+*/
     func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
         let row = Int(position.y / cellHeight)
         let column = Int(position.x / cellWidth)

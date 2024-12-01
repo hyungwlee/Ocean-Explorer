@@ -32,7 +32,7 @@ class OEEnemyNode3: SKSpriteNode {
         self.position = start
         self.position.x = self.position.x + 2000
 
-        let moveAction = SKAction.move(to: CGPoint(x: end.x - 2000, y: end.y), duration: 10) // Adjust the duration as necessary
+        let moveAction = SKAction.move(to: CGPoint(x: end.x - 2000, y: end.y), duration: 7.5) // Adjust the duration as necessary
 
         let removeAction = SKAction.removeFromParent()
         let sequence = SKAction.sequence([moveAction, removeAction])

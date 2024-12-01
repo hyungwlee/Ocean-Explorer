@@ -20,9 +20,48 @@ struct Lane {
     let endPosition: CGPoint
     let direction: CGVector
     let speed: CGFloat
-    let laneType: String // Empty, Normal, Tutorial, Eel, Pufferfish, Long, or Jellyfish
+    let laneType: String // Empty, Normal, Tutorial, Eel, Pufferfish, Long, or Jelly
 }
 
+// Collection of easy sets of lanes
+let easySets: [[String]] = [
+    ["Jellyfish", "Jellyfish", "Jellyfish"],
+    ["Jellyfish", "Long", "Jellyfish"],
+    ["Jellyfish"],
+    ["Long"],
+    ["Jellyfish"],
+    ["Jellyfish", "Normal"],
+    ["Jellyfish", "Jellyfish"],
+    ["Eel"],
+    ["Eel", "Jellyfish"],
+    ["Jellyfish", "Normal", "Long"],
+    ["Normal", "Jellyfish", "Jellyfish"]
+]
+
+// Collection of medium sets of lanes
+let mediumSets: [[String]] = [
+    ["Eel", "Eel", "Jellyfish"],
+    ["Long", "Long", "Normal"],
+    ["Jellyfish", "Jellyfish", "Eel", "Eel"],
+    ["Normal", "Jellyfish", "Jellyfish", "Jellyfish", "Jellyfish"],
+    ["Long", "Normal", "Long"],
+    ["Normal", "Jellyfish", "Jellyfish", "Normal"],
+    ["Jellyfish", "Long", "Jellyfish", "Jellyfish", "Long"],
+    ["Normal", "Eel", "Jellyfish", "Long"],
+    ["Eel", "Normal", "Eel"]
+]
+
+// Collection of hard sets of lanes
+let hardSets: [[String]] = [
+    ["Jellyfish", "Jellyfish", "Normal", "Eel", "Eel"],
+    ["Normal", "Eel", "Eel", "Eel"],
+    ["Eel", "Long", "Jellyfish", "Jellyfish", "Eel"],
+    ["Jellyfish", "Normal", "Normal", "Long", "Jellyfish", "Jellyfish", "Jellyfish", "Jellyfish"],
+    ["Jellyfish", "Jellyfish", "Normal", "Eel", "Eel", "Eel", "Long"],
+    ["Jellyfish", "Normal", "Jellyfish", "Normal", "Normal", "Long", "Jellyfish", "Eel", "Jellyfish"],
+    ["Normal", "Pufferfish", "Normal"]
+]
+    
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
     weak var context: OEGameContext?
     var box: OEBoxNode?
@@ -165,7 +204,57 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 yPositionLanes = yPosition
                 i += 1
             }
-
+            
+            // Difficulty of lanes based on score
+            var chanceOfEasyLanes = 0
+            var chanceOfMediumLanes = 0
+            var laneDifficulty: [[String]]
+            
+            if score < 25 {
+                chanceOfEasyLanes = 7
+                chanceOfMediumLanes = 10
+            }
+            else if score < 50 {
+                chanceOfEasyLanes = 4
+                chanceOfMediumLanes = 8
+            }
+            else {
+                chanceOfEasyLanes = 0
+                chanceOfMediumLanes = 4
+            }
+            
+            let chanceOfLaneType = Int.random(in: 1...10)
+            
+            if (chanceOfLaneType <= chanceOfEasyLanes) {
+                laneDifficulty = easySets
+            }
+            else if (chanceOfLaneType <= chanceOfMediumLanes) {
+                laneDifficulty = mediumSets
+            }
+            else {
+                laneDifficulty = hardSets
+            }
+            
+            let laneSet = Int.random(in: 0...laneDifficulty.count - 1)
+            var lane = 0
+            for _ in i...i + laneDifficulty[laneSet].count - 1 {
+                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+                let leftStart = CGPoint(x: -size.width, y: yPosition)
+                let rightStart = CGPoint(x: size.width, y: yPosition)
+                
+                // Random directions for lanes
+                laneDirection = Int.random(in: 0..<2)
+                
+                if laneDirection == 0 {
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7...13), laneType: laneDifficulty[laneSet][lane]))
+                } else {
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7...13), laneType: laneDifficulty[laneSet][lane]))
+                }
+                yPositionLanes = yPosition
+                i += 1
+                lane += 1
+            }
+            /*
             // Number of lanes in a row with enemies
             let chanceOfEnemyRows = Int.random(in: 1...20)
             var numberOfEnemyRows: Int = 0
@@ -220,6 +309,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 yPositionLanes = yPosition
                 i += 1
             }
+             */
         }
     }
 
@@ -556,6 +646,57 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 i += 1
             }
             
+            
+            // Difficulty of lanes based on score
+            var chanceOfEasyLanes = 0
+            var chanceOfMediumLanes = 0
+            var laneDifficulty: [[String]]
+            
+            if score < 25 {
+                chanceOfEasyLanes = 7
+                chanceOfMediumLanes = 10
+            }
+            else if score < 50 {
+                chanceOfEasyLanes = 4
+                chanceOfMediumLanes = 8
+            }
+            else {
+                chanceOfEasyLanes = 0
+                chanceOfMediumLanes = 4
+            }
+            
+            let chanceOfLaneType = Int.random(in: 1...10)
+            
+            if (chanceOfLaneType <= chanceOfEasyLanes) {
+                laneDifficulty = easySets
+            }
+            else if (chanceOfLaneType <= chanceOfMediumLanes) {
+                laneDifficulty = mediumSets
+            }
+            else {
+                laneDifficulty = hardSets
+            }
+            
+            let laneSet = Int.random(in: 0...laneDifficulty.count - 1)
+            var lane = 0
+            for _ in i...i + laneDifficulty[laneSet].count - 1 {
+                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
+                let leftStart = CGPoint(x: -size.width, y: newYPosition)
+                let rightStart = CGPoint(x: size.width, y: newYPosition)
+                
+                // Random directions for lanes
+                laneDirection = Int.random(in: 0..<2)
+                
+                if laneDirection == 0 {
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7...13), laneType: laneDifficulty[laneSet][lane]))
+                } else {
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7...13), laneType: laneDifficulty[laneSet][lane]))
+                }
+                yPositionLanes = newYPosition
+                i += 1
+                lane += 1
+            }
+            /*
             // Number of lanes in a row with enemies
             let chanceOfEnemyRows = Int.random(in: 1...20)
             var numberOfEnemyRows: Int = 0
@@ -614,6 +755,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 yPositionLanes = newYPosition
                 i += 1
             }
+             */
         }
         startSpawning(lanes: newLanes)
     }

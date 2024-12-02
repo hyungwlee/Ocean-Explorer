@@ -514,7 +514,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Game over if the character falls below the camera's view
         if box.position.y < cameraNode.position.y - size.height / 2 {
-            gameOver()
+            gameOver(reason: "You sank into the depths and disappeared!")
         }
     }
 
@@ -1263,7 +1263,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airAmount -= 1
             airLabel.text = "\(airAmount)"
         } else {
-            gameOver()
+            gameOver(reason: "Out of air! The depths claimed you.")
         }
     }
     
@@ -1309,7 +1309,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isGameOver {
-                gameOver()
+                gameOver(reason: "A sea creature stopped your adventure!")
             }
         }
         
@@ -1344,59 +1344,56 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-    func gameOver() {
+    func gameOver(reason: String) {
         isGameOver = true
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
-        
-        // Create semi-transparent black box
-        let backgroundBox = SKShapeNode(rectOf: CGSize(width: size.width, height: 85))
-        backgroundBox.position = CGPoint(x: 0, y: 92) // Adjust position as needed
+
+        // Create semi-transparent black background
+        let backgroundBox = SKShapeNode(rectOf: CGSize(width: 1000, height: 1000))
+        backgroundBox.position = CGPoint(x: 0, y: 0) // Centered on screen
         backgroundBox.fillColor = .black
-        backgroundBox.alpha = 0.20 // Set transparency
+        backgroundBox.alpha = 1.00 // Set full opacity
         backgroundBox.zPosition = 999 // Ensure it is behind the text but above other nodes
         cameraNode.addChild(backgroundBox)
-        
+
         // Add the game logo
         let logoTexture = SKTexture(imageNamed: "Logo")
         let logoSprite = SKSpriteNode(texture: logoTexture)
-        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the "Game Over" text
-        logoSprite.zPosition = 1000 // Make logo be top visible layer
+        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
+        logoSprite.zPosition = 1000 // Make logo be the top visible layer
         logoSprite.xScale = 0.6 // Scale width to 60%
         logoSprite.yScale = 0.6 // Scale height to 60%
         cameraNode.addChild(logoSprite)
-        
+
+        // Display the reason for game over
+        let reasonLabel = SKLabelNode(text: reason)
+        reasonLabel.fontSize = 22
+        reasonLabel.fontColor = .lightGray
+        reasonLabel.zPosition = 1000 // Ensure top visibility
+        reasonLabel.fontName = "Arial-BoldMT" // Use bold font
+        reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
+        cameraNode.addChild(reasonLabel)
+
         // Save the current score
         let finalScore = score
-        
-        // Reset the score display (but keep the score variable intact for now)
-        scoreLabel.text = "\(score)"
-        
-        // Add Game Over text
-        let gameOverLabel = SKLabelNode(text: "Game Over!")
-        gameOverLabel.fontSize = 48
-        gameOverLabel.zPosition = 1000 // Make text be top visible layer
-        gameOverLabel.fontColor = .red
-        gameOverLabel.fontName = "Arial-BoldMT" // Use bold font
-        gameOverLabel.position = CGPoint(x: 0, y: 90) // Center on screen
-        cameraNode.addChild(gameOverLabel)
 
         // Display Final Score
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
         finalScoreLabel.fontSize = 32
         finalScoreLabel.fontColor = .white
-        finalScoreLabel.zPosition = 1000 // Make text be top visible layer
+        finalScoreLabel.zPosition = 1000 // Make text be the top visible layer
         finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
-        finalScoreLabel.position = CGPoint(x: 0, y: 60) // Positioned just below the "Game Over" text
+        finalScoreLabel.position = CGPoint(x: 0, y: 30) // Positioned just below the reason text
         cameraNode.addChild(finalScoreLabel)
 
         // Display "Tap to Restart" message
         let restartLabel = SKLabelNode(text: "Tap to Restart")
-        restartLabel.fontSize = 28
-        restartLabel.fontColor = .yellow
-        restartLabel.zPosition = 1000 // Make text be top visible layer
+        restartLabel.fontSize = 18
+        restartLabel.fontColor = .white
+        restartLabel.zPosition = 1000 // Make text be the top visible layer
         restartLabel.fontName = "Arial" // Use bold font
-        restartLabel.position = CGPoint(x: 0, y: -10) // Positioned below the final score
+        restartLabel.position = CGPoint(x: 0, y: -350) // Positioned below the final score
         cameraNode.addChild(restartLabel)
 
         // Pause the scene to stop further actions

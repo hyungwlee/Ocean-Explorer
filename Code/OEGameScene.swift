@@ -1380,16 +1380,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Display Final Score
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
-        finalScoreLabel.fontSize = 32
+        finalScoreLabel.fontSize = 38
         finalScoreLabel.fontColor = .white
         finalScoreLabel.zPosition = 1000 // Make text be the top visible layer
         finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
-        finalScoreLabel.position = CGPoint(x: 0, y: 30) // Positioned just below the reason text
+        finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
         cameraNode.addChild(finalScoreLabel)
 
         // Display "Tap to Restart" message
         let restartLabel = SKLabelNode(text: "Tap to Restart")
-        restartLabel.fontSize = 18
+        restartLabel.fontSize = 20
         restartLabel.fontColor = .white
         restartLabel.zPosition = 1000 // Make text be the top visible layer
         restartLabel.fontName = "Arial" // Use bold font

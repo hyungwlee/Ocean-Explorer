@@ -947,7 +947,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Normal" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3.5..<5.5))
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4..<5.5))
                 let spawn = SKAction.run { [weak self] in
                     let enemyType = Int.random(in: 0..<8)
                     if enemyType == 7 {
@@ -963,7 +963,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Jellyfish" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4..<5.5) - CGFloat(score) / 20)
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3.5..<5.5))
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnJellyfish(in: lane)
                 }
@@ -974,7 +974,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
 
             if lane.laneType == "Long" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4.5..<5.5) - CGFloat(score) / 20)
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4.5..<5.5))
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnLongEnemy(in: lane)
                 }

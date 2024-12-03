@@ -890,17 +890,34 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
     }
     
-    func warn(in lane: Lane) {
+//    func warn(in lane: Lane) {
+//        let warningLabel = SKLabelNode()
+//        warningLabel.fontColor = .red
+//        warningLabel.text = "WARNING"
+//        warningLabel.fontSize = 30
+//        warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
+//        addChild(warningLabel)
+//        let wait = SKAction.wait(forDuration: 1.5)
+//        let removeWarning = SKAction.removeFromParent()
+//        warningLabel.run(SKAction.sequence([wait, removeWarning]))
+//    }
+    
+    func warn(in lane: Lane, completion: @escaping () -> Void) {
         let warningLabel = SKLabelNode()
         warningLabel.fontColor = .red
         warningLabel.text = "WARNING"
         warningLabel.fontSize = 30
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
         addChild(warningLabel)
-        let wait = SKAction.wait(forDuration: 3.0)
+        let wait = SKAction.wait(forDuration: 1.5)
         let removeWarning = SKAction.removeFromParent()
-        warningLabel.run(SKAction.sequence([wait, removeWarning]))
+        let sequence = SKAction.sequence([wait, removeWarning])
+        // Run the sequence and trigger the completion block
+        warningLabel.run(sequence) {
+            completion()
+        }
     }
+
         
     func startSpawning(lanes: [Lane]) {
       
@@ -923,14 +940,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             if lane.laneType == "Eel" {
                 colorLane(in: lane)
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 12...20))
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 8...10))
                 let warn = SKAction.run { [weak self] in
-                    self?.warn(in: lane)
+                    self?.warn(in: lane) {
+                        // Trigger spawn after warning is completed
+                        self?.spawnEel(in: lane)
+                    }
                 }
-                let spawn = SKAction.run { [weak self] in
-                    self?.spawnEel(in: lane)
-                }
-                let sequence = SKAction.sequence([wait, warn, spawn])
+                let sequence = SKAction.sequence([wait, warn])
                 let repeatAction = SKAction.repeatForever(sequence)
                 
                 run(repeatAction)

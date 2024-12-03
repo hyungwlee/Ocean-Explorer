@@ -12,7 +12,8 @@ struct PhysicsCategory {
     static let box: UInt32 = 0b1       // 1
     static let enemy: UInt32 = 0b10    // 2
     static let bubble: UInt32 = 0b100  // 4
-    static let shell: UInt32 = 0b1000
+    static let shell: UInt32 = 0b1000  // 8
+    static let GoldBubble: UInt32 = 0b10000  // 16
 }
 
 struct Lane {
@@ -1120,17 +1121,29 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {
-        
-        // Create the bubble asset
-        let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
-        bubble.size = CGSize(width: 35, height: 35) // Adjust size as needed
-        bubble.alpha = 0.75 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
-        bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
-        bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
+        // Determine if the bubble should be a GoldBubble
+        let isGoldBubble = Int.random(in: 0..<100) < 10 // Adjust as needed the < XX is % spawn rate
+
+        // Create the bubble (GoldBubble or regular Bubble)
+        let bubble: SKSpriteNode
+        if isGoldBubble {
+            bubble = SKSpriteNode(imageNamed: "GoldBubble") // GoldBubble asset
+            bubble.size = CGSize(width: 42, height: 42) // Larger for GoldBubble
+            bubble.alpha = 0.90
+            bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
+            bubble.physicsBody?.categoryBitMask = PhysicsCategory.GoldBubble // Ensure this is correct
+        } else {
+            bubble = SKSpriteNode(imageNamed: "Bubble") // Regular bubble asset
+            bubble.size = CGSize(width: 38, height: 38)
+            bubble.alpha = 0.75
+            bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
+            bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
+        }
+
         bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
         bubble.physicsBody?.isDynamic = false
-        
+
         // If this is the first bubble, set a fixed position
         if firstBubble == nil {
             let fixedRow = 3
@@ -1162,7 +1175,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Set the bubble position
             bubble.position = positionFor(row: randomRow, column: randomColumn)
         }
-        
+
         addChild(bubble)
     }
     
@@ -1170,13 +1183,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create the arrow
         arrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
         arrow?.position = CGPoint(x: bubble.position.x - 35, y: bubble.position.y - 35) // Adjust position
-        arrow?.zPosition = 1
+        arrow?.zPosition = 1000
         addChild(arrow!)
         
         // Create the text label
-        bubbleText = SKLabelNode(text: "Collect bubbles to increase air!")
+        bubbleText = SKLabelNode(text: "Collect Bubbles to Increase Air!")
         bubbleText?.fontName = "SF Mono"
-        bubbleText?.fontSize = 25
+        bubbleText?.fontSize = 20
         bubbleText?.fontColor = .red
         bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 70)
         bubbleText?.zPosition = 1
@@ -1267,23 +1280,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // Function to increase air by 10 when player gets bubble
-    func increaseAir() {
+    // Function to increase air by a specific amount
+    func increaseAir(by amount: Int) {
         guard !isGameOver else { return }
-        
-        if airAmount < 30 {
-            airAmount += 5
-            if airAmount > 30 {
-                airAmount = 30 // Cap the air at 30
-            }
-            airLabel.text = "\(airAmount)"
+
+        airAmount += amount
+        if airAmount > 30 {
+            airAmount = 30 // Cap the air at 30
         }
+        airLabel.text = "\(airAmount)"
     }
     
     func spawnTemporaryArrow() {
         // Create the temporary arrow
         let temporaryArrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
         temporaryArrow.size = CGSize(width: 50, height: 50) // Adjust size as needed
+        temporaryArrow.zPosition = 1000
         temporaryArrow.position = CGPoint(x: airIcon.position.x - 50, y: airIcon.position.y - 50)
         
         // Add the arrow to the scene
@@ -1299,7 +1311,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         temporaryArrow.run(sequence)
     }
 
-    
     // Handles player contact with bubbles, enemies, and shells
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
@@ -1316,7 +1327,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Handle contact with bubbles
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.bubble) ||
            (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
-            increaseAir()
+            increaseAir(by: 5) // Regular bubble increases air by 5
             
             // Check which body is the bubble
             let bubbleNode: SKNode
@@ -1335,6 +1346,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 arrow?.removeFromParent()
                 bubbleText?.removeFromParent()
             }
+        }
+        
+        // Handle contact with GoldBubble
+        if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.GoldBubble) ||
+           (bodyA.categoryBitMask == PhysicsCategory.GoldBubble && bodyB.categoryBitMask == PhysicsCategory.box) {
+            increaseAir(by: 30) // GoldBubble increases air by 30
+            
+            // Check which body is the GoldBubble
+            let goldBubbleNode: SKNode
+            if bodyA.categoryBitMask == PhysicsCategory.GoldBubble {
+                goldBubbleNode = bodyA.node!
+            } else {
+                goldBubbleNode = bodyB.node!
+            }
+            
+            // Remove the GoldBubble from the scene
+            goldBubbleNode.removeFromParent()
         }
         
         // Handle contact with shells

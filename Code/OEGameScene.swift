@@ -1485,7 +1485,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Player is not on a rock, trigger death logic
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             if !self.isGameOver && self.isPlayerOnRock == false {
-                self.gameOver()
+                self.gameOver(reason: "You burned to death underwater! Wait...")
             }
         }
     }

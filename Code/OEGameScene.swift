@@ -12,9 +12,10 @@ struct PhysicsCategory {
     static let box: UInt32 = 0b1       // 1
     static let enemy: UInt32 = 0b10    // 2
     static let bubble: UInt32 = 0b100  // 4
-    static let shell: UInt32 = 0b1000
-    static let rock: UInt32 = 0b10000
-    static let lava: UInt32 = 0b100000
+    static let shell: UInt32 = 0b1000  // 8
+    static let GoldBubble: UInt32 = 0b10000  // 16
+    static let rock: UInt32 = 0b100000 // 32
+    static let lava: UInt32 = 0b1000000 // 64
 }
 
 struct Lane {
@@ -487,7 +488,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 //
 //        if characterAboveThreshold {
 //            // Move the camera up to match the character's y position while maintaining continuous movement
-//            cameraNode.position.y = box.position.y 
+//            cameraNode.position.y = box.position.y
 //        }
 //
 //        // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
@@ -538,7 +539,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Game over if the character falls below the camera's view
         if box.position.y < cameraNode.position.y - size.height / 2 {
-            gameOver()
+            gameOver(reason: "You sank into the depths and disappeared!")
         }
         
         super.update(currentTime)
@@ -750,7 +751,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             for _ in i...i + numberOfEnemyRows {
-                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight 
+                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
                 let leftStart = CGPoint(x: -size.width, y: newYPosition)
                 let rightStart = CGPoint(x: size.width, y: newYPosition)
                 
@@ -789,7 +790,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
              */
         }
+        // Update global lanes with new Lanes
+        lanes.append(contentsOf: newLanes)
+        
+        // Start spawning lanes
         startSpawning(lanes: newLanes)
+    }
+    
+    // Returns current Lane Type based on posistion of thing passed int (bubble)
+    func    currentLaneType(position: CGPoint) -> String? {
+        for lane in lanes {
+            if position.y >= lane.startPosition.y && position.y < lane.startPosition.y + cellHeight {
+                print(lane.laneType)
+                return lane.laneType
+            }
+        }
+        return nil // Return nil if no lane matches
     }
 
     func removeAllGestureRecognizers() {
@@ -933,17 +949,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
     }
     
-    func warn(in lane: Lane) {
+    func warn(in lane: Lane, completion: @escaping () -> Void) {
+
         let warningLabel = SKLabelNode()
         warningLabel.fontColor = .red
         warningLabel.text = "WARNING"
         warningLabel.fontSize = 30
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
         addChild(warningLabel)
-        let wait = SKAction.wait(forDuration: 3.0)
+        let wait = SKAction.wait(forDuration: 1.0)
         let removeWarning = SKAction.removeFromParent()
-        warningLabel.run(SKAction.sequence([wait, removeWarning]))
+        let sequence = SKAction.sequence([wait, removeWarning])
+        // Run the sequence and trigger the completion block
+        warningLabel.run(sequence) {
+            completion()
+        }
     }
+
         
     func startSpawning(lanes: [Lane]) {
       
@@ -966,14 +988,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             if lane.laneType == "Eel" {
                 colorLane(in: lane)
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 12...20))
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 7...10))
                 let warn = SKAction.run { [weak self] in
-                    self?.warn(in: lane)
+                    self?.warn(in: lane) {
+                        // Trigger spawn after warning is completed
+                        self?.spawnEel(in: lane)
+                    }
                 }
-                let spawn = SKAction.run { [weak self] in
-                    self?.spawnEel(in: lane)
-                }
-                let sequence = SKAction.sequence([wait, warn, spawn])
+                let sequence = SKAction.sequence([wait, warn])
                 let repeatAction = SKAction.repeatForever(sequence)
                 
                 run(repeatAction)
@@ -1057,13 +1079,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         laneColor.alpha = 0.5
         laneColor.zPosition = 0
         addChild(laneColor)
-        print("Lane position: \(lane.startPosition.y)")
+//        print("Lane position: \(lane.startPosition.y)")
     }
     
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
         let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
-        shell.size = CGSize(width: 45, height: 45) // Adjust size as needed
+        shell.size = CGSize(width: 38, height: 38) // Adjust size as needed
         shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         shell.physicsBody = SKPhysicsBody(circleOfRadius: shell.size.width / 2.2)
         shell.physicsBody?.categoryBitMask = PhysicsCategory.shell
@@ -1179,17 +1201,29 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {
-        
-        // Create the bubble asset
-        let bubble = SKSpriteNode(imageNamed: "Bubble") // Use your bubble asset
-        bubble.size = CGSize(width: 35, height: 35) // Adjust size as needed
-        bubble.alpha = 0.75 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
-        bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
-        bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
+        // Determine if the bubble should be a GoldBubble
+        let isGoldBubble = Int.random(in: 0..<100) < 10 // Adjust as needed the < XX is % spawn rate
+
+        // Create the bubble (GoldBubble or regular Bubble)
+        let bubble: SKSpriteNode
+        if isGoldBubble {
+            bubble = SKSpriteNode(imageNamed: "GoldBubble") // GoldBubble asset
+            bubble.size = CGSize(width: 38, height: 38) // Larger for GoldBubble
+            bubble.alpha = 0.90
+            bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
+            bubble.physicsBody?.categoryBitMask = PhysicsCategory.GoldBubble // Ensure this is correct
+        } else {
+            bubble = SKSpriteNode(imageNamed: "Bubble") // Regular bubble asset
+            bubble.size = CGSize(width: 35, height: 35)
+            bubble.alpha = 0.75
+            bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
+            bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
+        }
+
         bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
         bubble.physicsBody?.isDynamic = false
-        
+
         // If this is the first bubble, set a fixed position
         if firstBubble == nil {
             let fixedRow = 3
@@ -1215,13 +1249,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let playableRowRange = min...max
             
             // Now get a random row and column for the bubble to spawn in
-            let randomRow = Int.random(in: playableRowRange)
+            var randomRow = Int.random(in: playableRowRange)
             let randomColumn = Int.random(in: playableColumnRange)
             
             // Set the bubble position
             bubble.position = positionFor(row: randomRow, column: randomColumn)
+            
+            var bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
+            while bubbleLaneType == "eel" {
+                randomRow += 1
+                bubble.position = positionFor(row: randomRow, column: randomColumn)
+                bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
+            }
         }
-        
+
         addChild(bubble)
     }
     
@@ -1229,13 +1270,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create the arrow
         arrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
         arrow?.position = CGPoint(x: bubble.position.x - 35, y: bubble.position.y - 35) // Adjust position
-        arrow?.zPosition = 1
+        arrow?.zPosition = 1000
         addChild(arrow!)
         
         // Create the text label
-        bubbleText = SKLabelNode(text: "Collect bubbles to increase air!")
+        bubbleText = SKLabelNode(text: "Collect Bubbles to Increase Air!")
         bubbleText?.fontName = "SF Mono"
-        bubbleText?.fontSize = 25
+        bubbleText?.fontSize = 20
         bubbleText?.fontColor = .red
         bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 70)
         bubbleText?.zPosition = 1
@@ -1322,27 +1363,26 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airAmount -= 1
             airLabel.text = "\(airAmount)"
         } else {
-            gameOver()
+            gameOver(reason: "Out of air! The depths claimed you.")
         }
     }
     
-    // Function to increase air by 10 when player gets bubble
-    func increaseAir() {
+    // Function to increase air by a specific amount
+    func increaseAir(by amount: Int) {
         guard !isGameOver else { return }
-        
-        if airAmount < 30 {
-            airAmount += 5
-            if airAmount > 30 {
-                airAmount = 30 // Cap the air at 30
-            }
-            airLabel.text = "\(airAmount)"
+
+        airAmount += amount
+        if airAmount > 30 {
+            airAmount = 30 // Cap the air at 30
         }
+        airLabel.text = "\(airAmount)"
     }
     
     func spawnTemporaryArrow() {
         // Create the temporary arrow
         let temporaryArrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
         temporaryArrow.size = CGSize(width: 50, height: 50) // Adjust size as needed
+        temporaryArrow.zPosition = 1000
         temporaryArrow.position = CGPoint(x: airIcon.position.x - 50, y: airIcon.position.y - 50)
         
         // Add the arrow to the scene
@@ -1357,7 +1397,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Run the sequence on the arrow
         temporaryArrow.run(sequence)
     }
-
     
     // Handles player contact with bubbles, enemies, shells, and rocks
     func didBegin(_ contact: SKPhysicsContact) {
@@ -1368,14 +1407,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isGameOver {
-                gameOver()
+                gameOver(reason: "A sea creature stopped your adventure!")
             }
         }
         
         // Handle contact with bubbles
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.bubble) ||
            (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
-            increaseAir()
+            increaseAir(by: 5) // Regular bubble increases air by 5
             
             // Check which body is the bubble
             let bubbleNode: SKNode
@@ -1394,6 +1433,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 arrow?.removeFromParent()
                 bubbleText?.removeFromParent()
             }
+        }
+        
+        // Handle contact with GoldBubble
+        if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.GoldBubble) ||
+           (bodyA.categoryBitMask == PhysicsCategory.GoldBubble && bodyB.categoryBitMask == PhysicsCategory.box) {
+            increaseAir(by: 30) // GoldBubble increases air by 30
+            
+            // Check which body is the GoldBubble
+            let goldBubbleNode: SKNode
+            if bodyA.categoryBitMask == PhysicsCategory.GoldBubble {
+                goldBubbleNode = bodyA.node!
+            } else {
+                goldBubbleNode = bodyB.node!
+            }
+            
+            // Remove the GoldBubble from the scene
+            goldBubbleNode.removeFromParent()
         }
         
         // Handle contact with shells
@@ -1457,59 +1513,57 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
-    func gameOver() {
+    func gameOver(reason: String) {
+
         isGameOver = true
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
-        
-        // Create semi-transparent black box
-        let backgroundBox = SKShapeNode(rectOf: CGSize(width: size.width, height: 85))
-        backgroundBox.position = CGPoint(x: 0, y: 92) // Adjust position as needed
+
+        // Create semi-transparent black background
+        let backgroundBox = SKShapeNode(rectOf: CGSize(width: 1000, height: 1000))
+        backgroundBox.position = CGPoint(x: 0, y: 0) // Centered on screen
         backgroundBox.fillColor = .black
-        backgroundBox.alpha = 0.20 // Set transparency
+        backgroundBox.alpha = 1.00 // Set full opacity
         backgroundBox.zPosition = 999 // Ensure it is behind the text but above other nodes
         cameraNode.addChild(backgroundBox)
-        
+
         // Add the game logo
         let logoTexture = SKTexture(imageNamed: "Logo")
         let logoSprite = SKSpriteNode(texture: logoTexture)
-        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the "Game Over" text
-        logoSprite.zPosition = 1000 // Make logo be top visible layer
+        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
+        logoSprite.zPosition = 1000 // Make logo be the top visible layer
         logoSprite.xScale = 0.6 // Scale width to 60%
         logoSprite.yScale = 0.6 // Scale height to 60%
         cameraNode.addChild(logoSprite)
-        
+
+        // Display the reason for game over
+        let reasonLabel = SKLabelNode(text: reason)
+        reasonLabel.fontSize = 22
+        reasonLabel.fontColor = .lightGray
+        reasonLabel.zPosition = 1000 // Ensure top visibility
+        reasonLabel.fontName = "Arial-BoldMT" // Use bold font
+        reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
+        cameraNode.addChild(reasonLabel)
+
         // Save the current score
         let finalScore = score
-        
-        // Reset the score display (but keep the score variable intact for now)
-        scoreLabel.text = "\(score)"
-        
-        // Add Game Over text
-        let gameOverLabel = SKLabelNode(text: "Game Over!")
-        gameOverLabel.fontSize = 48
-        gameOverLabel.zPosition = 1000 // Make text be top visible layer
-        gameOverLabel.fontColor = .red
-        gameOverLabel.fontName = "Arial-BoldMT" // Use bold font
-        gameOverLabel.position = CGPoint(x: 0, y: 90) // Center on screen
-        cameraNode.addChild(gameOverLabel)
 
         // Display Final Score
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
-        finalScoreLabel.fontSize = 32
+        finalScoreLabel.fontSize = 38
         finalScoreLabel.fontColor = .white
-        finalScoreLabel.zPosition = 1000 // Make text be top visible layer
+        finalScoreLabel.zPosition = 1000 // Make text be the top visible layer
         finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
-        finalScoreLabel.position = CGPoint(x: 0, y: 60) // Positioned just below the "Game Over" text
+        finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
         cameraNode.addChild(finalScoreLabel)
 
         // Display "Tap to Restart" message
         let restartLabel = SKLabelNode(text: "Tap to Restart")
-        restartLabel.fontSize = 28
-        restartLabel.fontColor = .yellow
-        restartLabel.zPosition = 1000 // Make text be top visible layer
+        restartLabel.fontSize = 20
+        restartLabel.fontColor = .white
+        restartLabel.zPosition = 1000 // Make text be the top visible layer
         restartLabel.fontName = "Arial" // Use bold font
-        restartLabel.position = CGPoint(x: 0, y: -10) // Positioned below the final score
+        restartLabel.position = CGPoint(x: 0, y: -350) // Positioned below the final score
         cameraNode.addChild(restartLabel)
 
         // Pause the scene to stop further actions

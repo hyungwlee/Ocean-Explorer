@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Group 17015.png",
+      "filename" : "ROCK.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Group 17015@2x.png",
+      "filename" : "ROCK 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Group 17015@3x.png",
+      "filename" : "ROCK 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

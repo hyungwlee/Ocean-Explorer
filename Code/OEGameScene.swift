@@ -13,6 +13,8 @@ struct PhysicsCategory {
     static let enemy: UInt32 = 0b10    // 2
     static let bubble: UInt32 = 0b100  // 4
     static let shell: UInt32 = 0b1000
+    static let rock: UInt32 = 0b10000
+    static let lava: UInt32 = 0b100000
 }
 
 struct Lane {
@@ -20,46 +22,60 @@ struct Lane {
     let endPosition: CGPoint
     let direction: CGVector
     let speed: CGFloat
-    let laneType: String // Empty, Normal, Tutorial, Eel, Pufferfish, Long, or Jelly
+    let laneType: String // Empty, Spike, Tutorial, Eel, Pufferfish, Shark, Jellyfish, or Lava
 }
 
 // Collection of easy sets of lanes
 let easySets: [[String]] = [
+    ["Lava"],
     ["Jellyfish", "Jellyfish", "Jellyfish"],
-    ["Jellyfish", "Long", "Jellyfish"],
+    ["Jellyfish", "Shark", "Jellyfish"],
     ["Jellyfish"],
-    ["Long"],
+    ["Shark"],
     ["Jellyfish"],
-    ["Jellyfish", "Normal"],
+    ["Jellyfish", "Spike"],
     ["Jellyfish", "Jellyfish"],
     ["Eel"],
     ["Eel", "Jellyfish"],
-    ["Jellyfish", "Normal", "Long"],
-    ["Normal", "Jellyfish", "Jellyfish"]
+    ["Jellyfish", "Spike", "Shark"],
+    ["Spike", "Jellyfish", "Jellyfish"],
+    ["Lava", "Lava", "Lava"],
+    ["Lava", "Lava"],
+    ["Lava", "Lava", "Jellyfish"],
 ]
 
 // Collection of medium sets of lanes
 let mediumSets: [[String]] = [
     ["Eel", "Eel", "Jellyfish"],
-    ["Long", "Long", "Normal"],
+    ["Shark", "Shark", "Spike"],
     ["Jellyfish", "Jellyfish", "Eel", "Eel"],
-    ["Normal", "Jellyfish", "Jellyfish", "Jellyfish", "Jellyfish"],
-    ["Long", "Normal", "Long"],
-    ["Normal", "Jellyfish", "Jellyfish", "Normal"],
-    ["Jellyfish", "Long", "Jellyfish", "Jellyfish", "Long"],
-    ["Normal", "Eel", "Jellyfish", "Long"],
-    ["Eel", "Normal", "Eel"]
+    ["Spike", "Jellyfish", "Jellyfish", "Jellyfish", "Jellyfish"],
+    ["Shark", "Spike", "Shark"],
+    ["Spike", "Jellyfish", "Jellyfish", "Spike"],
+    ["Jellyfish", "Shark", "Jellyfish", "Jellyfish", "Shark"],
+    ["Spike", "Eel", "Jellyfish", "Shark"],
+    ["Eel", "Spike", "Eel"],
+    ["Lava", "Lava", "Lava", "Lava", "Lava", "Lava", "Lava"],
+    ["Jellyfish", "Spike", "Spike", "Jellyfish", "Lava", "Lava"],
+    ["Lava", "Lava", "Lava", "Jellyfish", "Jellyfish"],
+    ["Jellyfish", "Jellyfish", "Jellyfish", "Lava", "Lava"],
+    ["Spike", "Jellyfish", "Shark", "Lava", "Lava"]
 ]
 
 // Collection of hard sets of lanes
 let hardSets: [[String]] = [
-    ["Jellyfish", "Jellyfish", "Normal", "Eel", "Eel"],
-    ["Normal", "Eel", "Eel", "Eel"],
-    ["Eel", "Long", "Jellyfish", "Jellyfish", "Eel"],
-    ["Jellyfish", "Normal", "Normal", "Long", "Jellyfish", "Jellyfish", "Jellyfish", "Jellyfish"],
-    ["Jellyfish", "Jellyfish", "Normal", "Eel", "Eel", "Eel", "Long"],
-    ["Jellyfish", "Normal", "Jellyfish", "Normal", "Normal", "Long", "Jellyfish", "Eel", "Jellyfish"],
-    ["Normal", "Pufferfish", "Normal"]
+    ["Jellyfish", "Jellyfish", "Spike", "Eel", "Eel"],
+    ["Spike", "Eel", "Eel", "Eel"],
+    ["Eel", "Shark", "Jellyfish", "Jellyfish", "Eel"],
+    ["Jellyfish", "Spike", "Spike", "Shark", "Jellyfish", "Jellyfish", "Jellyfish", "Jellyfish"],
+    ["Jellyfish", "Jellyfish", "Spike", "Eel", "Eel", "Eel", "Shark"],
+    ["Jellyfish", "Spike", "Jellyfish", "Spike", "Spike", "Shark", "Jellyfish", "Eel", "Jellyfish"],
+    ["Spike", "Pufferfish", "Spike"],
+    ["Eel", "Spike", "Eel", "Lava", "Lava", "Lava", "Spike"],
+    ["Spike", "Jellyfish", "Jellyfish", "Jellyfish", "Shark", "Lava", "Lava"],
+    ["Jellyfish", "Jellyfish", "Eel", "Eel", "Jellyfish", "Eel", "Eel", "Eel"],
+    ["Lava", "Lava", "Lava", "Lava", "Jellyfish", "Jellyfish"],
+    ["Jellyfish", "Spike", "Jellyfish", "Spike", "Lava", "Lava", "Lava", "Lava", "Shark", "Lava", "Lava", "Lava", "Lava"]
 ]
     
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
@@ -70,6 +86,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     let gridSize = CGSize(width: 50, height: 50)
     var backgroundTiles: [SKSpriteNode] = []
   
+    // Check if player on rock
+    var isPlayerOnRock: Bool = false
+    var currentRock: OERockNode? = nil
+    var lastRockPosition: CGPoint? = nil
+
     // Score properties
     var score = 0
     var scoreDisplayed = 0
@@ -114,6 +135,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         self.context = context
         super.init(size: size)
 
+        isPlayerOnRock = false
+        currentRock = nil
+        
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
         self.camera = cameraNode
@@ -159,9 +183,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
                 if i == 6 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Long"))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Shark"))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Tutorial"))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Jellyfish"))
                 }
                 yPositionLanes = yPosition
                 i += 1
@@ -289,7 +313,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 let enemySizeChance = Int.random(in: 0...4)
                 if enemySizeChance == 0 {
-                    enemySize = "Long"
+                    enemySize = "Shark"
                     enemySpeed = CGFloat.random(in: 10..<13)
                 }
                 else if enemySizeChance == 1 {
@@ -297,7 +321,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     enemySpeed = CGFloat.random(in: 8.5..<11.5)
                 }
                 else {
-                    enemySize = "Normal"
+                    enemySize = "Spike"
                     enemySpeed = CGFloat.random(in: 7..<10)
                 }
                 
@@ -335,7 +359,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Set up physics world contact delegate
         physicsWorld.contactDelegate = self
         
-        //drawGridLines()
+        // drawGridLines()
         
         // Start timed enemy spawning
         startSpawning(lanes: lanes)
@@ -516,6 +540,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if box.position.y < cameraNode.position.y - size.height / 2 {
             gameOver()
         }
+        
+        super.update(currentTime)
+
+        // Sync player movement with rock while they are on it
+        if let rock = currentRock {
+            box.position.x = rock.position.x // Follow the rock horizontally
+        }
     }
 
     func updateBackgroundTiles() {
@@ -542,7 +573,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let y = CGFloat(row) * cellHeight + cellHeight / 2
         return CGPoint(x: x, y: y)
     }
-/*
+
+    /*
     func drawGridLines() {
         // Horizontal lines
         for row in 0...numberOfRows {
@@ -613,8 +645,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             addChild(verticalLine)
         }
     }
-    
-*/
+    */
+
     func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
         let row = Int(position.y / cellHeight)
         let column = Int(position.x / cellWidth)
@@ -732,7 +764,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     laneSpeed = 0.0
                 }
                 else if eelSpawn > 16 {
-                    laneType = "Long"
+                    laneType = "Shark"
                     laneSpeed = CGFloat.random(in: 10..<13)
                 }
                 else if eelSpawn > 12 {
@@ -740,7 +772,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     laneSpeed = CGFloat.random(in: 8.5..<11.5)
                 }
                 else {
-                    laneType = "Normal"
+                    laneType = "Spike"
                     laneSpeed = CGFloat.random(in: 7..<10)
                 }
                 
@@ -889,6 +921,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
     }
     
+    func spawnLava(in lane: Lane) {
+        let lava = OELavaNode(size: CGSize(width: size.width * 2, height: cellHeight))
+        addChild(lava)
+        lava.position = CGPoint(x: 0, y: lane.startPosition.y)
+    }
+    
+    func spawnRock(in lane: Lane) {
+        let rock = OERockNode(height: cellHeight + cellHeight / 4)
+        addChild(rock)
+        rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+    }
+    
     func warn(in lane: Lane) {
         let warningLabel = SKLabelNode()
         warningLabel.fontColor = .red
@@ -946,7 +990,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
             
-            if lane.laneType == "Normal" {
+            if lane.laneType == "Spike" {
                 let wait = SKAction.wait(forDuration: CGFloat.random(in: 4..<5.5))
                 let spawn = SKAction.run { [weak self] in
                     let enemyType = Int.random(in: 0..<8)
@@ -973,10 +1017,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
 
-            if lane.laneType == "Long" {
+            if lane.laneType == "Shark" {
                 let wait = SKAction.wait(forDuration: CGFloat.random(in: 4.5..<5.5))
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnLongEnemy(in: lane)
+                }
+                let sequence = SKAction.sequence([spawn, wait])
+                let repeatAction = SKAction.repeatForever(sequence)
+                
+                run(repeatAction)
+            }
+            
+            if lane.laneType == "Lava" {
+                spawnLava(in: lane)
+                let wait = SKAction.wait(forDuration: 4.0)
+                let spawn = SKAction.run { [weak self] in
+                    self?.spawnRock(in: lane)
                 }
                 let sequence = SKAction.sequence([spawn, wait])
                 let repeatAction = SKAction.repeatForever(sequence)
@@ -992,8 +1048,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if lane.laneType == "Empty" {
             laneColor.fillColor = .cyan
         }
-        else {
+        else if lane.laneType == "Eel" {
             laneColor.fillColor = .yellow
+        }
+        else {
+            laneColor.fillColor = .red
         }
         laneColor.alpha = 0.5
         laneColor.zPosition = 0
@@ -1300,7 +1359,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     
-    // Handles player contact with bubbles, enemies, and shells
+    // Handles player contact with bubbles, enemies, shells, and rocks
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB
@@ -1342,8 +1401,62 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
            (bodyA.categoryBitMask == PhysicsCategory.shell && bodyB.categoryBitMask == PhysicsCategory.box) {
             didBeginShellContact(contact)
         }
-    }
+        
+        if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.rock) ||
+            (bodyA.categoryBitMask == PhysicsCategory.rock && bodyB.categoryBitMask == PhysicsCategory.box) {
+            let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock ? contact.bodyA : contact.bodyB
+            if let rock = rockBody.node as? OERockNode {
+                currentRock = rock
+                isPlayerOnRock = true
 
+                // Correctly place the player on top of the rock
+                box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
+                
+                return
+            }
+        } else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
+           (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
+            handleLavaContact()
+        }
+    }
+    
+    func handleLavaContact() {
+        if isPlayerOnRock {
+            // Player is safe on the rock
+            return
+        }
+        
+        // Player is not on a rock, trigger death logic
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if !self.isGameOver && self.isPlayerOnRock == false {
+                self.gameOver()
+            }
+        }
+    }
+    
+    func didEnd(_ contact: SKPhysicsContact) {
+        let collision = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
+
+        if collision == (PhysicsCategory.box | PhysicsCategory.rock) {
+            let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock ? contact.bodyA : contact.bodyB
+            if currentRock == rockBody.node as? OERockNode {
+                currentRock = nil
+                isPlayerOnRock = false
+                
+                guard let box = box else { return }
+                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+            }
+        }
+    }
+    
+    func snapToGrid(position: CGFloat) {
+        
+        guard let box = box else { return }
+        
+        box.snapToGrid(xPosition: position)
+        
+    }
+    
     func gameOver() {
         isGameOver = true
         cameraNode.removeAllActions() // Stop camera movement

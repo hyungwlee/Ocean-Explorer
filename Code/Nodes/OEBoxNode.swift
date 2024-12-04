@@ -17,12 +17,14 @@ class OEBoxNode: SKSpriteNode {
     init(gridSize: CGSize) {
         self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Smiley")
+      
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.485, height: texture.size().height * 0.485))
-        self.zPosition = 1
+        self.zPosition = 2
+
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.categoryBitMask = PhysicsCategory.box
         self.physicsBody?.collisionBitMask = PhysicsCategory.enemy
-        self.physicsBody?.contactTestBitMask = PhysicsCategory.enemy
+        self.physicsBody?.contactTestBitMask = PhysicsCategory.enemy | PhysicsCategory.rock | PhysicsCategory.lava
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -56,4 +58,10 @@ class OEBoxNode: SKSpriteNode {
         
         lastClickTime = currentTime
     }
+    
+    func snapToGrid(xPosition: CGFloat) {
+        let moveAction = SKAction.move(to: CGPoint(x: xPosition, y: self.position.y), duration: 0.01)
+        self.run(moveAction)
+    }
+    
 }

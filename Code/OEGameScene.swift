@@ -464,7 +464,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 //
 //        if characterAboveThreshold {
 //            // Move the camera up to match the character's y position while maintaining continuous movement
-//            cameraNode.position.y = box.position.y 
+//            cameraNode.position.y = box.position.y
 //        }
 //
 //        // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
@@ -719,7 +719,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             for _ in i...i + numberOfEnemyRows {
-                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight 
+                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
                 let leftStart = CGPoint(x: -size.width, y: newYPosition)
                 let rightStart = CGPoint(x: size.width, y: newYPosition)
                 
@@ -758,7 +758,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
              */
         }
+        // Update global lanes with new Lanes
+        lanes.append(contentsOf: newLanes)
+        
+        // Start spawning lanes
         startSpawning(lanes: newLanes)
+    }
+    
+    // Returns current Lane Type based on posistion of thing passed int (bubble)
+    func    currentLaneType(position: CGPoint) -> String? {
+        for lane in lanes {
+            if position.y >= lane.startPosition.y && position.y < lane.startPosition.y + cellHeight {
+                print(lane.laneType)
+                return lane.laneType
+            }
+        }
+        return nil // Return nil if no lane matches
     }
 
     func removeAllGestureRecognizers() {
@@ -890,18 +905,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
     }
     
-//    func warn(in lane: Lane) {
-//        let warningLabel = SKLabelNode()
-//        warningLabel.fontColor = .red
-//        warningLabel.text = "WARNING"
-//        warningLabel.fontSize = 30
-//        warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
-//        addChild(warningLabel)
-//        let wait = SKAction.wait(forDuration: 1.5)
-//        let removeWarning = SKAction.removeFromParent()
-//        warningLabel.run(SKAction.sequence([wait, removeWarning]))
-//    }
-    
     func warn(in lane: Lane, completion: @escaping () -> Void) {
         let warningLabel = SKLabelNode()
         warningLabel.fontColor = .red
@@ -909,7 +912,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         warningLabel.fontSize = 30
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
         addChild(warningLabel)
-        let wait = SKAction.wait(forDuration: 1.5)
+        let wait = SKAction.wait(forDuration: 1.0)
         let removeWarning = SKAction.removeFromParent()
         let sequence = SKAction.sequence([wait, removeWarning])
         // Run the sequence and trigger the completion block
@@ -940,7 +943,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             if lane.laneType == "Eel" {
                 colorLane(in: lane)
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 8...10))
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 7...10))
                 let warn = SKAction.run { [weak self] in
                     self?.warn(in: lane) {
                         // Trigger spawn after warning is completed
@@ -1016,13 +1019,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         laneColor.alpha = 0.5
         laneColor.zPosition = 0
         addChild(laneColor)
-        print("Lane position: \(lane.startPosition.y)")
+//        print("Lane position: \(lane.startPosition.y)")
     }
     
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
         let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
-        shell.size = CGSize(width: 45, height: 45) // Adjust size as needed
+        shell.size = CGSize(width: 38, height: 38) // Adjust size as needed
         shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         shell.physicsBody = SKPhysicsBody(circleOfRadius: shell.size.width / 2.2)
         shell.physicsBody?.categoryBitMask = PhysicsCategory.shell
@@ -1145,13 +1148,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let bubble: SKSpriteNode
         if isGoldBubble {
             bubble = SKSpriteNode(imageNamed: "GoldBubble") // GoldBubble asset
-            bubble.size = CGSize(width: 42, height: 42) // Larger for GoldBubble
+            bubble.size = CGSize(width: 38, height: 38) // Larger for GoldBubble
             bubble.alpha = 0.90
             bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.GoldBubble // Ensure this is correct
         } else {
             bubble = SKSpriteNode(imageNamed: "Bubble") // Regular bubble asset
-            bubble.size = CGSize(width: 38, height: 38)
+            bubble.size = CGSize(width: 35, height: 35)
             bubble.alpha = 0.75
             bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
@@ -1186,11 +1189,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let playableRowRange = min...max
             
             // Now get a random row and column for the bubble to spawn in
-            let randomRow = Int.random(in: playableRowRange)
+            var randomRow = Int.random(in: playableRowRange)
             let randomColumn = Int.random(in: playableColumnRange)
             
             // Set the bubble position
             bubble.position = positionFor(row: randomRow, column: randomColumn)
+            
+            var bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
+            while bubbleLaneType == "eel" {
+                randomRow += 1
+                bubble.position = positionFor(row: randomRow, column: randomColumn)
+                bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
+            }
         }
 
         addChild(bubble)

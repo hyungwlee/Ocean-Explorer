@@ -545,6 +545,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             gameOver(reason: "You sank into the depths and disappeared!")
         }
         
+        if box.position.x > size.width / 2 || box.position.x < -size.width / 2 {
+            gameOver(reason: "You were swept away by the rocks!")
+        }
+        
         super.update(currentTime)
         
         if !isPlayerOnRock && isPlayerOnLava() {

@@ -91,7 +91,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var isPlayerOnRock: Bool = false
     var currentRock: OERockNode? = nil
     var lastRockPosition: CGPoint? = nil
-
+    
+    // Positions of all lava nodes
+    var lavaYPositions: [CGFloat] = []
+    
     // Score properties
     var score = 0
     var scoreDisplayed = 0
@@ -543,7 +546,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         super.update(currentTime)
-
+        
+        if !isPlayerOnRock && isPlayerOnLava() {
+                handleLavaContact()
+            }
+        
         // Sync player movement with rock while they are on it
         if let rock = currentRock {
             box.position.x = rock.position.x // Follow the rock horizontally
@@ -1052,6 +1059,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             if lane.laneType == "Lava" {
                 spawnLava(in: lane)
+                lavaYPositions.append(lane.startPosition.y)
                 let wait = SKAction.wait(forDuration: 4.0)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnRock(in: lane)
@@ -1463,20 +1471,41 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             (bodyA.categoryBitMask == PhysicsCategory.rock && bodyB.categoryBitMask == PhysicsCategory.box) {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock ? contact.bodyA : contact.bodyB
             if let rock = rockBody.node as? OERockNode {
-                currentRock = rock
+                
                 isPlayerOnRock = true
+                print("PLAYER ON ROCK")
+                if isPlayerOnLava() {
+                    print("PLAYER ON LAVA")
+                    handleLavaContact()
+                }
+                
+                currentRock = rock
 
                 // Correctly place the player on top of the rock
                 box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
                 
-                return
             }
         } else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
-           (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
+                    (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
             handleLavaContact()
         }
     }
     
+    func isPlayerOnLava() -> Bool {
+        guard let box = box else { return false }
+        let playerPosition = box.position.y
+        print("PLAYER POSITION: \(playerPosition)")
+        // Check if the player's position overlaps the lava area
+        for lavaPosition in lavaYPositions {
+            print("LAVA POSITION: \(lavaPosition)")
+            if playerPosition > lavaPosition - 5 && playerPosition < lavaPosition + 5 {
+                print("PLAYER ON LAVA")
+                return true
+            }
+        }
+        return false
+    }
+
     func handleLavaContact() {
         if isPlayerOnRock {
             // Player is safe on the rock
@@ -1501,7 +1530,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 isPlayerOnRock = false
                 
                 guard let box = box else { return }
+                
                 snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                
             }
         }
     }

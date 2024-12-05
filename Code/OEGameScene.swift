@@ -16,6 +16,7 @@ struct PhysicsCategory {
     static let GoldBubble: UInt32 = 0b10000  // 16
     static let rock: UInt32 = 0b100000 // 32
     static let lava: UInt32 = 0b1000000 // 64
+    static let seaweed: UInt32 = 0b10000000 // 128
 }
 
 struct Lane {
@@ -874,20 +875,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         moveBox(to: nextPosition)
     }
-
-//    func moveBox(to position: CGPoint) {
-//        if position.y > box?.position.y ?? 0 {
-//            if box?.move(to: position) == 1 {
-//                updateScore()
-//            }
-//        }
-//        else {
-//            box?.move(to: position)
-//        }
-//    }
     
     func moveBox(to position: CGPoint) {
         guard let box else { return }
+        
+        //Check if player is running into seaweed with movement
+        if handleSeaweedContact(nextPosition:  position) {
+            // If true then return and do nothing
+            print("Ran into seaweed")
+            return
+        }
         
         // Set the flag to indicate movement in progress
         isActionInProgress = true
@@ -960,6 +957,36 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
     }
     
+    func spawnSeaweed(in lane: Lane) {
+        // Randomly decide how many seaweed assets to spawn (3 to 5)
+        let numberOfSeaweed = Int.random(in: 1...4)
+        
+        // Exclude the 0 in the middle
+        let validColumns = (-4...4).filter { $0 != 0 }
+        
+        // Randomly select distinct columns for seaweed placement
+        var selectedColumns = Set<Int>()
+        while selectedColumns.count < numberOfSeaweed {
+            if let columnIndex = validColumns.randomElement() {
+                selectedColumns.insert(columnIndex)
+            }
+        }
+        
+        // Spawn seaweed in the selected columns
+        for columnIndex in selectedColumns {
+            
+            //Set size of seaweed
+            let seaweed = OESeaweedNode(size: CGSize(width: 40, height: 40))
+            addChild(seaweed)
+            
+            // Calculate the x-position for the selected column
+            let columnXPosition = (CGFloat(columnIndex) + 0.5) * cellWidth
+            
+            // Use the lane's startPosition y-coordinate for the row
+            seaweed.position = CGPoint(x: columnXPosition, y: lane.startPosition.y)
+        }
+    }
+    
     func warn(in lane: Lane, completion: @escaping () -> Void) {
 
         let warningLabel = SKLabelNode()
@@ -983,6 +1010,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             if lane.laneType == "Empty" {
                 colorLane(in: lane)
+                let spawn = SKAction.run { [weak self] in
+                    self?.spawnSeaweed(in: lane)
+                }
+                run(spawn)
             }
             
             if lane.laneType == "Tutorial" {
@@ -1527,6 +1558,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 self.gameOver(reason: "You burned to death underwater!")
             }
         }
+    }
+    
+    func handleSeaweedContact(nextPosition: CGPoint) -> Bool {
+        
+        // Check for collision with any seaweed node
+        let seaweedNodes = children.filter { $0 is OESeaweedNode }
+        
+        for node in seaweedNodes {
+            if let seaweed = node as? OESeaweedNode {
+                // Use the node's frame to check for intersection
+                if seaweed.frame.contains(nextPosition) {
+                    return true // Collision detected
+                }
+            }
+        }
+        return false // No collision
     }
     
     func didEnd(_ contact: SKPhysicsContact) {

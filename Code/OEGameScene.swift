@@ -1256,11 +1256,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             bubble.position = positionFor(row: randomRow, column: randomColumn)
             
             var bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
-            while bubbleLaneType == "eel" {
+            while bubbleLaneType == "eel" ||  bubbleLaneType == "lava" {
                 randomRow += 1
                 bubble.position = positionFor(row: randomRow, column: randomColumn)
                 bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
             }
+            
         }
 
         addChild(bubble)

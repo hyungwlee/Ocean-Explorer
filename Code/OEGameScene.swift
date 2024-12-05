@@ -977,7 +977,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-        
     func startSpawning(lanes: [Lane]) {
       
         for lane in lanes {
@@ -1125,10 +1124,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let max = currRow + 4
         let playableRowRange = min...max
 
-        let randomRow = Int.random(in: playableRowRange)
+        var randomRow = Int.random(in: playableRowRange)
         let randomColumn = Int.random(in: playableColumnRange)
-
         shell.position = positionFor(row: randomRow, column: randomColumn)
+
+        // Check lane type and ensure it's not "Eel" or "Lava"
+        var shellLaneType = currentLaneType(position: shell.position)?.lowercased()
+        while shellLaneType == "eel" || shellLaneType == "lava" {
+            randomRow += 1
+            shell.position = positionFor(row: randomRow, column: randomColumn)
+            shellLaneType = currentLaneType(position: shell.position)?.lowercased()
+        }
+
         addChild(shell)
     }
 
@@ -1273,9 +1280,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 bubble.position = positionFor(row: randomRow, column: randomColumn)
                 bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
             }
-            
         }
-
         addChild(bubble)
     }
     

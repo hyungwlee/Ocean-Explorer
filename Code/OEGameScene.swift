@@ -729,13 +729,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let leftStart = CGPoint(x: -size.width, y: newYPosition)
                 let rightStart = CGPoint(x: size.width, y: newYPosition)
                 
+                var laneSpeed: CGFloat = 0.0
+                if laneDifficulty[laneSet][lane] == "Lava" {
+                    laneSpeed = CGFloat.random(in: 4...17)
+                } else {
+                    laneSpeed = CGFloat.random(in: 7...13)
+                }
+                
                 // Random directions for lanes
                 laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
-                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7...13), laneType: laneDifficulty[laneSet][lane]))
+                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: laneSpeed, laneType: laneDifficulty[laneSet][lane]))
                 } else {
-                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7...13), laneType: laneDifficulty[laneSet][lane]))
+                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: laneSpeed, laneType: laneDifficulty[laneSet][lane]))
                 }
                 yPositionLanes = newYPosition
                 i += 1
@@ -810,7 +817,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     // Returns current Lane Type based on posistion of thing passed int (bubble)
-    func    currentLaneType(position: CGPoint) -> String? {
+    func currentLaneType(position: CGPoint) -> String? {
         for lane in lanes {
             if position.y >= lane.startPosition.y && position.y < lane.startPosition.y + cellHeight {
                 print(lane.laneType)
@@ -1094,7 +1101,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if lane.laneType == "Lava" {
                 spawnLava(in: lane)
                 lavaYPositions.append(lane.startPosition.y)
-                let wait = SKAction.wait(forDuration: 4.0)
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 2.0..<4.0))
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnRock(in: lane)
                 }

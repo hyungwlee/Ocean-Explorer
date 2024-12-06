@@ -80,6 +80,7 @@ let hardSets: [[String]] = [
     ["Jellyfish", "Spike", "Jellyfish", "Spike", "Lava", "Lava", "Lava", "Lava", "Shark", "Lava", "Lava", "Lava", "Lava"]
 ]
     
+@available(iOS 18.0, *)
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
     weak var context: OEGameContext?
     var box: OEBoxNode?
@@ -95,6 +96,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     // Positions of all lava nodes
     var lavaYPositions: [CGFloat] = []
+    
+    // To keep track of seaweed positions
+    var seaweedPositions: Set<CGPoint> = []
     
     // Score properties
     var score = 0
@@ -810,15 +814,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     // Returns current Lane Type based on posistion of thing passed int (bubble)
-    func    currentLaneType(position: CGPoint) -> String? {
+    func currentLaneType(position: CGPoint) -> String? {
         for lane in lanes {
-            if position.y >= lane.startPosition.y && position.y < lane.startPosition.y + cellHeight {
-                print(lane.laneType)
+            if position.y >= lane.startPosition.y - 3 && position.y < lane.startPosition.y + 3 {
                 return lane.laneType
             }
         }
         return nil // Return nil if no lane matches
     }
+    
+    
 
     func removeAllGestureRecognizers() {
         if let gestureRecognizers = view?.gestureRecognizers {
@@ -979,11 +984,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let seaweed = OESeaweedNode(size: CGSize(width: 40, height: 40))
             addChild(seaweed)
             
+            
             // Calculate the x-position for the selected column
             let columnXPosition = (CGFloat(columnIndex) + 0.5) * cellWidth
             
             // Use the lane's startPosition y-coordinate for the row
             seaweed.position = CGPoint(x: columnXPosition, y: lane.startPosition.y)
+            
+            //Keep track of seaweed spots for bubble and shell placement
+            seaweedPositions.insert(seaweed.position)
         }
     }
     
@@ -1143,30 +1152,33 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let repeatPulsate = SKAction.repeatForever(pulsate)
         shell.run(repeatPulsate)
 
-        let columns = Int(size.width / cellWidth)
-        let playableColumnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
 
         guard let box = box else { return }
 
         let currPosition = gridPosition(for: box.position)
-        let currRow = currPosition.row
+        let playerRow = currPosition.row
+        let playerColumn = currPosition.column
+        
+        let columns = Int(size.width / cellWidth)
+        let columnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
+        let playableColumnRange = columnRange.filter { $0 != playerColumn} //Filter out where the player is so shell can be seen spawning
 
-        let min = currRow - 2
-        let max = currRow + 4
+        let min = playerRow - 2
+        let max = playerRow + 4
         let playableRowRange = min...max
 
         var randomRow = Int.random(in: playableRowRange)
-        let randomColumn = Int.random(in: playableColumnRange)
+        var randomColumn = playableColumnRange.randomElement()!
         shell.position = positionFor(row: randomRow, column: randomColumn)
 
-        // Check lane type and ensure it's not "Eel" or "Lava"
+        // Check lane type and ensure it's not "Eel" or "Lava" and make sure shell not spawning on seaweed
         var shellLaneType = currentLaneType(position: shell.position)?.lowercased()
-        while shellLaneType == "eel" || shellLaneType == "lava" {
+        while shellLaneType == "eel" || shellLaneType == "lava" || seaweedPositions.contains(shell.position) {
             randomRow += 1
+            randomColumn = playableColumnRange.randomElement()!
             shell.position = positionFor(row: randomRow, column: randomColumn)
             shellLaneType = currentLaneType(position: shell.position)?.lowercased()
         }
-
         addChild(shell)
     }
 
@@ -1282,36 +1294,42 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             firstBubble = bubble
             addArrowAndText(to: bubble)
         } else {
-            // Used to find the column range to place the bubble in randomly
-            let columns = Int(size.width / cellWidth)
-            let playableColumnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
             
             // Used to find the row range to place the bubble in randomly
             guard let box = box else { return }
             
             // Getting the current row and column of the box/player using gridPosition function
             let currPosition = gridPosition(for: box.position)
-            let currRow = currPosition.row // This is the current row the player is on
+            let playerRow = currPosition.row // This is the current row the player is on
+            let playerColumn = currPosition.column
+            
+            // Used to find the column range to place the bubble in randomly
+            let columns = Int(size.width / cellWidth)
+            let columnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
+            let playableColumnRange = columnRange.filter {$0 != playerColumn}
             
             // Create a row range for bubble to be placed randomly
-            let min = currRow - 2
-            let max = currRow + 4
+            let min = playerRow - 2
+            let max = playerRow + 4
             let playableRowRange = min...max
             
             // Now get a random row and column for the bubble to spawn in
             var randomRow = Int.random(in: playableRowRange)
-            let randomColumn = Int.random(in: playableColumnRange)
+            var randomColumn = playableColumnRange.randomElement()!
             
             // Set the bubble position
             bubble.position = positionFor(row: randomRow, column: randomColumn)
             
+            // Check if bubble on the lava or eel lane and make sure it doesnt spawn on seaweed
             var bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
-            while bubbleLaneType == "eel" ||  bubbleLaneType == "lava" {
+            while bubbleLaneType == "eel" ||  bubbleLaneType == "lava" || seaweedPositions.contains(bubble.position) {
                 randomRow += 1
+                randomColumn = playableColumnRange.randomElement()!
                 bubble.position = positionFor(row: randomRow, column: randomColumn)
                 bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
             }
         }
+        
         addChild(bubble)
     }
     

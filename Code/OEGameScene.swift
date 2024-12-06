@@ -1178,14 +1178,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 SKAction.run { [weak self] in
                     self?.spawnShell()
                 },
-                SKAction.wait(forDuration: 13) // Shells spawn less frequently
+                SKAction.wait(forDuration: 15) // Shells spawn less frequently
             ])
         )
         let sequence = SKAction.sequence([initialDelay, shellSpawnAction])
         run(sequence, withKey: "spawnShells")
     }
-
-    // Function to increase score by 5 when player collects a shell
+/*
+    // Function to increase score by 5 when player collects a shell **HIDE FOR NOW
     func increaseScoreFromShell() {
         guard !isGameOver else { return }
         
@@ -1203,27 +1203,62 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Run the sequence on the score label
         scoreLabel.run(colorSequence)
     }
-    
-    func showShellNextToScore() {
+*/
+    func shellAnimation() {
         let newShell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
-        newShell.size = CGSize(width: 35, height: 35) // Initial size
+        newShell.size = CGSize(width: 40, height: 40) // Initial size
         newShell.alpha = 0 // Start fully transparent
-        newShell.position = CGPoint(x: scoreLabel.position.x - 40, y: scoreLabel.position.y) // Adjust position next to the score
+
+        // Adjust position more to the left and slightly upwards
+        newShell.position = CGPoint(x: scoreLabel.position.x - 70, y: scoreLabel.position.y + 30)
         newShell.zPosition = scoreLabel.zPosition
 
+        // Define fade-in and enlarge action
         let fadeInAction = SKAction.fadeAlpha(to: 1.0, duration: 0.5) // Fade in over 0.5 seconds
         let enlargeAction = SKAction.scale(to: 1.5, duration: 0.5) // Enlarge over 0.5 seconds
-        let moveToScoreAction = SKAction.move(to: scoreLabel.position, duration: 1.0) // Move to the score position over 1 second
-        let shrinkAction = SKAction.scale(to: 0.1, duration: 1.0) // Shrink over 1 second
+
+        // Pulsating effect (enlarge and shrink repeatedly)
+        let scaleUp = SKAction.scale(to: 1.6, duration: 0.3)
+        let scaleDown = SKAction.scale(to: 1.4, duration: 0.3)
+        let pulsate = SKAction.sequence([scaleUp, scaleDown])
+        let repeatPulsate = SKAction.repeatForever(pulsate)
+
+        // Run pulsating action
+        newShell.run(repeatPulsate, withKey: "pulsateAction")
+
+        // Wait at the top for a set duration before fading out
+        let waitAction = SKAction.wait(forDuration: 2.5) // Duration at the top with pulsating effect
         let fadeOutAction = SKAction.fadeOut(withDuration: 1.0) // Fade out over 1 second
 
-        let appearAction = SKAction.group([fadeInAction, enlargeAction])
-        let moveAndFadeAction = SKAction.group([moveToScoreAction, shrinkAction, fadeOutAction])
-        let removeAction = SKAction.removeFromParent()
-        let sequenceAction = SKAction.sequence([appearAction, moveAndFadeAction, removeAction])
+        // Stop pulsating before fading out
+        let stopPulsating = SKAction.run {
+            newShell.removeAction(forKey: "pulsateAction") // Stop pulsating
+        }
+        let removeAction = SKAction.removeFromParent() // Remove from scene after fade-out
+
+        // Sequence of actions
+        let sequenceAction = SKAction.sequence([
+            fadeInAction,  // Fade in
+            enlargeAction, // Enlarge
+            waitAction,    // Wait while pulsating
+            stopPulsating, // Stop pulsating
+            fadeOutAction, // Fade out
+            removeAction   // Remove the shell node
+        ])
         
         newShell.run(sequenceAction)
         cameraNode.addChild(newShell)
+    }
+
+    //METHOD TO SLOW DOWN CAMERA
+    func slowDownCamera() {
+        // Reduce the speed of the camera
+        let slowDownAction = SKAction.speed(to: 0.5, duration: 0.0) // Instantly slow down
+        let waitAction = SKAction.wait(forDuration: 3.5) // Slow Length (Higher the longer it's slow)
+        let speedUpAction = SKAction.speed(to: 1.0, duration: 0.0) // Revert to original speed
+
+        let sequenceAction = SKAction.sequence([slowDownAction, waitAction, speedUpAction])
+        cameraNode.run(sequenceAction)
     }
 
     func didBeginShellContact(_ contact: SKPhysicsContact) {
@@ -1243,10 +1278,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         shellNode.removeFromParent()
         
         // Show a new shell next to the score
-        showShellNextToScore()
+        shellAnimation()
 
-        // Increase the score
-        increaseScoreFromShell()
+        // Slow down the camera movement
+        slowDownCamera()
     }
 
     // Function to spawn the bubbles randomly in grid spaces

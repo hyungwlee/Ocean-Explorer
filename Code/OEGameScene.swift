@@ -1311,7 +1311,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Create the bubble (GoldBubble or regular Bubble)
         let bubble: SKSpriteNode
-        if isGoldBubble {
+        if isGoldBubble && firstBubble != nil {
             bubble = SKSpriteNode(imageNamed: "GoldBubble") // GoldBubble asset
             bubble.size = CGSize(width: 38, height: 38) // Larger for GoldBubble
             bubble.alpha = 0.90

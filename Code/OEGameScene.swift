@@ -112,6 +112,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var firstBubble: SKSpriteNode? = nil
     var arrow: SKSpriteNode?
     var bubbleText: SKLabelNode?
+    var bubbleTextBackground: SKShapeNode?
     
     // Tapping properties
     var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
@@ -1378,17 +1379,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func addArrowAndText(to bubble: SKSpriteNode) {
         // Create the arrow
         arrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
+        arrow?.size = CGSize(width: 40, height: 40) // Adjust size as needed
         arrow?.position = CGPoint(x: bubble.position.x - 35, y: bubble.position.y - 35) // Adjust position
         arrow?.zPosition = 1000
         addChild(arrow!)
         
         // Create the text label
         bubbleText = SKLabelNode(text: "Collect Bubbles to Increase Air!")
-        bubbleText?.fontName = "SF Mono"
-        bubbleText?.fontSize = 20
-        bubbleText?.fontColor = .red
-        bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 70)
+        bubbleText?.fontName = "Sf_mono"
+        bubbleText?.fontSize = 25
+        bubbleText?.fontColor = .white
+        bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 85)
         bubbleText?.zPosition = 1
+        
+        // Create a background rectangle for the text
+        bubbleTextBackground = SKShapeNode(rectOf: CGSize(width: bubbleText!.frame.width + 20, height: bubbleText!.frame.height + 10), cornerRadius: 10)
+        bubbleTextBackground?.fillColor = .black
+        bubbleTextBackground?.strokeColor = .clear // No border
+        bubbleTextBackground?.position = CGPoint(x: bubbleText!.position.x, y: bubbleText!.position.y + 10)
+        bubbleTextBackground?.zPosition = bubbleText!.zPosition - 1 // Put it behind the text
+
+        // Add the background and the text to the scene
+        addChild(bubbleTextBackground!)
         addChild(bubbleText!)
     }
     
@@ -1541,6 +1553,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 // Remove the arrow and text
                 arrow?.removeFromParent()
                 bubbleText?.removeFromParent()
+                bubbleTextBackground?.removeFromParent()
+                
             }
         }
         

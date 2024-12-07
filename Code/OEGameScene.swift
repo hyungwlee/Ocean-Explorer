@@ -564,7 +564,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         super.update(currentTime)
         
         if !isPlayerOnRock && isPlayerOnLava() && !isPlayerInContactWithAnyRock() && !isPlayerInContactWithAnyRock2() {
-            print("OUCH2")
             handleLavaContact()
         }
         
@@ -1665,7 +1664,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         } else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
                     (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isPlayerOnRock {
-                print("OUCH")
                 handleLavaContact()
 
             }

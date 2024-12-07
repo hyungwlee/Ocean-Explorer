@@ -123,6 +123,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var isGameOver = false
     var lanes: [Lane] = []  // Added this line to define lanes
     var laneDirection = 0
+    var prevLane: Lane? = nil
     
     var playableWidthRange: ClosedRange<CGFloat> {
         return ((-size.width / 2) + cellWidth)...((size.width / 2) - cellWidth)
@@ -1022,11 +1023,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func startSpawning(lanes: [Lane]) {
-      
+        
         for lane in lanes {
             
             if lane.laneType == "Empty" {
                 colorLane(in: lane)
+                
+                // If Lava then empty then don't spawn any seaweed
+                if prevLane?.laneType == "Lava" {
+                    continue
+                }
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnSeaweed(in: lane)
                 }
@@ -1120,6 +1126,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 run(repeatAction)
             }
+            
+            // Set prevLane
+            prevLane = lane
         }
     }
       

@@ -96,9 +96,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var currentRock: OERockNode? = nil
     var currentRock2: OERockNode2? = nil
     var currentRock3: OERockNode3? = nil
-    var lastRockPosition: CGPoint? = nil
     var currentRockZone: String = ""
     var currentLongRockZone: String = ""
+    
+    // Keep track of current latest rock speed and direction
+    var currentRockSpeed: String = ""
     
     // Positions of all lava nodes
     var lavaYPositions: [CGFloat] = []
@@ -128,7 +130,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Game state variable
     var isGameOver = false
     var lanes: [Lane] = []  // Added this line to define lanes
-    var laneDirection = 0
+    var laneDirection: Int = 0
     var prevLane: Lane? = nil
     
     var playableWidthRange: ClosedRange<CGFloat> {
@@ -158,6 +160,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         currentRock3 = nil
         currentRockZone = ""
         currentLongRockZone = ""
+        
+        // Randomize initial rock speed
+        if Int.random(in: 0...1) == 0 {
+            currentRockSpeed = "Slow"
+        } else {
+            currentRockSpeed = "Fast"
+        }
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
@@ -287,13 +296,56 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
                 
-                // Random directions for lanes
-                laneDirection = Int.random(in: 0..<2)
+                var laneSpeed: CGFloat = 0
+                
+                // For lava lanes have to either switch direction, speed, or both each time
+                if laneDifficulty[laneSet][lane] == "Lava" {
+                    
+                    let choice = Int.random(in: 0...2)
+                    
+                    // Switch direction
+                    if choice == 0 {
+                        laneDirection = 1 - laneDirection
+                        if currentRockSpeed == "Slow" {
+                            laneSpeed = CGFloat.random(in: 13...16)
+                        } else {
+                            laneSpeed = CGFloat.random(in: 4...6.5)
+                        }
+                    }
+                    
+                    // Switch speed
+                    else if choice == 1 {
+                        if currentRockSpeed == "Slow" {
+                            laneSpeed = CGFloat.random(in: 4...6.5)
+                            currentRockSpeed = "Fast"
+                        } else {
+                            laneSpeed = CGFloat.random(in: 13...16)
+                            currentRockSpeed = "Slow"
+                        }
+                    }
+                    
+                    // Switch direction and speed
+                    else {
+                        laneDirection = 1 - laneDirection
+                        if currentRockSpeed == "Slow" {
+                            laneSpeed = CGFloat.random(in: 4...6.5)
+                            currentRockSpeed = "Fast"
+                        } else {
+                            laneSpeed = CGFloat.random(in: 13...16)
+                            currentRockSpeed = "Slow"
+                        }
+                    }
+                    
+                } else {
+                    // Random directions for lanes
+                    laneDirection = Int.random(in: 0..<2)
+                    laneSpeed = CGFloat.random(in: 7...13)
+                }
                 
                 if laneDirection == 0 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: CGFloat.random(in: 7...13), laneType: laneDifficulty[laneSet][lane]))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: laneSpeed, laneType: laneDifficulty[laneSet][lane]))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: CGFloat.random(in: 7...13), laneType: laneDifficulty[laneSet][lane]))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: laneSpeed, laneType: laneDifficulty[laneSet][lane]))
                 }
                 yPositionLanes = yPosition
                 i += 1
@@ -765,14 +817,49 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let rightStart = CGPoint(x: size.width, y: newYPosition)
                 
                 var laneSpeed: CGFloat = 0.0
+                
                 if laneDifficulty[laneSet][lane] == "Lava" {
-                    laneSpeed = CGFloat.random(in: 4...17)
+                    
+                    let choice = Int.random(in: 0...2)
+                    
+                    // Switch direction
+                    if choice == 0 {
+                        laneDirection = 1 - laneDirection
+                        if currentRockSpeed == "Slow" {
+                            laneSpeed = CGFloat.random(in: 13...16)
+                        } else {
+                            laneSpeed = CGFloat.random(in: 4...6.5)
+                        }
+                    }
+                    
+                    // Switch speed
+                    else if choice == 1 {
+                        if currentRockSpeed == "Slow" {
+                            laneSpeed = CGFloat.random(in: 4...6.5)
+                            currentRockSpeed = "Fast"
+                        } else {
+                            laneSpeed = CGFloat.random(in: 13...16)
+                            currentRockSpeed = "Slow"
+                        }
+                    }
+                    
+                    // Switch direction and speed
+                    else {
+                        laneDirection = 1 - laneDirection
+                        if currentRockSpeed == "Slow" {
+                            laneSpeed = CGFloat.random(in: 4...6.5)
+                            currentRockSpeed = "Fast"
+                        } else {
+                            laneSpeed = CGFloat.random(in: 13...16)
+                            currentRockSpeed = "Slow"
+                        }
+                    }
+                    
                 } else {
+                    // Random directions for lanes
+                    laneDirection = Int.random(in: 0...1)
                     laneSpeed = CGFloat.random(in: 7...13)
                 }
-                
-                // Random directions for lanes
-                laneDirection = Int.random(in: 0..<2)
                 
                 if laneDirection == 0 {
                     newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: laneSpeed, laneType: laneDifficulty[laneSet][lane]))
@@ -1180,7 +1267,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if lane.laneType == "Lava" {
                 spawnLava(in: lane)
                 lavaYPositions.append(lane.startPosition.y)
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3..<5))
+                var waitTime: CGFloat = 0.0
+                if lane.speed > 11 {
+                    waitTime = CGFloat.random(in: 3.75..<4.5)
+                } else {
+                    waitTime = CGFloat.random(in: 3..<4.25)
+                }
+                let wait = SKAction.wait(forDuration: waitTime)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnRock(in: lane)
                 }

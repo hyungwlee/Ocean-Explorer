@@ -185,7 +185,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
-                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Lava"))
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Tutorial"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -204,9 +204,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
                 if i == 6 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Lava"))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Jellyfish"))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Lava"))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Shark"))
                 }
                 yPositionLanes = yPosition
                 i += 1
@@ -1180,7 +1180,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if lane.laneType == "Lava" {
                 spawnLava(in: lane)
                 lavaYPositions.append(lane.startPosition.y)
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 2.0..<4.0))
+                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3..<5))
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnRock(in: lane)
                 }
@@ -1831,7 +1831,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock ? contact.bodyA : contact.bodyB
             if currentRock == rockBody.node as? OERockNode {
                 currentRock = nil
-                isPlayerOnRock = false
+                if !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
+                    isPlayerOnRock = false
+                }
                 print("PLAYER HAS LEFT ROCK")
                 guard let box = box else { return }
                 
@@ -1849,7 +1851,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock2 ? contact.bodyA : contact.bodyB
             if currentRock2 == rockBody.node as? OERockNode2 {
                 currentRock2 = nil
-                isPlayerOnRock = false
+                if !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
+                    isPlayerOnRock = false
+                }
                 print("PLAYER HAS LEFT LONG ROCK")
                 guard let box = box else { return }
                 
@@ -1867,7 +1871,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock3 ? contact.bodyA : contact.bodyB
             if currentRock3 == rockBody.node as? OERockNode3 {
                 currentRock3 = nil
-                isPlayerOnRock = false
+                if !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
+                    isPlayerOnRock = false
+                }
                 print("PLAYER HAS LEFT VERY LONG ROCK")
                 guard let box = box else { return }
                 
@@ -1891,6 +1897,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Check if the player's frame intersects with any rock's frame
         for rock in rocks {
             if box.frame.intersects(rock.frame) {
+                print("PLAYER ON ROCK CONFIRMED")
                 return true
             }
         }
@@ -1907,6 +1914,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Check if the player's frame intersects with any rock's frame
         for rock in rocks {
             if box.frame.intersects(rock.frame) {
+                print("PLAYER ON ROCK CONFIRMED")
                 return true
             }
         }
@@ -1923,6 +1931,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Check if the player's frame intersects with any rock's frame
         for rock in rocks {
             if box.frame.intersects(rock.frame) {
+                print("PLAYER ON ROCK CONFIRMED")
                 return true
             }
         }

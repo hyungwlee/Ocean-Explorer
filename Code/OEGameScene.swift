@@ -1297,15 +1297,44 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         newShell.run(sequenceAction)
         cameraNode.addChild(newShell)
     }
+    // TO SLOW DOWN THE AIR COUNTDOWN (UPON SHELL PICKUP, ETC)
+    func adjustAirCountdown(isSlowed: Bool) {
+        // Stop the current air countdown
+        removeAction(forKey: "airCountdown")
+        
+        // Set the new countdown speed
+        let duration = isSlowed ? 2.0 : 1.0 // Double the wait time when slowed
+        let countdownAction = SKAction.repeatForever(
+            SKAction.sequence([
+                SKAction.run { [weak self] in
+                    self?.decreaseAir()
+                },
+                SKAction.wait(forDuration: duration)
+            ])
+        )
+        run(countdownAction, withKey: "airCountdown")
+    }
 
+    
     //METHOD TO SLOW DOWN CAMERA
     func slowDownCamera() {
         // Reduce the speed of the camera
         let slowDownAction = SKAction.speed(to: 0.5, duration: 0.0) // Instantly slow down
         let waitAction = SKAction.wait(forDuration: 3.5) // Slow Length (Higher the longer it's slow)
         let speedUpAction = SKAction.speed(to: 1.0, duration: 0.0) // Revert to original speed
-
-        let sequenceAction = SKAction.sequence([slowDownAction, waitAction, speedUpAction])
+        
+        // Adjust the air countdown timing
+        adjustAirCountdown(isSlowed: true)
+        
+        let sequenceAction = SKAction.sequence([
+            slowDownAction,
+            waitAction,
+            SKAction.run { [weak self] in
+                self?.adjustAirCountdown(isSlowed: false)
+            },
+            speedUpAction
+        ])
+        
         cameraNode.run(sequenceAction)
     }
 

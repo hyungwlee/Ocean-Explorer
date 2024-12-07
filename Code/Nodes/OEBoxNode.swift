@@ -24,7 +24,7 @@ class OEBoxNode: SKSpriteNode {
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.categoryBitMask = PhysicsCategory.box
         self.physicsBody?.collisionBitMask = PhysicsCategory.enemy
-        self.physicsBody?.contactTestBitMask = PhysicsCategory.enemy | PhysicsCategory.rock | PhysicsCategory.lava
+        self.physicsBody?.contactTestBitMask = PhysicsCategory.enemy | PhysicsCategory.rock | PhysicsCategory.lava | PhysicsCategory.rock2
     }
 
     required init?(coder aDecoder: NSCoder) {

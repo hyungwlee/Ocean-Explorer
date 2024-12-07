@@ -17,6 +17,8 @@ struct PhysicsCategory {
     static let rock: UInt32 = 0b100000 // 32
     static let lava: UInt32 = 0b1000000 // 64
     static let seaweed: UInt32 = 0b10000000 // 128
+    static let rock2: UInt32 = 0b100000000 // 256
+
 }
 
 struct Lane {
@@ -92,7 +94,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Check if player on rock
     var isPlayerOnRock: Bool = false
     var currentRock: OERockNode? = nil
+    var currentRock2: OERockNode2? = nil
     var lastRockPosition: CGPoint? = nil
+    var currentRockZone: String = ""
     
     // Positions of all lava nodes
     var lavaYPositions: [CGFloat] = []
@@ -147,6 +151,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         isPlayerOnRock = false
         currentRock = nil
+        currentRock2 = nil
+        currentRockZone = ""
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
@@ -174,7 +180,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
-                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Tutorial"))
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Lava"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -193,9 +199,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
                 if i == 6 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Shark"))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Lava"))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Jellyfish"))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Lava"))
                 }
                 yPositionLanes = yPosition
                 i += 1
@@ -565,6 +571,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let rock = currentRock {
             box.position.x = rock.position.x // Follow the rock horizontally
         }
+        
+        if let rock = currentRock2 {
+            if currentRockZone == "Left" {
+                box.position.x = rock.position.x - rock.size.width * 0.2
+            } else {
+                box.position.x = rock.position.x + rock.size.width * 0.2
+            }
+        }
     }
 
     func updateBackgroundTiles() {
@@ -881,8 +895,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             score -= 1
         case .left:
             nextPosition = CGPoint(x: max(box.position.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
+            if currentRock2 != nil && currentRockZone == "Right" {
+                currentRockZone = "Left"
+            }
         case .right:
             nextPosition = CGPoint(x: min(box.position.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
+            if currentRock2 != nil && currentRockZone == "Left" {
+                currentRockZone = "Right"
+            }
         default:
             return
         }
@@ -965,9 +985,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func spawnRock(in lane: Lane) {
-        let rock = OERockNode(height: cellHeight + cellHeight / 4)
-        addChild(rock)
-        rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+        let rockType = Int.random(in: 0...1)
+        if rockType == 0 {
+            let rock = OERockNode(height: cellHeight + cellHeight / 4)
+            addChild(rock)
+            rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+        } else {
+            let rock = OERockNode2(height: cellHeight + cellHeight / 4)
+            addChild(rock)
+            rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+        }
     }
     
     func spawnSeaweed(in lane: Lane) {
@@ -1581,6 +1608,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             didBeginShellContact(contact)
         }
         
+        // Handle contact with rocks
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.rock) ||
             (bodyA.categoryBitMask == PhysicsCategory.rock && bodyB.categoryBitMask == PhysicsCategory.box) {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock ? contact.bodyA : contact.bodyB
@@ -1594,11 +1622,45 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 
                 currentRock = rock
-
+                
                 // Correctly place the player on top of the rock
                 box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
                 
             }
+        }
+        
+        // Handle contact with rock2
+        else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.rock2) ||
+            (bodyA.categoryBitMask == PhysicsCategory.rock2 && bodyB.categoryBitMask == PhysicsCategory.box) {
+            let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock2 ? contact.bodyA : contact.bodyB
+            if let rock = rockBody.node as? OERockNode2 {
+                
+                isPlayerOnRock = true
+                print("PLAYER ON ROCK")
+                if isPlayerOnLava() {
+                    print("PLAYER ON LAVA")
+                    handleLavaContact()
+                }
+                
+                currentRock2 = rock
+
+                // Correctly place the player on top of the rock
+                box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
+                
+                // Determine the closest snap zone
+                let playerX = box?.position.x ?? 0
+                let rockX = rock.position.x
+                let snapToLeft = abs(playerX - (rockX - rock.size.width / 4)) < abs(playerX - (rockX + rock.size.width / 4))
+                
+                // Snap player to the left or right
+                if snapToLeft {
+                    currentRockZone = "Left"
+                } else {
+                    currentRockZone = "Right"
+                }
+                
+            }
+            
         } else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
                     (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
             handleLavaContact()
@@ -1612,7 +1674,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Check if the player's position overlaps the lava area
         for lavaPosition in lavaYPositions {
             print("LAVA POSITION: \(lavaPosition)")
-            if playerPosition > lavaPosition - 5 && playerPosition < lavaPosition + 5 {
+            if playerPosition > lavaPosition - 5 && playerPosition < lavaPosition + 5 && !isPlayerOnRock {
                 print("PLAYER ON LAVA")
                 return true
             }
@@ -1661,8 +1723,31 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 guard let box = box else { return }
                 
-                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                for lane in lanes {
+                    if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
+                        if lane.laneType != "Lava" {
+                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                        }
+                    }
+                }
+            }
+        }
+        
+        if collision == (PhysicsCategory.box | PhysicsCategory.rock2) {
+            let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock2 ? contact.bodyA : contact.bodyB
+            if currentRock2 == rockBody.node as? OERockNode2 {
+                currentRock2 = nil
+                isPlayerOnRock = false
                 
+                guard let box = box else { return }
+                
+                for lane in lanes {
+                    if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
+                        if lane.laneType != "Lava" {
+                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                        }
+                    }
+                }
             }
         }
     }

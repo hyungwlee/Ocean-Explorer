@@ -194,7 +194,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
-                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Tutorial"))
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Lava"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -432,7 +432,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Set up physics world contact delegate
         physicsWorld.contactDelegate = self
         
-        // drawGridLines()
+        drawGridLines()
         
         // Start timed enemy spawning
         startSpawning(lanes: lanes)
@@ -674,7 +674,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return CGPoint(x: x, y: y)
     }
 
-    /*
+    
     func drawGridLines() {
         // Horizontal lines
         for row in 0...numberOfRows {
@@ -745,7 +745,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             addChild(verticalLine)
         }
     }
-    */
+    
 
     func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
         let row = Int(position.y / cellHeight)
@@ -1932,8 +1932,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 for lane in lanes {
                     if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
-                        if lane.laneType != "Lava" {
+                        if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
                             snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                        } else {
+                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
                         }
                     }
                 }
@@ -1952,8 +1954,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 for lane in lanes {
                     if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
-                        if lane.laneType != "Lava" {
+                        if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
                             snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                        } else {
+                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
                         }
                     }
                 }
@@ -1973,7 +1977,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 for lane in lanes {
                     if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
                         if lane.laneType != "Lava" {
-                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                            if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
+                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                            } else {
+                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
+                            }
                         }
                     }
                 }

@@ -59,7 +59,7 @@ let mediumSets: [[String]] = [
     ["Jellyfish", "Shark", "Jellyfish", "Jellyfish", "Shark"],
     ["Spike", "Eel", "Jellyfish", "Shark"],
     ["Eel", "Spike", "Eel"],
-    ["Lava", "Lava", "Lava", "Lava", "Lava", "Lava", "Lava"],
+    ["Lava", "Lava", "Lava", "Lava", "Lava"],
     ["Jellyfish", "Spike", "Spike", "Jellyfish", "Lava", "Lava"],
     ["Lava", "Lava", "Lava", "Jellyfish", "Jellyfish"],
     ["Jellyfish", "Jellyfish", "Jellyfish", "Lava", "Lava"],

@@ -1065,13 +1065,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func spawnEnemy(in lane: Lane) {
         let enemy = OEEnemyNode(gridSize: gridSize)
         addChild(enemy)
-        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...2))
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
     }
     
     func spawnJellyfish(in lane: Lane) {
         let enemy = OEEnemyNode5(gridSize: gridSize)
         addChild(enemy)
-        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...2))
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
     }
     
     func spawnLongEnemy(in lane: Lane) {
@@ -1080,7 +1080,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if lane.direction == CGVector(dx: -1, dy: 0) {
             enemy.xScale = -1
         }
-        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...2))
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
     }
     
     func spawnPufferfish(in lane: Lane) {
@@ -1227,7 +1227,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Spike" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3.5..<5.5))
+                let wait = SKAction.wait(forDuration: 4.25, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     let enemyType = Int.random(in: 0..<8)
                     if enemyType == 7 {
@@ -1243,7 +1243,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Jellyfish" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3..<5))
+                let wait = SKAction.wait(forDuration: 4, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnJellyfish(in: lane)
                 }
@@ -1254,7 +1254,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
 
             if lane.laneType == "Shark" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4..<5.5))
+                let wait = SKAction.wait(forDuration: 4.5, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnLongEnemy(in: lane)
                 }
@@ -1932,8 +1932,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 for lane in lanes {
                     if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
-                        if lane.laneType != "Lava" {
+                        if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
                             snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                        } else {
+                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
                         }
                     }
                 }
@@ -1952,8 +1954,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 for lane in lanes {
                     if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
-                        if lane.laneType != "Lava" {
+                        if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
                             snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                        } else {
+                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
                         }
                     }
                 }
@@ -1973,7 +1977,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 for lane in lanes {
                     if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
                         if lane.laneType != "Lava" {
-                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                            if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
+                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                            } else {
+                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
+                            }
                         }
                     }
                 }

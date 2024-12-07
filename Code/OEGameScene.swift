@@ -563,9 +563,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         super.update(currentTime)
         
-        if !isPlayerOnRock && isPlayerOnLava() {
-                handleLavaContact()
-            }
+        if !isPlayerOnRock && isPlayerOnLava() && !isPlayerInContactWithAnyRock() && !isPlayerInContactWithAnyRock2() {
+            handleLavaContact()
+        }
+        
         
         // Sync player movement with rock while they are on it
         if let rock = currentRock {
@@ -1634,7 +1635,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             (bodyA.categoryBitMask == PhysicsCategory.rock2 && bodyB.categoryBitMask == PhysicsCategory.box) {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock2 ? contact.bodyA : contact.bodyB
             if let rock = rockBody.node as? OERockNode2 {
-                
                 isPlayerOnRock = true
                 print("PLAYER ON ROCK")
                 if isPlayerOnLava() {
@@ -1663,19 +1663,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
         } else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
                     (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
-            handleLavaContact()
+            if !isPlayerOnRock {
+                handleLavaContact()
+
+            }
         }
     }
     
     func isPlayerOnLava() -> Bool {
         guard let box = box else { return false }
         let playerPosition = box.position.y
-        print("PLAYER POSITION: \(playerPosition)")
         // Check if the player's position overlaps the lava area
         for lavaPosition in lavaYPositions {
-            print("LAVA POSITION: \(lavaPosition)")
             if playerPosition > lavaPosition - 5 && playerPosition < lavaPosition + 5 && !isPlayerOnRock {
-                print("PLAYER ON LAVA")
                 return true
             }
         }
@@ -1691,6 +1691,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Player is not on a rock, trigger death logic
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             if !self.isGameOver && self.isPlayerOnRock == false {
+                print("PLAYER NOT ON ROCK")
                 self.gameOver(reason: "You burned to death underwater!")
             }
         }
@@ -1720,7 +1721,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if currentRock == rockBody.node as? OERockNode {
                 currentRock = nil
                 isPlayerOnRock = false
-                
+                print("PLAYER HAS LEFT ROCK")
                 guard let box = box else { return }
                 
                 for lane in lanes {
@@ -1738,7 +1739,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if currentRock2 == rockBody.node as? OERockNode2 {
                 currentRock2 = nil
                 isPlayerOnRock = false
-                
+                print("PLAYER HAS LEFT LONG ROCK")
                 guard let box = box else { return }
                 
                 for lane in lanes {
@@ -1752,6 +1753,38 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func isPlayerInContactWithAnyRock() -> Bool {
+        guard let box = box else { return false }
+
+        // Get all rock nodes in the scene
+        let rocks = self.children.compactMap { $0 as? SKSpriteNode }.filter { $0.physicsBody?.categoryBitMask == PhysicsCategory.rock }
+
+        // Check if the player's frame intersects with any rock's frame
+        for rock in rocks {
+            if box.frame.intersects(rock.frame) {
+                return true
+            }
+        }
+
+        return false
+    }
+    
+    func isPlayerInContactWithAnyRock2() -> Bool {
+        guard let box = box else { return false }
+
+        // Get all rock2 nodes in the scene
+        let rocks = self.children.compactMap { $0 as? SKSpriteNode }.filter { $0.physicsBody?.categoryBitMask == PhysicsCategory.rock2 }
+
+        // Check if the player's frame intersects with any rock's frame
+        for rock in rocks {
+            if box.frame.intersects(rock.frame) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     func snapToGrid(position: CGFloat) {
         
         guard let box = box else { return }

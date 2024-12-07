@@ -194,7 +194,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
-                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Lava"))
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Tutorial"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -432,7 +432,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Set up physics world contact delegate
         physicsWorld.contactDelegate = self
         
-        drawGridLines()
+        // drawGridLines()
         
         // Start timed enemy spawning
         startSpawning(lanes: lanes)
@@ -674,7 +674,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return CGPoint(x: x, y: y)
     }
 
-    
+    /*
     func drawGridLines() {
         // Horizontal lines
         for row in 0...numberOfRows {
@@ -745,7 +745,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             addChild(verticalLine)
         }
     }
-    
+    */
 
     func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
         let row = Int(position.y / cellHeight)
@@ -1065,13 +1065,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func spawnEnemy(in lane: Lane) {
         let enemy = OEEnemyNode(gridSize: gridSize)
         addChild(enemy)
-        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...2))
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
     }
     
     func spawnJellyfish(in lane: Lane) {
         let enemy = OEEnemyNode5(gridSize: gridSize)
         addChild(enemy)
-        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...2))
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
     }
     
     func spawnLongEnemy(in lane: Lane) {
@@ -1080,7 +1080,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if lane.direction == CGVector(dx: -1, dy: 0) {
             enemy.xScale = -1
         }
-        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...2))
+        enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
     }
     
     func spawnPufferfish(in lane: Lane) {
@@ -1227,7 +1227,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Spike" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3.5..<5.5))
+                let wait = SKAction.wait(forDuration: 4.25, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     let enemyType = Int.random(in: 0..<8)
                     if enemyType == 7 {
@@ -1243,7 +1243,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Jellyfish" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 3..<5))
+                let wait = SKAction.wait(forDuration: 4, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnJellyfish(in: lane)
                 }
@@ -1254,7 +1254,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
 
             if lane.laneType == "Shark" {
-                let wait = SKAction.wait(forDuration: CGFloat.random(in: 4..<5.5))
+                let wait = SKAction.wait(forDuration: 4.5, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnLongEnemy(in: lane)
                 }

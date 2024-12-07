@@ -18,7 +18,7 @@ struct PhysicsCategory {
     static let lava: UInt32 = 0b1000000 // 64
     static let seaweed: UInt32 = 0b10000000 // 128
     static let rock2: UInt32 = 0b100000000 // 256
-
+    static let rock3: UInt32 = 0b1000000000 // 532
 }
 
 struct Lane {
@@ -95,8 +95,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var isPlayerOnRock: Bool = false
     var currentRock: OERockNode? = nil
     var currentRock2: OERockNode2? = nil
+    var currentRock3: OERockNode3? = nil
     var lastRockPosition: CGPoint? = nil
     var currentRockZone: String = ""
+    var currentLongRockZone: String = ""
     
     // Positions of all lava nodes
     var lavaYPositions: [CGFloat] = []
@@ -152,7 +154,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         isPlayerOnRock = false
         currentRock = nil
         currentRock2 = nil
+        currentRock3 = nil
         currentRockZone = ""
+        currentLongRockZone = ""
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
@@ -563,7 +567,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         super.update(currentTime)
         
-        if !isPlayerOnRock && isPlayerOnLava() && !isPlayerInContactWithAnyRock() && !isPlayerInContactWithAnyRock2() {
+        if !isPlayerOnRock && isPlayerOnLava() && !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
             handleLavaContact()
         }
         
@@ -578,6 +582,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 box.position.x = rock.position.x - rock.size.width * 0.2
             } else {
                 box.position.x = rock.position.x + rock.size.width * 0.2
+            }
+        }
+        
+        if let rock = currentRock3 {
+            if currentLongRockZone == "Left" {
+                box.position.x = rock.leftSnapZone.x
+            } else if currentLongRockZone == "Center" {
+                box.position.x = rock.centerSnapZone.x
+            } else {
+                box.position.x = rock.rightSnapZone.x
             }
         }
     }
@@ -899,11 +913,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if currentRock2 != nil && currentRockZone == "Right" {
                 currentRockZone = "Left"
             }
+            if currentRock3 != nil {
+                if currentLongRockZone == "Right" {
+                    currentLongRockZone = "Center"
+                }
+                else if currentLongRockZone == "Center" {
+                    currentLongRockZone = "Left"
+                }
+            }
         case .right:
             nextPosition = CGPoint(x: min(box.position.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
             if currentRock2 != nil && currentRockZone == "Left" {
                 currentRockZone = "Right"
             }
+            if currentRock3 != nil {
+                if currentLongRockZone == "Left" {
+                    currentLongRockZone = "Center"
+                }
+                else if currentLongRockZone == "Center" {
+                    currentLongRockZone = "Right"
+                }
+            }
+
         default:
             return
         }
@@ -986,13 +1017,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func spawnRock(in lane: Lane) {
-        let rockType = Int.random(in: 0...1)
+        let rockType = Int.random(in: 0...2)
         if rockType == 0 {
             let rock = OERockNode(height: cellHeight + cellHeight / 4)
             addChild(rock)
             rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
-        } else {
+        } else if rockType == 1{
             let rock = OERockNode2(height: cellHeight + cellHeight / 4)
+            addChild(rock)
+            rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+        } else {
+            let rock = OERockNode3(height: cellHeight + cellHeight / 4)
             addChild(rock)
             rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
         }
@@ -1661,7 +1696,45 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
             }
             
-        } else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
+        }
+        
+        // Handle contact with rock3
+        else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.rock3) ||
+            (bodyA.categoryBitMask == PhysicsCategory.rock3 && bodyB.categoryBitMask == PhysicsCategory.box) {
+            let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock3 ? contact.bodyA : contact.bodyB
+            if let rock = rockBody.node as? OERockNode3 {
+                isPlayerOnRock = true
+                print("PLAYER ON ROCK")
+                if isPlayerOnLava() {
+                    print("PLAYER ON LAVA")
+                    handleLavaContact()
+                }
+                
+                currentRock3 = rock
+
+                // Correctly place the player on top of the rock
+                box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
+                
+                // Calculate distances to each snap zone
+                let playerX = box?.position.x ?? 0
+                
+                let leftDistance = abs(playerX - rock.leftSnapZone.x)
+                let centerDistance = abs(playerX - rock.centerSnapZone.x)
+                let rightDistance = abs(playerX - rock.rightSnapZone.x)
+
+                // Find the closest zone
+                if leftDistance < centerDistance && leftDistance < rightDistance {
+                    currentLongRockZone = "Left"
+                } else if centerDistance < rightDistance {
+                    currentLongRockZone = "Center"
+                } else {
+                    currentLongRockZone = "Right"
+                }
+            }
+        }
+        
+        // Handle contact with lava
+        else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
                     (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isPlayerOnRock {
                 handleLavaContact()
@@ -1751,9 +1824,27 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
+        
+        if collision == (PhysicsCategory.box | PhysicsCategory.rock3) {
+            let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock3 ? contact.bodyA : contact.bodyB
+            if currentRock3 == rockBody.node as? OERockNode3 {
+                currentRock3 = nil
+                isPlayerOnRock = false
+                print("PLAYER HAS LEFT VERY LONG ROCK")
+                guard let box = box else { return }
+                
+                for lane in lanes {
+                    if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
+                        if lane.laneType != "Lava" {
+                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                        }
+                    }
+                }
+            }
+        }
     }
     
-    func isPlayerInContactWithAnyRock() -> Bool {
+    func isPlayerInContactWithRock() -> Bool {
         guard let box = box else { return false }
 
         // Get all rock nodes in the scene
@@ -1769,11 +1860,27 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return false
     }
     
-    func isPlayerInContactWithAnyRock2() -> Bool {
+    func isPlayerInContactWithRock2() -> Bool {
         guard let box = box else { return false }
 
         // Get all rock2 nodes in the scene
         let rocks = self.children.compactMap { $0 as? SKSpriteNode }.filter { $0.physicsBody?.categoryBitMask == PhysicsCategory.rock2 }
+
+        // Check if the player's frame intersects with any rock's frame
+        for rock in rocks {
+            if box.frame.intersects(rock.frame) {
+                return true
+            }
+        }
+
+        return false
+    }
+    
+    func isPlayerInContactWithRock3() -> Bool {
+        guard let box = box else { return false }
+
+        // Get all rock3 nodes in the scene
+        let rocks = self.children.compactMap { $0 as? SKSpriteNode }.filter { $0.physicsBody?.categoryBitMask == PhysicsCategory.rock3 }
 
         // Check if the player's frame intersects with any rock's frame
         for rock in rocks {

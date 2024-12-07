@@ -26,6 +26,7 @@
 		859006702CFED6FC005859C6 /* OELavaNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8590066F2CFED6F6005859C6 /* OELavaNode.swift */; };
 		859006722CFEDB96005859C6 /* OERockNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859006712CFEDB8C005859C6 /* OERockNode.swift */; };
 		859006742D03EBEA005859C6 /* OERockNode2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859006732D03EBE5005859C6 /* OERockNode2.swift */; };
+		859006762D042590005859C6 /* OERockNode3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859006752D04258D005859C6 /* OERockNode3.swift */; };
 		85C1D3222CE319120025A3F1 /* OEEnemyNode2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3212CE319060025A3F1 /* OEEnemyNode2.swift */; };
 		85C1D3242CE54FC50025A3F1 /* OEEnemyNode3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3232CE54FC10025A3F1 /* OEEnemyNode3.swift */; };
 		85C1D3262CEABD830025A3F1 /* OEEnemyNode4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3252CEABD7B0025A3F1 /* OEEnemyNode4.swift */; };
@@ -76,6 +77,7 @@
 		8590066F2CFED6F6005859C6 /* OELavaNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OELavaNode.swift; sourceTree = "<group>"; };
 		859006712CFEDB8C005859C6 /* OERockNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OERockNode.swift; sourceTree = "<group>"; };
 		859006732D03EBE5005859C6 /* OERockNode2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OERockNode2.swift; sourceTree = "<group>"; };
+		859006752D04258D005859C6 /* OERockNode3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OERockNode3.swift; sourceTree = "<group>"; };
 		85C1D3212CE319060025A3F1 /* OEEnemyNode2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode2.swift; sourceTree = "<group>"; };
 		85C1D3232CE54FC10025A3F1 /* OEEnemyNode3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode3.swift; sourceTree = "<group>"; };
 		85C1D3252CEABD7B0025A3F1 /* OEEnemyNode4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode4.swift; sourceTree = "<group>"; };
@@ -222,6 +224,7 @@
 		FA2E04182CD34D77001DB9FB /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
+				859006752D04258D005859C6 /* OERockNode3.swift */,
 				859006732D03EBE5005859C6 /* OERockNode2.swift */,
 				9895623A2D025CB1000BA60A /* OESeaweedNode.swift */,
 				859006712CFEDB8C005859C6 /* OERockNode.swift */,
@@ -410,6 +413,7 @@
 				0F6191E12CD08E3000149AB6 /* OEGameInfo.swift in Sources */,
 				0F3B8B492CCF5E4A00775DC7 /* GameContext.swift in Sources */,
 				FA2E04172CD34D6D001DB9FB /* OEBoxNode.swift in Sources */,
+				859006762D042590005859C6 /* OERockNode3.swift in Sources */,
 				FA2E04152CD34CE1001DB9FB /* OEGameIdleState.swift in Sources */,
 				85C1D3282CF45B5F0025A3F1 /* OEEnemyNode5.swift in Sources */,
 				9895623B2D025CB1000BA60A /* OESeaweedNode.swift in Sources */,

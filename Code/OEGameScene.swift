@@ -987,6 +987,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
+        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
+            box.alpha = 0
+            let wait = SKAction.wait(forDuration: 0.04)
+            let makeVisible = SKAction.run { box.alpha = 1 }
+            box.run(SKAction.sequence([wait, makeVisible]))
+        }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
         moveBox(to: nextPosition)
         // If an action is already in progress, queue the next tap position
@@ -1004,8 +1010,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let nextPosition: CGPoint
         switch sender.direction {
         case .up:
+            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
+                box.alpha = 0
+                let wait = SKAction.wait(forDuration: 0.04)
+                let makeVisible = SKAction.run { box.alpha = 1 }
+                box.run(SKAction.sequence([wait, makeVisible]))
+            }
             nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
         case .down:
+            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight) {
+                box.alpha = 0
+                let wait = SKAction.wait(forDuration: 0.04)
+                let makeVisible = SKAction.run { box.alpha = 1 }
+                box.run(SKAction.sequence([wait, makeVisible]))
+            }
             nextPosition = CGPoint(x: box.position.x, y: box.position.y - cellHeight)
             score -= 1
         case .left:
@@ -1883,6 +1901,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Check if the player's position overlaps the lava area
         for lavaPosition in lavaYPositions {
             if playerPosition > lavaPosition - 5 && playerPosition < lavaPosition + 5 && !isPlayerOnRock {
+                return true
+            }
+        }
+        return false
+    }
+    
+    func isPlayerOnLavaLane(playerPositionY: CGFloat) -> Bool {
+        // Check if the player's position overlaps the lava area
+        for lavaPosition in lavaYPositions {
+            if playerPositionY > lavaPosition - 5 && playerPositionY < lavaPosition + 5 {
                 return true
             }
         }

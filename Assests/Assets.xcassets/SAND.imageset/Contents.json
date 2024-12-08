@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Lava.png",
+      "filename" : "SAND.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Lava 1.png",
+      "filename" : "SAND 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Lava 2.png",
+      "filename" : "SAND 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

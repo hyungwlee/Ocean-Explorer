@@ -1152,7 +1152,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         for columnIndex in selectedColumns {
             
             //Set size of seaweed
-            let seaweed = OESeaweedNode(size: CGSize(width: 40, height: 40))
+            let seaweed = OESeaweedNode(size: CGSize(width: 48, height: 52))
             addChild(seaweed)
             
             

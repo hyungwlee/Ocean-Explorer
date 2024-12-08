@@ -1322,7 +1322,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func colorLane(in lane: Lane) {
         let laneColor = SKShapeNode(rect: CGRect(x: -size.width, y: lane.startPosition.y - cellHeight / 2, width: size.width * 2, height: cellHeight))
         if lane.laneType == "Empty" {
-            laneColor.fillColor = .cyan
+            laneColor.fillColor = .white
+            laneColor.fillTexture = SKTexture(imageNamed: "SAND")
         }
         else if lane.laneType == "Eel" {
             laneColor.fillColor = .yellow

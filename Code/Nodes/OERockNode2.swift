@@ -21,7 +21,7 @@ class OERockNode2: SKSpriteNode {
         
         self.zPosition = 1
 
-        self.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: size.width, height: height))
+        self.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: size.width * 0.9, height: height))
         self.physicsBody?.isDynamic = false // Rocks won't be affected by physics
         self.physicsBody?.categoryBitMask = PhysicsCategory.rock2
         self.physicsBody?.contactTestBitMask = PhysicsCategory.box

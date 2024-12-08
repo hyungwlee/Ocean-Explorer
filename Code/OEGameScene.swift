@@ -162,12 +162,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         currentRockZone = ""
         currentLongRockZone = ""
         
-        // Randomize initial rock speed
-        if Int.random(in: 0...1) == 0 {
-            currentRockSpeed = "Slow"
-        } else {
-            currentRockSpeed = "Fast"
-        }
+        // Initially slow rock speed
+        currentRockSpeed = "Slow"
+ 
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
@@ -292,6 +289,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             let laneSet = Int.random(in: 0...laneDifficulty.count - 1)
             var lane = 0
+            
             for _ in i...i + laneDifficulty[laneSet].count - 1 {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
@@ -336,7 +334,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                             currentRockSpeed = "Slow"
                         }
                     }
-                    
                 } else {
                     // Random directions for lanes
                     laneDirection = Int.random(in: 0..<2)
@@ -590,36 +587,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         guard let box = box else { return }
         
-        // Smoothly move the camera towards the box's position with slower forward movement
-        let lerpFactor: CGFloat = 0.018 // Smaller value for slower camera movement
-        let targetY = max(cameraNode.position.y, box.position.y) // Ensure the camera only moves forward
-        cameraNode.position.y += (targetY - cameraNode.position.y) * lerpFactor
-        
-        // Draw new rows if the camera has moved past the highest drawn row
-        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
-            //drawNewGridRows()
-            updateHighestRowDrawn()
-        }
-        
-        // Update background tiles
-        updateBackgroundTiles()
-        
-        // Check for proximity to player for each pufferfish enemy
-        for child in children {
-            if let pufferfish = child as? OEEnemyNode2 {
-                pufferfish.checkProximityToPlayer(playerPosition: box.position)
-            }
-        }
-        
-        // Game over if the character falls below the camera's view
-        if box.position.y < cameraNode.position.y - size.height / 2 {
-            gameOver(reason: "You sank into the depths and disappeared!")
-        }
-        
-        if box.position.x > size.width / 2 || box.position.x < -size.width / 2 {
-            gameOver(reason: "You were swept away by the rocks!")
-        }
-        
         super.update(currentTime)
         
         if !isPlayerOnRock && isPlayerOnLava() && !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
@@ -648,6 +615,36 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             } else {
                 box.position.x = rock.rightSnapZone.x
             }
+        }
+        
+        // Smoothly move the camera towards the box's position with slower forward movement
+        let lerpFactor: CGFloat = 0.018 // Smaller value for slower camera movement
+        let targetY = max(cameraNode.position.y, box.position.y) // Ensure the camera only moves forward
+        cameraNode.position.y += (targetY - cameraNode.position.y) * lerpFactor
+        
+        // Draw new rows if the camera has moved past the highest drawn row
+        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
+            //drawNewGridRows()
+            updateHighestRowDrawn()
+        }
+        
+        // Update background tiles
+        updateBackgroundTiles()
+        
+        // Check for proximity to player for each pufferfish enemy
+        for child in children {
+            if let pufferfish = child as? OEEnemyNode2 {
+                pufferfish.checkProximityToPlayer(playerPosition: box.position)
+            }
+        }
+        
+        // Game over if the character falls below the camera's view
+        if box.position.y < cameraNode.position.y - size.height / 2 {
+            gameOver(reason: "You sank into the depths and disappeared!")
+        }
+        
+        if box.position.x > size.width / 2 || box.position.x < -size.width / 2 {
+            gameOver(reason: "You were swept away by the rocks!")
         }
     }
     
@@ -1271,9 +1268,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 lavaYPositions.append(lane.startPosition.y)
                 var waitTime: CGFloat = 0.0
                 if lane.speed > 11 {
-                    waitTime = CGFloat.random(in: 3.75..<4.5)
+                    waitTime = CGFloat.random(in: 4..<4.5)
                 } else {
-                    waitTime = CGFloat.random(in: 3..<4.25)
+                    waitTime = CGFloat.random(in: 1.5..<2.25)
                 }
                 let wait = SKAction.wait(forDuration: waitTime)
                 let spawn = SKAction.run { [weak self] in

@@ -1323,15 +1323,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let laneColor = SKShapeNode(rect: CGRect(x: -size.width, y: lane.startPosition.y - cellHeight / 2, width: size.width * 2, height: cellHeight))
         if lane.laneType == "Empty" {
             laneColor.fillColor = .white
-            laneColor.fillTexture = SKTexture(imageNamed: "SAND")
+            laneColor.fillTexture = SKTexture(imageNamed: "Sand")
         }
         else if lane.laneType == "Eel" {
-            laneColor.fillColor = .yellow
+            laneColor.fillColor = .white
+            laneColor.fillTexture = SKTexture(imageNamed: "eelLane")
+            
         }
         else {
             laneColor.fillColor = .red
         }
-        laneColor.alpha = 0.5
+        laneColor.alpha = 0.55
         laneColor.zPosition = 0
         addChild(laneColor)
         //        print("Lane position: \(lane.startPosition.y)")

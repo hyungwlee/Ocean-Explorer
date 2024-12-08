@@ -87,10 +87,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     weak var context: OEGameContext?
     var box: OEBoxNode?
     var cameraNode: SKCameraNode!
-
+    
     let gridSize = CGSize(width: 50, height: 50)
     var backgroundTiles: [SKSpriteNode] = []
-  
+    
     // Check if player on rock
     var isPlayerOnRock: Bool = false
     var currentRock: OERockNode? = nil
@@ -98,6 +98,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var currentRock3: OERockNode3? = nil
     var currentRockZone: String = ""
     var currentLongRockZone: String = ""
+    var hasGameStarted = false
     
     // Keep track of current latest rock speed and direction
     var currentRockSpeed: String = ""
@@ -125,7 +126,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Tapping properties
     var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
     var isActionInProgress = false // Flag to indicate if a movement is in progress
-
+    
     
     // Game state variable
     var isGameOver = false
@@ -149,11 +150,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var cellHeight: CGFloat = 0
     
     var highestRowDrawn: Int = 15 // Track the highest row drawn for grid
-
+    
     init(context: OEGameContext, size: CGSize) {
         self.context = context
         super.init(size: size)
-
+        
         isPlayerOnRock = false
         currentRock = nil
         currentRock2 = nil
@@ -188,7 +189,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 yPositionLanes = yPosition
                 i += 1
             }
-                    
+            
             // 1 enemy at a time
             if i == 4 {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
@@ -206,7 +207,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 yPositionLanes = yPosition
                 i += 1
             }
-
+            
             // 2 enemies at a time
             while i < 8 {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
@@ -251,7 +252,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             else {
                 numberOfEmptyRows = 2
             }
-
+            
             for _ in i...i + numberOfEmptyRows {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 lanes.append(Lane(startPosition: CGPoint(x: 0, y: yPosition), endPosition: CGPoint(x: 0, y: 0), direction: CGVector(dx: 1, dy: 0), speed: 0, laneType: "Empty"))
@@ -352,83 +353,84 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 lane += 1
             }
             /*
-            // Number of lanes in a row with enemies
-            let chanceOfEnemyRows = Int.random(in: 1...20)
-            var numberOfEnemyRows: Int = 0
-            
-            if chanceOfEnemyRows > 13 {
-                numberOfEnemyRows = 3
-            }
-            else if chanceOfEnemyRows > 4 {
-                numberOfEnemyRows = 2
-            }
-            else if chanceOfEnemyRows > 2 {
-                numberOfEnemyRows = 1
-            }
-            else if chanceOfEnemyRows == 2 {
-                numberOfEnemyRows = 4
-            }
-            else {
-                numberOfEnemyRows = 5
-            }
-            
-            for _ in i...i + numberOfEnemyRows {
-                let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-                let leftStart = CGPoint(x: -size.width, y: yPosition)
-                let rightStart = CGPoint(x: size.width, y: yPosition)
-
-                // Random directions for lanes
-                laneDirection = Int.random(in: 0..<2)
-                
-                // Random chance for longer enemies
-                let enemySize: String
-                let enemySpeed: CGFloat
-                
-                let enemySizeChance = Int.random(in: 0...4)
-                if enemySizeChance == 0 {
-                    enemySize = "Shark"
-                    enemySpeed = CGFloat.random(in: 10..<13)
-                }
-                else if enemySizeChance == 1 {
-                    enemySize = "Jellyfish"
-                    enemySpeed = CGFloat.random(in: 8.5..<11.5)
-                }
-                else {
-                    enemySize = "Spike"
-                    enemySpeed = CGFloat.random(in: 7..<10)
-                }
-                
-                if laneDirection == 0 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: enemySpeed, laneType: enemySize))
-                } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: enemySpeed, laneType: enemySize))
-                }
-                yPositionLanes = yPosition
-                i += 1
-            }
+             // Number of lanes in a row with enemies
+             let chanceOfEnemyRows = Int.random(in: 1...20)
+             var numberOfEnemyRows: Int = 0
+             
+             if chanceOfEnemyRows > 13 {
+             numberOfEnemyRows = 3
+             }
+             else if chanceOfEnemyRows > 4 {
+             numberOfEnemyRows = 2
+             }
+             else if chanceOfEnemyRows > 2 {
+             numberOfEnemyRows = 1
+             }
+             else if chanceOfEnemyRows == 2 {
+             numberOfEnemyRows = 4
+             }
+             else {
+             numberOfEnemyRows = 5
+             }
+             
+             for _ in i...i + numberOfEnemyRows {
+             let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
+             let leftStart = CGPoint(x: -size.width, y: yPosition)
+             let rightStart = CGPoint(x: size.width, y: yPosition)
+             
+             // Random directions for lanes
+             laneDirection = Int.random(in: 0..<2)
+             
+             // Random chance for longer enemies
+             let enemySize: String
+             let enemySpeed: CGFloat
+             
+             let enemySizeChance = Int.random(in: 0...4)
+             if enemySizeChance == 0 {
+             enemySize = "Shark"
+             enemySpeed = CGFloat.random(in: 10..<13)
+             }
+             else if enemySizeChance == 1 {
+             enemySize = "Jellyfish"
+             enemySpeed = CGFloat.random(in: 8.5..<11.5)
+             }
+             else {
+             enemySize = "Spike"
+             enemySpeed = CGFloat.random(in: 7..<10)
+             }
+             
+             if laneDirection == 0 {
+             lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: enemySpeed, laneType: enemySize))
+             } else {
+             lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: enemySpeed, laneType: enemySize))
+             }
+             yPositionLanes = yPosition
+             i += 1
+             }
              */
         }
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     override func didMove(to view: SKView) {
         guard let context else { return }
-
+        
         // Disable gravity in the scene's physics world
         physicsWorld.gravity = CGVector(dx: 0, dy: 0)
-                
+        
         setupBackground()
+        showStartOverlay()
         prepareGameContext()
         prepareStartNodes()
-
+        
         cameraNode.position = CGPoint(x: 0, y: 0)
         context.stateMachine?.enter(OEGameIdleState.self)
-
+        
         addGestureRecognizers()
-
+        
         // Set up physics world contact delegate
         physicsWorld.contactDelegate = self
         
@@ -436,7 +438,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Start timed enemy spawning
         startSpawning(lanes: lanes)
-
+        
         // Initialize and set up score label
         setupScoreLabel()
         setupAirDisplay()
@@ -444,23 +446,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         includeBubbles()
         includeShells()
         spawnTemporaryArrow()
-
+        
         startCameraMovement()
     }
-
+    
     func startCameraMovement() {
-      
+        guard hasGameStarted else { return } // Ensure camera movement starts only if game has started
         let moveUp = SKAction.moveBy(x: 0, y: size.height, duration: 15.0) // Adjust duration as needed CAMERA SPEED GOING UP
-
+        
         let continuousMove = SKAction.repeatForever(moveUp)
         cameraNode.run(continuousMove)
     }
-
+    
     func setupBackground() {
         addBackgroundTile(at: CGPoint(x: 0, y: 0))
         addChild(cameraNode)
     }
-
+    
     func addBackgroundTile(at position: CGPoint) {
         let backgroundNode = SKSpriteNode(imageNamed: "Background")
         backgroundNode.size = size
@@ -469,17 +471,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         addChild(backgroundNode)
         backgroundTiles.append(backgroundNode)
     }
-
+    
     func prepareGameContext() {
         guard let context else { return }
         context.scene = self
         context.updateLayoutInfo(withScreenSize: size)
         context.configureStates()
-
+        
         // Add reef to the scene
         setupReef()
     }
-
+    
     func setupReef() {
         let reef = SKSpriteNode(imageNamed: "Reef")
         
@@ -497,7 +499,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let sequence = SKAction.sequence([SKAction.wait(forDuration: 4.0), fadeOut, remove])
         reef.run(sequence)
     }
-
+    
     func prepareStartNodes() {
         let center = CGPoint(x: 0, y: 0)
         box = OEBoxNode(gridSize: gridSize)
@@ -506,7 +508,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             addChild(box)
         }
     }
-
+    
     func setupScoreLabel() {
         scoreLabel = SKLabelNode(fontNamed: "SF Mono")
         scoreLabel.fontSize = 75
@@ -517,7 +519,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel.text = "\(score)"
         cameraNode.addChild(scoreLabel)
     }
-
+    
     let goldColor = UIColor(red: 255/255.0, green: 223/255.0, blue: 87/255.0, alpha: 1.0) // Lighter gold
     
     func updateScore() {
@@ -536,7 +538,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         scoreLabel.text = "\(max(score, scoreDisplayed))"
     }
-
+    
     func createPopOutAction() -> SKAction {
         let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
         let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
@@ -548,67 +550,67 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         highestRowDrawn += numberOfRows
     }
     
-//    override func update(_ currentTime: TimeInterval) {
-//        guard let box = box else { return }
-//
-//        // 1. Continuous upward movement for the camera
-//        cameraNode.position.y += 0 // Adjust this value for camera speed
-//
-//        // 2. Check if the character is above a certain threshold relative to the camera's view
-//
-//        let characterAboveThreshold = box.position.y > cameraNode.position.y  // Adjust threshold as desired
-//
-//        if characterAboveThreshold {
-//            // Move the camera up to match the character's y position while maintaining continuous movement
-//            cameraNode.position.y = box.position.y
-//        }
-//
-//        // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
-//        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
-//            drawNewGridRows()
-//            updateHighestRowDrawn()
-//        }
-//
-//        // 4. Update background tiles
-//        updateBackgroundTiles()
-//
-//        // 5. Check for proximity to player for each pufferfish enemy
-//        for child in children {
-//            if let pufferfish = child as? OEEnemyNode2 {
-//                pufferfish.checkProximityToPlayer(playerPosition: box.position)
-//            }
-//        }
-//
-//        // 6. Game over if the character falls below the camera's view
-//        if box.position.y < cameraNode.position.y - size.height / 2 {
-//            gameOver()
-//        }
-//    }
+    //    override func update(_ currentTime: TimeInterval) {
+    //        guard let box = box else { return }
+    //
+    //        // 1. Continuous upward movement for the camera
+    //        cameraNode.position.y += 0 // Adjust this value for camera speed
+    //
+    //        // 2. Check if the character is above a certain threshold relative to the camera's view
+    //
+    //        let characterAboveThreshold = box.position.y > cameraNode.position.y  // Adjust threshold as desired
+    //
+    //        if characterAboveThreshold {
+    //            // Move the camera up to match the character's y position while maintaining continuous movement
+    //            cameraNode.position.y = box.position.y
+    //        }
+    //
+    //        // 3. Existing functionality: Draw new rows if the camera has moved past the highest drawn row
+    //        if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
+    //            drawNewGridRows()
+    //            updateHighestRowDrawn()
+    //        }
+    //
+    //        // 4. Update background tiles
+    //        updateBackgroundTiles()
+    //
+    //        // 5. Check for proximity to player for each pufferfish enemy
+    //        for child in children {
+    //            if let pufferfish = child as? OEEnemyNode2 {
+    //                pufferfish.checkProximityToPlayer(playerPosition: box.position)
+    //            }
+    //        }
+    //
+    //        // 6. Game over if the character falls below the camera's view
+    //        if box.position.y < cameraNode.position.y - size.height / 2 {
+    //            gameOver()
+    //        }
+    //    }
     
     override func update(_ currentTime: TimeInterval) {
         guard let box = box else { return }
-
+        
         // Smoothly move the camera towards the box's position with slower forward movement
         let lerpFactor: CGFloat = 0.018 // Smaller value for slower camera movement
         let targetY = max(cameraNode.position.y, box.position.y) // Ensure the camera only moves forward
         cameraNode.position.y += (targetY - cameraNode.position.y) * lerpFactor
-
+        
         // Draw new rows if the camera has moved past the highest drawn row
         if (cameraNode.position.y + size.height / 2) >= CGFloat(highestRowDrawn) * cellHeight / 4 {
             //drawNewGridRows()
             updateHighestRowDrawn()
         }
-
+        
         // Update background tiles
         updateBackgroundTiles()
-
+        
         // Check for proximity to player for each pufferfish enemy
         for child in children {
             if let pufferfish = child as? OEEnemyNode2 {
                 pufferfish.checkProximityToPlayer(playerPosition: box.position)
             }
         }
-
+        
         // Game over if the character falls below the camera's view
         if box.position.y < cameraNode.position.y - size.height / 2 {
             gameOver(reason: "You sank into the depths and disappeared!")
@@ -648,17 +650,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
-
+    
     func updateBackgroundTiles() {
         guard let box else { return }
-
+        
         let thresholdY = cameraNode.position.y + size.height / 2
         if let lastTile = backgroundTiles.last, lastTile.position.y < thresholdY {
             addBackgroundTile(at: CGPoint(x: 0, y: lastTile.position.y + size.height))
             // generate new lanes
             generateNewLanes(startingAt: yPositionLanes, numberOfLanes: numberOfRows)
         }
-
+        
         backgroundTiles = backgroundTiles.filter { tile in
             if tile.position.y < cameraNode.position.y - size.height {
                 tile.removeFromParent()
@@ -673,80 +675,80 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let y = CGFloat(row) * cellHeight + cellHeight / 2
         return CGPoint(x: x, y: y)
     }
-
-    /*
-    func drawGridLines() {
-        // Horizontal lines
-        for row in 0...numberOfRows {
-            let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
-            let startPoint = CGPoint(x: -size.width, y: yPosition)
-            let endPoint = CGPoint(x: size.width, y: yPosition)
-            
-            let horizontalLine = SKShapeNode()
-            let path = CGMutablePath()
-            path.move(to: startPoint)
-            path.addLine(to: endPoint)
-            horizontalLine.path = path
-            horizontalLine.strokeColor = .white  // Set color of grid lines
-            horizontalLine.lineWidth = 1.0
-            horizontalLine.alpha = 0.55 // OPACITY OF LINES
-            
-            addChild(horizontalLine)
-        }
-        
-        // Vertical lines
-        for column in 0...numberOfColumns {
-            let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
-            let startPoint = CGPoint(x: xPosition, y: -size.height)
-            let endPoint = CGPoint(x: xPosition, y: size.height)
-            
-            let verticalLine = SKShapeNode()
-            let path = CGMutablePath()
-            path.move(to: startPoint)
-            path.addLine(to: endPoint)
-            verticalLine.path = path
-            verticalLine.strokeColor = .white  // Set color of grid lines
-            verticalLine.lineWidth = 1.0
-            verticalLine.alpha = 0.55 // OPACITY OF LINES
-            
-            addChild(verticalLine)
-        }
-    }
     
-    func drawNewGridRows() {
-        // Draw new horizontal lines for rows above the current grid
-        for row in (highestRowDrawn)...(highestRowDrawn + numberOfRows) {
-            let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
-            let horizontalLine = SKShapeNode()
-            let path = CGMutablePath()
-            path.move(to: CGPoint(x: -size.width, y: yPosition))
-            path.addLine(to: CGPoint(x: size.width, y: yPosition))
-            horizontalLine.path = path
-            horizontalLine.strokeColor = .white
-            horizontalLine.lineWidth = 1.0
-            
-            addChild(horizontalLine)
-        }
-
-        // Extend the vertical lines for the new height of the grid
-        for column in 0...numberOfColumns {
-            let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
-            let startPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn) * cellHeight)
-            let endPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn + numberOfRows) * cellHeight)
-            
-            let verticalLine = SKShapeNode()
-            let path = CGMutablePath()
-            path.move(to: startPoint)
-            path.addLine(to: endPoint)
-            verticalLine.path = path
-            verticalLine.strokeColor = .white
-            verticalLine.lineWidth = 1.0
-
-            addChild(verticalLine)
-        }
-    }
-    */
-
+    /*
+     func drawGridLines() {
+     // Horizontal lines
+     for row in 0...numberOfRows {
+     let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
+     let startPoint = CGPoint(x: -size.width, y: yPosition)
+     let endPoint = CGPoint(x: size.width, y: yPosition)
+     
+     let horizontalLine = SKShapeNode()
+     let path = CGMutablePath()
+     path.move(to: startPoint)
+     path.addLine(to: endPoint)
+     horizontalLine.path = path
+     horizontalLine.strokeColor = .white  // Set color of grid lines
+     horizontalLine.lineWidth = 1.0
+     horizontalLine.alpha = 0.55 // OPACITY OF LINES
+     
+     addChild(horizontalLine)
+     }
+     
+     // Vertical lines
+     for column in 0...numberOfColumns {
+     let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
+     let startPoint = CGPoint(x: xPosition, y: -size.height)
+     let endPoint = CGPoint(x: xPosition, y: size.height)
+     
+     let verticalLine = SKShapeNode()
+     let path = CGMutablePath()
+     path.move(to: startPoint)
+     path.addLine(to: endPoint)
+     verticalLine.path = path
+     verticalLine.strokeColor = .white  // Set color of grid lines
+     verticalLine.lineWidth = 1.0
+     verticalLine.alpha = 0.55 // OPACITY OF LINES
+     
+     addChild(verticalLine)
+     }
+     }
+     
+     func drawNewGridRows() {
+     // Draw new horizontal lines for rows above the current grid
+     for row in (highestRowDrawn)...(highestRowDrawn + numberOfRows) {
+     let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
+     let horizontalLine = SKShapeNode()
+     let path = CGMutablePath()
+     path.move(to: CGPoint(x: -size.width, y: yPosition))
+     path.addLine(to: CGPoint(x: size.width, y: yPosition))
+     horizontalLine.path = path
+     horizontalLine.strokeColor = .white
+     horizontalLine.lineWidth = 1.0
+     
+     addChild(horizontalLine)
+     }
+     
+     // Extend the vertical lines for the new height of the grid
+     for column in 0...numberOfColumns {
+     let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
+     let startPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn) * cellHeight)
+     let endPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn + numberOfRows) * cellHeight)
+     
+     let verticalLine = SKShapeNode()
+     let path = CGMutablePath()
+     path.move(to: startPoint)
+     path.addLine(to: endPoint)
+     verticalLine.path = path
+     verticalLine.strokeColor = .white
+     verticalLine.lineWidth = 1.0
+     
+     addChild(verticalLine)
+     }
+     }
+     */
+    
     func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
         let row = Int(position.y / cellHeight)
         let column = Int(position.x / cellWidth)
@@ -871,64 +873,64 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 lane += 1
             }
             /*
-            // Number of lanes in a row with enemies
-            let chanceOfEnemyRows = Int.random(in: 1...20)
-            var numberOfEnemyRows: Int = 0
-            
-            if chanceOfEnemyRows > 13 {
-                numberOfEnemyRows = 3
-            }
-            else if chanceOfEnemyRows > 4 {
-                numberOfEnemyRows = 2
-            }
-            else if chanceOfEnemyRows > 2 {
-                numberOfEnemyRows = 1
-            }
-            else if chanceOfEnemyRows == 2 {
-                numberOfEnemyRows = 4
-            }
-            else {
-                numberOfEnemyRows = 5
-            }
-            
-            for _ in i...i + numberOfEnemyRows {
-                let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
-                let leftStart = CGPoint(x: -size.width, y: newYPosition)
-                let rightStart = CGPoint(x: size.width, y: newYPosition)
-                
-                // 1/20 chance to spawn eel
-                let eelSpawn = Int.random(in: 0..<21)
-                let laneType: String
-                let laneSpeed: CGFloat
-                
-                if eelSpawn == 20 {
-                    laneType = "Eel"
-                    laneSpeed = 0.0
-                }
-                else if eelSpawn > 16 {
-                    laneType = "Shark"
-                    laneSpeed = CGFloat.random(in: 10..<13)
-                }
-                else if eelSpawn > 12 {
-                    laneType = "Jellyfish"
-                    laneSpeed = CGFloat.random(in: 8.5..<11.5)
-                }
-                else {
-                    laneType = "Spike"
-                    laneSpeed = CGFloat.random(in: 7..<10)
-                }
-                
-                // Random directions for lanes
-                laneDirection = Int.random(in: 0..<2)
-                
-                if laneDirection == 0 {
-                    newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: max(laneSpeed - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
-                } else {
-                    newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: max(laneSpeed - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
-                }
-                yPositionLanes = newYPosition
-                i += 1
-            }
+             // Number of lanes in a row with enemies
+             let chanceOfEnemyRows = Int.random(in: 1...20)
+             var numberOfEnemyRows: Int = 0
+             
+             if chanceOfEnemyRows > 13 {
+             numberOfEnemyRows = 3
+             }
+             else if chanceOfEnemyRows > 4 {
+             numberOfEnemyRows = 2
+             }
+             else if chanceOfEnemyRows > 2 {
+             numberOfEnemyRows = 1
+             }
+             else if chanceOfEnemyRows == 2 {
+             numberOfEnemyRows = 4
+             }
+             else {
+             numberOfEnemyRows = 5
+             }
+             
+             for _ in i...i + numberOfEnemyRows {
+             let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
+             let leftStart = CGPoint(x: -size.width, y: newYPosition)
+             let rightStart = CGPoint(x: size.width, y: newYPosition)
+             
+             // 1/20 chance to spawn eel
+             let eelSpawn = Int.random(in: 0..<21)
+             let laneType: String
+             let laneSpeed: CGFloat
+             
+             if eelSpawn == 20 {
+             laneType = "Eel"
+             laneSpeed = 0.0
+             }
+             else if eelSpawn > 16 {
+             laneType = "Shark"
+             laneSpeed = CGFloat.random(in: 10..<13)
+             }
+             else if eelSpawn > 12 {
+             laneType = "Jellyfish"
+             laneSpeed = CGFloat.random(in: 8.5..<11.5)
+             }
+             else {
+             laneType = "Spike"
+             laneSpeed = CGFloat.random(in: 7..<10)
+             }
+             
+             // Random directions for lanes
+             laneDirection = Int.random(in: 0..<2)
+             
+             if laneDirection == 0 {
+             newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: max(laneSpeed - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
+             } else {
+             newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: max(laneSpeed - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
+             }
+             yPositionLanes = newYPosition
+             i += 1
+             }
              */
         }
         // Update global lanes with new Lanes
@@ -949,7 +951,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     
-
+    
     func removeAllGestureRecognizers() {
         if let gestureRecognizers = view?.gestureRecognizers {
             for gesture in gestureRecognizers {
@@ -957,22 +959,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
-
+    
     func addGestureRecognizers() {
         // First, remove any existing gesture recognizers to prevent buildup
         removeAllGestureRecognizers()
-
+        
         let directions: [UISwipeGestureRecognizer.Direction] = [.up, .down, .left, .right]
         for direction in directions {
             let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
             swipe.direction = direction
             view?.addGestureRecognizer(swipe)
         }
-
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         view?.addGestureRecognizer(tap)
     }
-
+    
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
@@ -985,10 +987,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             moveBox(to: nextPosition)
         }
     }
-
+    
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer) {
         guard let box, !isGameOver else { return }
-
+        
         let nextPosition: CGPoint
         switch sender.direction {
         case .up:
@@ -1022,7 +1024,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     currentLongRockZone = "Right"
                 }
             }
-
+            
         default:
             return
         }
@@ -1050,7 +1052,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             // Mark the current action as completed
             self.isActionInProgress = false
-
+            
             
             // If there are more actions in the queue, execute the next one
             if let nextPosition = self.tapQueue.first {
@@ -1061,7 +1063,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
-
+    
     func spawnEnemy(in lane: Lane) {
         let enemy = OEEnemyNode(gridSize: gridSize)
         addChild(enemy)
@@ -1091,7 +1093,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
     }
-
+    
     func spawnEel(in lane: Lane) {
         let enemy = OEEnemyNode3(gridSize: gridSize)
         addChild(enemy)
@@ -1156,7 +1158,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func warn(in lane: Lane, completion: @escaping () -> Void) {
-
+        
         let warningLabel = SKLabelNode()
         warningLabel.fontColor = .red
         warningLabel.text = "WARNING"
@@ -1171,7 +1173,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             completion()
         }
     }
-
+    
     func startSpawning(lanes: [Lane]) {
         
         for lane in lanes {
@@ -1252,7 +1254,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 run(repeatAction)
             }
-
+            
             if lane.laneType == "Shark" {
                 let wait = SKAction.wait(forDuration: 4.5, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
@@ -1287,7 +1289,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             prevLane = lane
         }
     }
-      
+    
     // Color lanes that are empty or eel type
     func colorLane(in lane: Lane) {
         let laneColor = SKShapeNode(rect: CGRect(x: -size.width, y: lane.startPosition.y - cellHeight / 2, width: size.width * 2, height: cellHeight))
@@ -1303,7 +1305,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         laneColor.alpha = 0.5
         laneColor.zPosition = 0
         addChild(laneColor)
-//        print("Lane position: \(lane.startPosition.y)")
+        //        print("Lane position: \(lane.startPosition.y)")
     }
     
     // Function to spawn the shells randomly in grid spaces
@@ -1316,7 +1318,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         shell.physicsBody?.contactTestBitMask = PhysicsCategory.box
         shell.physicsBody?.collisionBitMask = PhysicsCategory.none
         shell.physicsBody?.isDynamic = false
-
+        
         // Create the pulsating effect with a pause
         let scaleUp = SKAction.scale(to: 1.2, duration: 0.5)
         let scaleDown = SKAction.scale(to: 1.0, duration: 0.5)
@@ -1324,10 +1326,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let pulsate = SKAction.sequence([scaleUp, scaleDown, wait])
         let repeatPulsate = SKAction.repeatForever(pulsate)
         shell.run(repeatPulsate)
-
-
+        
+        
         guard let box = box else { return }
-
+        
         let currPosition = gridPosition(for: box.position)
         let playerRow = currPosition.row
         let playerColumn = currPosition.column
@@ -1335,15 +1337,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let columns = Int(size.width / cellWidth)
         let columnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
         let playableColumnRange = columnRange.filter { $0 != playerColumn} //Filter out where the player is so shell can be seen spawning
-
+        
         let min = playerRow - 2
         let max = playerRow + 4
         let playableRowRange = min...max
-
+        
         var randomRow = Int.random(in: playableRowRange)
         var randomColumn = playableColumnRange.randomElement()!
         shell.position = positionFor(row: randomRow, column: randomColumn)
-
+        
         // Check lane type and ensure it's not "Eel" or "Lava" and make sure shell not spawning on seaweed
         var shellLaneType = currentLaneType(position: shell.position)?.lowercased()
         while shellLaneType == "eel" || shellLaneType == "lava" || seaweedPositions.contains(shell.position) {
@@ -1354,9 +1356,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         addChild(shell)
     }
-
+    
     // Function to add shells periodically
     func includeShells() {
+        guard hasGameStarted else { return }
         let initialDelay = SKAction.wait(forDuration: 8) // Add an initial delay of 30 seconds
         let shellSpawnAction = SKAction.repeatForever(
             SKAction.sequence([
@@ -1369,58 +1372,58 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let sequence = SKAction.sequence([initialDelay, shellSpawnAction])
         run(sequence, withKey: "spawnShells")
     }
-/*
-    // Function to increase score by 5 when player collects a shell **HIDE FOR NOW
-    func increaseScoreFromShell() {
-        guard !isGameOver else { return }
-        
-        score += 5 // Increase score by 5
-        scoreLabel.text = "\(score)" // Update the score label
-        
-        // Change the score label color to yellow
-        let orangeAction = SKAction.colorize(with: .orange, colorBlendFactor: 1.0, duration: 0.0)
-        let waitAction = SKAction.wait(forDuration: 0.5) // X.X SECONDS LONG YELLOW STAYS UPON SHELL COLLECTED
-        // Change the score label color back to white
-        let whiteAction = SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 1.0)
-        // Create a sequence of actions
-        let colorSequence = SKAction.sequence([orangeAction, waitAction, whiteAction])
-        
-        // Run the sequence on the score label
-        scoreLabel.run(colorSequence)
-    }
-*/
+    /*
+     // Function to increase score by 5 when player collects a shell **HIDE FOR NOW
+     func increaseScoreFromShell() {
+     guard !isGameOver else { return }
+     
+     score += 5 // Increase score by 5
+     scoreLabel.text = "\(score)" // Update the score label
+     
+     // Change the score label color to yellow
+     let orangeAction = SKAction.colorize(with: .orange, colorBlendFactor: 1.0, duration: 0.0)
+     let waitAction = SKAction.wait(forDuration: 0.5) // X.X SECONDS LONG YELLOW STAYS UPON SHELL COLLECTED
+     // Change the score label color back to white
+     let whiteAction = SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 1.0)
+     // Create a sequence of actions
+     let colorSequence = SKAction.sequence([orangeAction, waitAction, whiteAction])
+     
+     // Run the sequence on the score label
+     scoreLabel.run(colorSequence)
+     }
+     */
     func shellAnimation() {
         let newShell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
         newShell.size = CGSize(width: 40, height: 40) // Initial size
         newShell.alpha = 0 // Start fully transparent
-
+        
         // Adjust position more to the left and slightly upwards
         newShell.position = CGPoint(x: scoreLabel.position.x - 70, y: scoreLabel.position.y + 30)
         newShell.zPosition = scoreLabel.zPosition
-
+        
         // Define fade-in and enlarge action
         let fadeInAction = SKAction.fadeAlpha(to: 1.0, duration: 0.5) // Fade in over 0.5 seconds
         let enlargeAction = SKAction.scale(to: 1.5, duration: 0.5) // Enlarge over 0.5 seconds
-
+        
         // Pulsating effect (enlarge and shrink repeatedly)
         let scaleUp = SKAction.scale(to: 1.6, duration: 0.3)
         let scaleDown = SKAction.scale(to: 1.4, duration: 0.3)
         let pulsate = SKAction.sequence([scaleUp, scaleDown])
         let repeatPulsate = SKAction.repeatForever(pulsate)
-
+        
         // Run pulsating action
         newShell.run(repeatPulsate, withKey: "pulsateAction")
-
+        
         // Wait at the top for a set duration before fading out
         let waitAction = SKAction.wait(forDuration: 2.5) // Duration at the top with pulsating effect
         let fadeOutAction = SKAction.fadeOut(withDuration: 1.0) // Fade out over 1 second
-
+        
         // Stop pulsating before fading out
         let stopPulsating = SKAction.run {
             newShell.removeAction(forKey: "pulsateAction") // Stop pulsating
         }
         let removeAction = SKAction.removeFromParent() // Remove from scene after fade-out
-
+        
         // Sequence of actions
         let sequenceAction = SKAction.sequence([
             fadeInAction,  // Fade in
@@ -1451,7 +1454,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(countdownAction, withKey: "airCountdown")
     }
-
+    
     
     //METHOD TO SLOW DOWN CAMERA
     func slowDownCamera() {
@@ -1474,7 +1477,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         cameraNode.run(sequenceAction)
     }
-
+    
     func didBeginShellContact(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB
@@ -1487,22 +1490,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             shellNode = bodyB.node!
         }
-
+        
         // Remove the shell from the scene
         shellNode.removeFromParent()
         
         // Show a new shell next to the score
         shellAnimation()
-
+        
         // Slow down the camera movement
         slowDownCamera()
     }
-
+    
     // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {
         // Determine if the bubble should be a GoldBubble
         let isGoldBubble = Int.random(in: 0..<100) < 10 // Adjust as needed the < XX is % spawn rate
-
+        
         // Create the bubble (GoldBubble or regular Bubble)
         let bubble: SKSpriteNode
         if isGoldBubble && firstBubble != nil {
@@ -1518,11 +1521,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
         }
-
+        
         bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
         bubble.physicsBody?.isDynamic = false
-
+        
         // If this is the first bubble, set a fixed position
         if firstBubble == nil {
             let fixedRow = 3
@@ -1592,13 +1595,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         bubbleTextBackground?.strokeColor = .clear // No border
         bubbleTextBackground?.position = CGPoint(x: bubbleText!.position.x, y: bubbleText!.position.y + 10)
         bubbleTextBackground?.zPosition = bubbleText!.zPosition - 1 // Put it behind the text
-
+        
         // Add the background and the text to the scene
         addChild(bubbleTextBackground!)
         addChild(bubbleText!)
     }
     
     func includeBubbles() {
+        guard hasGameStarted else { return }
         let bubbleSpawnAction = SKAction.repeatForever(
             SKAction.sequence([
                 SKAction.run { [weak self] in
@@ -1609,7 +1613,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
     }
-
+    
     func setupAirDisplay() {
         airIcon = SKSpriteNode(imageNamed: "AirMeter")
         airIcon.size = CGSize(width: 35, height: 50)
@@ -1617,6 +1621,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airIcon.zPosition = 1000
         cameraNode.addChild(airIcon)
 
+        // Ensure there's only one airLabel
+        airLabel?.removeFromParent()
         airLabel = SKLabelNode(fontNamed: "SF Mono")
         airLabel.fontSize = 32
         airLabel.fontColor = .white
@@ -1629,6 +1635,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     // Continuously decreases air during game
     func airCountDown() {
+        guard hasGameStarted else { return } // Ensure countdown starts only if game has started
         let countdownAction = SKAction.repeatForever(
             SKAction.sequence([
                 SKAction.run { [weak self] in
@@ -1639,46 +1646,32 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(countdownAction, withKey: "airCountdown")
     }
-
+    
     // Function to decrease air by 1 (called in aircountdown) // Air Meter Animation for Low Air
     func decreaseAir() {
         guard !isGameOver else { return }
-
-        // Update air label
+        
+        airAmount -= 1
         airLabel.text = "\(airAmount)"
-
-        // Change air label color when air is low
+        
         if airAmount < 17 {
             airLabel.fontColor = .red
-        } else {
-            airLabel.fontColor = .white
-        }
-
-        // Enlarge the AirMeter asset (airIcon) when low air and pulsate red
-        if airAmount < 17 {
-            let enlargeAction = SKAction.scale(to: CGSize(width: 52.5, height: 75), duration: 0.2) // Scale up by 1.5x
+            let enlargeAction = SKAction.scale(to: CGSize(width: 52.5, height: 75), duration: 0.2)
             airIcon.run(enlargeAction)
-
-            // Add pulsating red effect
             let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
             let normalAction = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
             let pulsateAction = SKAction.sequence([redAction, normalAction])
             airIcon.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
         } else {
-            let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 50), duration: 0.2) // Reset to original size
+            airLabel.fontColor = .white
+            let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 50), duration: 0.2)
             airIcon.run(shrinkAction)
-
-            // Remove the pulsating effect if air is 10 or more
             airIcon.removeAction(forKey: "pulsateRed")
-            airIcon.colorBlendFactor = 0.0 // Reset to normal color
+            airIcon.colorBlendFactor = 0.0
         }
-
-        // Decrease air amount
-        if airAmount > 0 {
-            airAmount -= 1
-            airLabel.text = "\(airAmount)"
-        } else {
-            gameOver(reason: "Out of air! The depths claimed you.")
+        
+        if airAmount <= 0 {
+            gameOver(reason: "Out of Air")
         }
     }
     
@@ -2045,7 +2038,37 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box = box else { return }
         
         box.snapToGrid(xPosition: position)
-        
+    }
+    
+    func showStartOverlay() {
+        // Create semi-transparent black background
+        let backgroundBox = SKShapeNode(rectOf: CGSize(width: 1000, height: 1000))
+        backgroundBox.name = "backgroundBox"
+        backgroundBox.position = CGPoint(x: 0, y: 0) // Centered on screen
+        backgroundBox.fillColor = .black
+        backgroundBox.alpha = 0.7 // Set appropriate opacity
+        backgroundBox.zPosition = 999 // Ensure it is behind the text but above other nodes
+        cameraNode.addChild(backgroundBox)
+
+        // Add the game logo
+        let logoTexture = SKTexture(imageNamed: "Logo")
+        let logoSprite = SKSpriteNode(texture: logoTexture)
+        logoSprite.name = "logoSprite"
+        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the "Tap to Begin" text
+        logoSprite.zPosition = 1000 // Make logo be the top visible layer
+        logoSprite.xScale = 0.6 // Scale width to 60%
+        logoSprite.yScale = 0.6 // Scale height to 60%
+        cameraNode.addChild(logoSprite)
+
+        // Display "Tap to Begin" message
+        let startLabel = SKLabelNode(text: "Tap to Begin")
+        startLabel.name = "startLabel"
+        startLabel.fontSize = 38
+        startLabel.fontColor = .white
+        startLabel.zPosition = 1000 // Ensure top visibility
+        startLabel.fontName = "Arial-BoldMT" // Use bold font
+        startLabel.position = CGPoint(x: 0, y: 40) // Centered on screen
+        cameraNode.addChild(startLabel)
     }
     
     func gameOver(reason: String) {
@@ -2106,11 +2129,34 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if isGameOver {
+        if isGameOver{
             restartGame()
         }
+        else if !hasGameStarted {
+            removeOverlay()
+            startGame()
+        }
     }
-
+    
+    func removeOverlay(){
+        cameraNode.childNode(withName: "backgroundBox")?.removeFromParent()
+        cameraNode.childNode(withName: "logoSprite")?.removeFromParent()
+        cameraNode.childNode(withName: "startLabel")?.removeFromParent()
+        
+    }
+    func startGame() {
+        hasGameStarted = true
+        score = 1 // Ensure score is greater than 0 to start
+        // Start camera movement and air countdown
+        setupAirDisplay()
+        airCountDown()
+        startCameraMovement()
+        
+        includeBubbles()
+        includeShells()
+        setupReef()
+    }
+    
     func restartGame() {
         // Clear all nodes and actions from the current scene
         removeAllActions()

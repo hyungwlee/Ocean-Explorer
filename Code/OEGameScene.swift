@@ -450,7 +450,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airCountDown()
         includeBubbles()
         includeShells()
-        spawnTemporaryArrow()
+     // spawnTemporaryArrow()
         
         startCameraMovement()
     }
@@ -515,12 +515,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupScoreLabel() {
-        scoreLabel = SKLabelNode(fontNamed: "SF Mono")
+        scoreLabel = SKLabelNode(fontNamed: "Arial-BoldMT")
         scoreLabel.fontSize = 75
         scoreLabel.fontColor = .white
         scoreLabel.zPosition = 1000
-        scoreLabel.position = CGPoint(x: -size.width / 2 + 170, y: size.height / 2 - 125)
-        scoreLabel.horizontalAlignmentMode = .left
+        scoreLabel.position = CGPoint(x: 0, y: size.height / 2 - 125) // Centered horizontally
+        scoreLabel.horizontalAlignmentMode = .center // Center the text alignment
         scoreLabel.text = "\(score)"
         cameraNode.addChild(scoreLabel)
     }
@@ -1614,7 +1614,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Create the text label
         bubbleText = SKLabelNode(text: "Collect Bubbles to Increase Air!")
-        bubbleText?.fontName = "Sf_mono"
+        bubbleText?.fontName = "Arial-BoldMT"
         bubbleText?.fontSize = 25
         bubbleText?.fontColor = .white
         bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 85)
@@ -1646,19 +1646,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupAirDisplay() {
+        // Remove existing airIcon and airLabel if they exist
+        airIcon?.removeFromParent()
+        airLabel?.removeFromParent()
+
+        // Create and configure the air icon
         airIcon = SKSpriteNode(imageNamed: "AirMeter")
-        airIcon.size = CGSize(width: 35, height: 50)
-        airIcon.position = CGPoint(x: size.width / 2 - 60, y: size.height / 2 - 70)
+        airIcon.size = CGSize(width: 80, height: 110) // Increased size
+        airIcon.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 70)
         airIcon.zPosition = 1000
         cameraNode.addChild(airIcon)
-
-        // Ensure there's only one airLabel
-        airLabel?.removeFromParent()
-        airLabel = SKLabelNode(fontNamed: "SF Mono")
-        airLabel.fontSize = 32
-        airLabel.fontColor = .white
+        
+        // Create and configure the air label
+        airLabel = SKLabelNode(fontNamed: "Arial-BoldMT")
+        airLabel.fontSize = 48 // Increased font size
+        airLabel.fontColor = UIColor(red: 0.678, green: 0.847, blue: 0.902, alpha: 1.0) // Light blue color
         airLabel.zPosition = 1000
-        airLabel.position = CGPoint(x: airIcon.position.x - 20, y: airIcon.position.y - 10)
+        airLabel.position = CGPoint(x: airIcon.position.x + 25, y: airIcon.position.y)
         airLabel.horizontalAlignmentMode = .right
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
@@ -1666,7 +1670,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     // Continuously decreases air during game
     func airCountDown() {
-        guard hasGameStarted else { return } // Ensure countdown starts only if game has started
+    guard hasGameStarted else { return } // Ensure countdown starts only if game has started
         let countdownAction = SKAction.repeatForever(
             SKAction.sequence([
                 SKAction.run { [weak self] in
@@ -1687,25 +1691,25 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         if airAmount < 17 {
             airLabel.fontColor = .red
-            let enlargeAction = SKAction.scale(to: CGSize(width: 52.5, height: 75), duration: 0.2)
+            let enlargeAction = SKAction.scale(to: CGSize(width: 95, height: 125), duration: 0.2)
             airIcon.run(enlargeAction)
             let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
             let normalAction = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
             let pulsateAction = SKAction.sequence([redAction, normalAction])
             airIcon.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
         } else {
-            airLabel.fontColor = .white
-            let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 50), duration: 0.2)
+            airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 1.0) // Darker blue color
+            let shrinkAction = SKAction.scale(to: CGSize(width: 80, height: 110), duration: 0.2)
             airIcon.run(shrinkAction)
             airIcon.removeAction(forKey: "pulsateRed")
             airIcon.colorBlendFactor = 0.0
         }
         
         if airAmount <= 0 {
-            gameOver(reason: "Out of Air")
+            gameOver(reason: "You Ran Out of Air and Drowned")
         }
     }
-    
+        
     // Function to increase air by a specific amount
     func increaseAir(by amount: Int) {
         guard !isGameOver else { return }
@@ -1717,6 +1721,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airLabel.text = "\(airAmount)"
     }
     
+    /*
     func spawnTemporaryArrow() {
         // Create the temporary arrow
         let temporaryArrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
@@ -1736,6 +1741,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Run the sequence on the arrow
         temporaryArrow.run(sequence)
     }
+    */
     
     // Handles player contact with bubbles, enemies, shells, and rocks
     func didBegin(_ contact: SKPhysicsContact) {

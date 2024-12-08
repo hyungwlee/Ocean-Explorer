@@ -1187,19 +1187,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func warn(in lane: Lane, completion: @escaping () -> Void) {
         
-        let warningLabel = SKLabelNode()
-        warningLabel.fontColor = .red
-        warningLabel.text = "WARNING"
-        warningLabel.fontSize = 30
+        let warningLabel = SKSpriteNode(imageNamed: "Warning")
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
+        warningLabel.size = CGSize(width: warningLabel.size.width * 0.75, height: warningLabel.size.height * 0.75)
         addChild(warningLabel)
-        let wait = SKAction.wait(forDuration: 1.0)
+        let fadeOut = SKAction.fadeOut(withDuration: 0.25)
+        let fadeIn = SKAction.fadeIn(withDuration: 0.25)
         let removeWarning = SKAction.removeFromParent()
-        let sequence = SKAction.sequence([wait, removeWarning])
+        let sequence = SKAction.sequence([fadeOut, fadeIn, fadeOut, fadeIn, fadeOut, removeWarning])
         // Run the sequence and trigger the completion block
         warningLabel.run(sequence) {
             completion()
         }
+        
     }
     
     func startSpawning(lanes: [Lane]) {

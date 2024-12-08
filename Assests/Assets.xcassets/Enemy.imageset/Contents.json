@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Urchin.png",
+      "filename" : "Urchin 1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Urchin 1.png",
+      "filename" : "Urchin@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Urchin 2.png",
+      "filename" : "Urchin@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

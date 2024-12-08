@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Seaweed.png",
+      "filename" : "Grass.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Seaweed 1.png",
+      "filename" : "Grass 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Seaweed 2.png",
+      "filename" : "Grass 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

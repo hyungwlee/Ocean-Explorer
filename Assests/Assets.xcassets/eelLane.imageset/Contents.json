@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Shark.png",
+      "filename" : "EEL LANE.jpg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Shark@2x.png",
+      "filename" : "EEL LANE@2x.jpg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Shark@3x.png",
+      "filename" : "EEL LANE@3x.jpg",
       "idiom" : "universal",
       "scale" : "3x"
     }

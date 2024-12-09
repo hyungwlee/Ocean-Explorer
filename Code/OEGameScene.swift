@@ -670,6 +670,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Game over if the character falls below the camera's view
         if box.position.y < cameraNode.position.y - size.height / 2 {
+            // Play the "fell" sound effect
+            playFellSound()
+            
+            // Trigger game over with the appropriate reason
             gameOver(reason: "You sank into the depths and disappeared!")
         }
         
@@ -1776,6 +1780,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isGameOver {
+                // Play the contact sound effect
+                playEnemyContactSound()
+
+                // Trigger game over
                 gameOver(reason: "A sea creature stopped your adventure!")
             }
         }
@@ -1783,6 +1791,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Handle contact with bubbles
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.bubble) ||
            (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
+            
+            // Play the bubble sound effect
+            playBubbleSound()
+            
             increaseAir(by: 5) // Regular bubble increases air by 5
             
             // Check which body is the bubble
@@ -1802,7 +1814,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 arrow?.removeFromParent()
                 bubbleText?.removeFromParent()
                 bubbleTextBackground?.removeFromParent()
-                
             }
         }
         
@@ -1967,7 +1978,33 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
+    
+    func playBubbleSound() {
+        if let soundURL = Bundle.main.url(forResource: "bubble", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Bubble sound file not found.")
+        }
+    }
 
+    func playEnemyContactSound() {
+        if let soundURL = Bundle.main.url(forResource: "contact", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Contact sound file not found.")
+        }
+    }
+    
     // Function to play the burned sound
     func playBurnedSound() {
         if let soundURL = Bundle.main.url(forResource: "burned", withExtension: "mp3") {
@@ -1979,6 +2016,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         } else {
             print("Burned sound file not found.")
+        }
+    }
+    
+    func playFellSound() {
+        if let soundURL = Bundle.main.url(forResource: "falling", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Fell sound file not found.")
         }
     }
     

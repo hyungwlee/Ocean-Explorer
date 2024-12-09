@@ -6,6 +6,7 @@
 //
 
 import SpriteKit
+import AVFoundation
 
 struct PhysicsCategory {
     static let none: UInt32 = 0
@@ -152,6 +153,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var cellHeight: CGFloat = 0
     
     var highestRowDrawn: Int = 15 // Track the highest row drawn for grid
+    var audioPlayer: AVAudioPlayer? // Audio player
     
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -1954,12 +1956,29 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
         
-        // Player is not on a rock, trigger death logic
+        // check if the player dies due to lava
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if !self.isGameOver && self.isPlayerOnRock == false {
+            if !self.isGameOver && !self.isPlayerOnRock {
+                // Play the "burned" sound only if the player dies
+                self.playBurnedSound()
+                
                 print("PLAYER NOT ON ROCK")
                 self.gameOver(reason: "You burned to death underwater!")
             }
+        }
+    }
+
+    // Function to play the burned sound
+    func playBurnedSound() {
+        if let soundURL = Bundle.main.url(forResource: "burned", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Burned sound file not found.")
         }
     }
     

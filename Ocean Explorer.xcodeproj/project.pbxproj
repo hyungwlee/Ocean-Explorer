@@ -36,6 +36,8 @@
 		FA02F59A2CD347D200E05631 /* OEGameContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA02F5992CD347D200E05631 /* OEGameContext.swift */; };
 		FA2E04152CD34CE1001DB9FB /* OEGameIdleState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2E04142CD34CE1001DB9FB /* OEGameIdleState.swift */; };
 		FA2E04172CD34D6D001DB9FB /* OEBoxNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2E04162CD34D6D001DB9FB /* OEBoxNode.swift */; };
+		FA5C75E82D078A550064E475 /* burned.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75E72D078A550064E475 /* burned.mp3 */; };
+		FA5C75E92D078A550064E475 /* burned.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75E72D078A550064E475 /* burned.mp3 */; };
 		FAC619EA2CD8BD2300C94F5E /* OEEnemyNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC619E92CD8BD2300C94F5E /* OEEnemyNode.swift */; };
 /* End PBXBuildFile section */
 
@@ -87,6 +89,7 @@
 		FA02F5992CD347D200E05631 /* OEGameContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEGameContext.swift; sourceTree = "<group>"; };
 		FA2E04142CD34CE1001DB9FB /* OEGameIdleState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEGameIdleState.swift; sourceTree = "<group>"; };
 		FA2E04162CD34D6D001DB9FB /* OEBoxNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEBoxNode.swift; sourceTree = "<group>"; };
+		FA5C75E72D078A550064E475 /* burned.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = burned.mp3; sourceTree = "<group>"; };
 		FAC619E92CD8BD2300C94F5E /* OEEnemyNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -188,6 +191,7 @@
 		0F3B8B4E2CCF5E6D00775DC7 /* Assests */ = {
 			isa = PBXGroup;
 			children = (
+				FA5C75E62D0787CB0064E475 /* Sounds */,
 				0F28EAB92CCDA52400F16CB4 /* Assets.xcassets */,
 			);
 			path = Assests;
@@ -237,6 +241,14 @@
 				FA2E04162CD34D6D001DB9FB /* OEBoxNode.swift */,
 			);
 			path = Nodes;
+			sourceTree = "<group>";
+		};
+		FA5C75E62D0787CB0064E475 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				FA5C75E72D078A550064E475 /* burned.mp3 */,
+			);
+			path = Sounds;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -364,6 +376,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA5C75E82D078A550064E475 /* burned.mp3 in Resources */,
 				0F28EAE32CCDA52400F16CB4 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -372,6 +385,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA5C75E92D078A550064E475 /* burned.mp3 in Resources */,
 				0F28EAE42CCDA52400F16CB4 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

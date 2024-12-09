@@ -1102,6 +1102,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let enemy = OEEnemyNode5(gridSize: gridSize)
         addChild(enemy)
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
+        enemy.animate()
     }
     
     func spawnLongEnemy(in lane: Lane) {
@@ -1111,6 +1112,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             enemy.xScale = -1
         }
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
+        enemy.animate()
     }
     
     func spawnPufferfish(in lane: Lane) {

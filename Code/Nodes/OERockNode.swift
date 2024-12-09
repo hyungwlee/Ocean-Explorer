@@ -17,7 +17,7 @@ class OERockNode: SKSpriteNode {
         
         let texture = SKTexture(imageNamed: "Rock")
                 
-        super.init(texture: texture, color: .gray, size: CGSize(width: texture.size().width * 1.5, height: texture.size().height * 1.4))
+        super.init(texture: texture, color: .gray, size: CGSize(width: texture.size().width * 0.40, height: texture.size().height * 0.40))
         
         self.zPosition = 1
 

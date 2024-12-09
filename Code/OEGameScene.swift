@@ -513,15 +513,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             addChild(box)
         }
     }
-    
+    let shadowLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
+
     func setupScoreLabel() {
-        scoreLabel = SKLabelNode(fontNamed: "Arial-BoldMT")
+        // Main score label
+        scoreLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
         scoreLabel.fontSize = 75
         scoreLabel.fontColor = .white
         scoreLabel.zPosition = 1000
         scoreLabel.position = CGPoint(x: 0, y: size.height / 2 - 125) // Centered horizontally
-        scoreLabel.horizontalAlignmentMode = .center // Center the text alignment
+        scoreLabel.horizontalAlignmentMode = .center
         scoreLabel.text = "\(score)"
+
+        // Shadow label
+        shadowLabel.fontSize = 75
+        shadowLabel.fontColor = .black.withAlphaComponent(0.5) // Semi-transparent shadow
+        shadowLabel.zPosition = 999 // Place below the main label
+        shadowLabel.position = CGPoint(x: scoreLabel.position.x + 5, y: scoreLabel.position.y - 5) // Slight offset
+        shadowLabel.horizontalAlignmentMode = .center
+        shadowLabel.text = "\(score)"
+        
+        // Add shadow and main score label to the camera node
+        cameraNode.addChild(shadowLabel)
         cameraNode.addChild(scoreLabel)
     }
     
@@ -533,6 +546,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             scoreDisplayed += 1
         }
         
+        // Update font colors and effects based on score milestones
         if score % 100 == 0 {
             scoreLabel.fontColor = .red // Gold color
         } else if score % 10 == 0 {
@@ -540,9 +554,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             scoreLabel.run(createPopOutAction()) // Apply the popping effect on multiples of 10
         } else {
             scoreLabel.fontColor = .white
+            shadowLabel.fontColor = .black.withAlphaComponent(0.5) // Default shadow color
         }
-        scoreLabel.text = "\(max(score, scoreDisplayed))"
+        
+        // Update the text for both labels
+        let updatedText = "\(max(score, scoreDisplayed))"
+        scoreLabel.text = updatedText
+        shadowLabel.text = updatedText
     }
+
     
     func createPopOutAction() -> SKAction {
         let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
@@ -1614,7 +1634,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Create the text label
         bubbleText = SKLabelNode(text: "Collect Bubbles to Increase Air!")
-        bubbleText?.fontName = "Arial-BoldMT"
+        bubbleText?.fontName = "Helvetica Neue"
         bubbleText?.fontSize = 25
         bubbleText?.fontColor = .white
         bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 85)
@@ -1658,7 +1678,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.addChild(airIcon)
         
         // Create and configure the air label
-        airLabel = SKLabelNode(fontNamed: "Arial-BoldMT")
+        airLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
         airLabel.fontSize = 48 // Increased font size
         airLabel.fontColor = UIColor(red: 0.678, green: 0.847, blue: 0.902, alpha: 1.0) // Light blue color
         airLabel.zPosition = 1000
@@ -2146,7 +2166,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         reasonLabel.fontSize = 22
         reasonLabel.fontColor = .lightGray
         reasonLabel.zPosition = 1000 // Ensure top visibility
-        reasonLabel.fontName = "Arial-BoldMT" // Use bold font
+        reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font
         reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
         cameraNode.addChild(reasonLabel)
 
@@ -2158,7 +2178,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         finalScoreLabel.fontSize = 38
         finalScoreLabel.fontColor = .white
         finalScoreLabel.zPosition = 1000 // Make text be the top visible layer
-        finalScoreLabel.fontName = "Arial-BoldMT" // Use bold font
+        finalScoreLabel.fontName = "Helvetica Neue Bold" // Use bold font
         finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
         cameraNode.addChild(finalScoreLabel)
 
@@ -2167,7 +2187,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         restartLabel.fontSize = 20
         restartLabel.fontColor = .white
         restartLabel.zPosition = 1000 // Make text be the top visible layer
-        restartLabel.fontName = "Arial" // Use bold font
+        restartLabel.fontName = "Arial-BoldMT" // Use bold font
         restartLabel.position = CGPoint(x: 0, y: -350) // Positioned below the final score
         cameraNode.addChild(restartLabel)
 

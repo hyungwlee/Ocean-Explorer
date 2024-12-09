@@ -2139,7 +2139,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func gameOver(reason: String) {
-
         isGameOver = true
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
@@ -2181,6 +2180,30 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         finalScoreLabel.fontName = "Helvetica Neue Bold" // Use bold font
         finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
         cameraNode.addChild(finalScoreLabel)
+
+        // Display asset based on reason
+        let reasonAsset: SKSpriteNode
+        switch reason {
+        case "You burned to death underwater!":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameBurned")
+        case "A sea creature stopped your adventure!":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameContact")
+        case "You Ran Out of Air and Drowned":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameDrowned")
+        case "You were swept away by the rocks!":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+        case "You sank into the depths and disappeared!":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+        default:
+            reasonAsset = SKSpriteNode() // Fallback to an empty node
+        }
+        
+        // Position the reason asset below the final score
+        reasonAsset.position = CGPoint(x: 0, y: -50)
+        reasonAsset.zPosition = 1000
+        reasonAsset.xScale = 1.0 // Adjust scale as needed
+        reasonAsset.yScale = 1.0
+        cameraNode.addChild(reasonAsset)
 
         // Display "Tap to Restart" message
         let restartLabel = SKLabelNode(text: "Tap to Restart")

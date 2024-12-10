@@ -1069,6 +1069,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             nextPosition = CGPoint(x: box.position.x, y: box.position.y - cellHeight)
             score -= 1
         case .left:
+            if isPlayerOnRock { // Check if the player is on the rock
+                playRockJumpSound()
+            }
             nextPosition = CGPoint(x: max(box.position.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
             if currentRock2 != nil && currentRockZone == "Right" {
                 currentRockZone = "Left"
@@ -1082,6 +1085,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         case .right:
+            if isPlayerOnRock { // Check if the player is on the rock
+                playRockJumpSound()
+            }
             nextPosition = CGPoint(x: min(box.position.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
             if currentRock2 != nil && currentRockZone == "Left" {
                 currentRockZone = "Right"
@@ -1170,6 +1176,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let enemy = OEEnemyNode3(gridSize: gridSize)
         addChild(enemy)
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
+        
     }
     
     func spawnLava(in lane: Lane) {
@@ -1243,7 +1250,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         warningLabel.run(sequence) {
             completion()
         }
-        
     }
     
     func startSpawning(lanes: [Lane]) {
@@ -2004,7 +2010,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             do {
                 backgroundMusicPlayer = try AVAudioPlayer(contentsOf: musicURL)
                 backgroundMusicPlayer?.numberOfLoops = -1 // Loop indefinitely
-                backgroundMusicPlayer?.volume = 0.5       // Adjust volume as needed
+                backgroundMusicPlayer?.volume = 0.3       // Adjust volume as needed
                 backgroundMusicPlayer?.play()
             } catch {
                 print("Error playing background music: \(error.localizedDescription)")
@@ -2018,6 +2024,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         backgroundMusicPlayer?.stop()
         backgroundMusicPlayer = nil
     }
+    
+    func playElectricitySound() {
+        if let soundURL = Bundle.main.url(forResource: "electricity", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing gameOver sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Electricity sound file not found.")
+        }
+    }
+
     
     func playGameOverSound() {
         if let soundURL = Bundle.main.url(forResource: "gameOver", withExtension: "mp3") {
@@ -2049,6 +2069,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let soundURL = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.75 // Set to maximum volume
                 audioPlayer?.play()
             } catch {
                 print("Error playing rockjump sound: \(error.localizedDescription)")
@@ -2075,6 +2096,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let soundURL = Bundle.main.url(forResource: "bubble", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.90 // Set to maximum volume
                 audioPlayer?.play()
             } catch {
                 print("Error playing sound: \(error.localizedDescription)")

@@ -7,6 +7,8 @@
 
 import SpriteKit
 import AVFoundation
+import CoreHaptics
+import UIKit
 
 struct PhysicsCategory {
     static let none: UInt32 = 0
@@ -1017,6 +1019,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
+        
+        // Haptic feedback for movement
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+        
         if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
             box.alpha = 0
             let wait = SKAction.wait(forDuration: 0.04)
@@ -1024,6 +1031,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             box.run(SKAction.sequence([wait, makeVisible]))
         }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
+        moveBox(to: nextPosition)
         
         // Play the move sound effect
         playMoveSound()
@@ -1041,6 +1049,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box, !isGameOver else { return }
         
         let nextPosition: CGPoint
+        playMoveSound()
         switch sender.direction {
         case .up:
             if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
@@ -1556,12 +1565,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             shellNode = bodyB.node!
         }
+
+        // Remove the shell from the scene
+        shellNode.removeFromParent()
         
         // Play the shell pickup sound
         playShellPickupSound()
-        
-        // Remove the shell from the scene
-        shellNode.removeFromParent()
         
         // Show a new shell next to the score
         shellAnimation()
@@ -1831,6 +1840,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.GoldBubble) ||
            (bodyA.categoryBitMask == PhysicsCategory.GoldBubble && bodyB.categoryBitMask == PhysicsCategory.box) {
             increaseAir(by: 30) // GoldBubble increases air by 30
+            playBubbleSound() // sound for picking up bubbles
             
             // Check which body is the GoldBubble
             let goldBubbleNode: SKNode
@@ -2311,8 +2321,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Stop the background music
         stopBackgroundMusic()
         
-        // Play the game over sound effect
-        playGameOverSound()
+        // Delay the game over sound effect by 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.38) {
+            self.playGameOverSound()
+        }
         
         // Create semi-transparent black background
         let backgroundBox = SKShapeNode(rectOf: CGSize(width: 1000, height: 1000))

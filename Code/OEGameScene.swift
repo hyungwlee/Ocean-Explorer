@@ -154,6 +154,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     var highestRowDrawn: Int = 15 // Track the highest row drawn for grid
     var audioPlayer: AVAudioPlayer? // Audio player
+    var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
     
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -678,6 +679,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         if box.position.x > size.width / 2 || box.position.x < -size.width / 2 {
+            // Play the "fell" sound effect
+            //swept and fell have same sounds
+            playFellSound()
             gameOver(reason: "You were swept away by the rocks!")
         }
     }
@@ -1020,7 +1024,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             box.run(SKAction.sequence([wait, makeVisible]))
         }
         let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
-        moveBox(to: nextPosition)
+        
+        // Play the move sound effect
+        playMoveSound()
+        
         // If an action is already in progress, queue the next tap position
         if isActionInProgress {
             tapQueue.append(nextPosition)
@@ -1550,6 +1557,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             shellNode = bodyB.node!
         }
         
+        // Play the shell pickup sound
+        playShellPickupSound()
+        
         // Remove the shell from the scene
         shellNode.removeFromParent()
         
@@ -1979,6 +1989,78 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func playBackgroundMusic() { // play background music named "music" and loop
+        if let musicURL = Bundle.main.url(forResource: "music", withExtension: "mp3") {
+            do {
+                backgroundMusicPlayer = try AVAudioPlayer(contentsOf: musicURL)
+                backgroundMusicPlayer?.numberOfLoops = -1 // Loop indefinitely
+                backgroundMusicPlayer?.volume = 0.5       // Adjust volume as needed
+                backgroundMusicPlayer?.play()
+            } catch {
+                print("Error playing background music: \(error.localizedDescription)")
+            }
+        } else {
+            print("Background music file not found.")
+        }
+    }
+    
+    func stopBackgroundMusic() { // method to stop background music
+        backgroundMusicPlayer?.stop()
+        backgroundMusicPlayer = nil
+    }
+    
+    func playGameOverSound() {
+        if let soundURL = Bundle.main.url(forResource: "gameOver", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing gameOver sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Game over sound file not found.")
+        }
+    }
+    
+    func playShellPickupSound() {
+        if let soundURL = Bundle.main.url(forResource: "shellPickup", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing shellPickup sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Shell pickup sound file not found.")
+        }
+    }
+    
+    func playRockJumpSound() {
+        if let soundURL = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing rockjump sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Rockjump sound file not found.")
+        }
+    }
+    
+    func playMoveSound() {
+        if let soundURL = Bundle.main.url(forResource: "move", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing move sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Move sound file not found.")
+        }
+    }
+    
     func playBubbleSound() {
         if let soundURL = Bundle.main.url(forResource: "bubble", withExtension: "mp3") {
             do {
@@ -2130,6 +2212,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         for rock in rocks {
             if box.frame.intersects(rock.frame) {
                 print("PLAYER ON ROCK CONFIRMED")
+                
+                // Play the rock jump sound
+                playRockJumpSound()
+                
                 return true
             }
         }
@@ -2147,6 +2233,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         for rock in rocks {
             if box.frame.intersects(rock.frame) {
                 print("PLAYER ON ROCK CONFIRMED")
+                
+                // Play the rock jump sound
+                playRockJumpSound()
+                
                 return true
             }
         }
@@ -2164,6 +2254,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         for rock in rocks {
             if box.frame.intersects(rock.frame) {
                 print("PLAYER ON ROCK CONFIRMED")
+                
+                // Play the rock jump sound
+                playRockJumpSound()
+                
                 return true
             }
         }
@@ -2214,6 +2308,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
 
+        // Stop the background music
+        stopBackgroundMusic()
+        
+        // Play the game over sound effect
+        playGameOverSound()
+        
         // Create semi-transparent black background
         let backgroundBox = SKShapeNode(rectOf: CGSize(width: 1000, height: 1000))
         backgroundBox.position = CGPoint(x: 0, y: 0) // Centered on screen
@@ -2307,6 +2407,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     func startGame() {
         hasGameStarted = true
+        
+        playBackgroundMusic() //play background music
+        
         score = 1 // Ensure score is greater than 0 to start
         // Start camera movement and air countdown
         setupAirDisplay()
@@ -2332,6 +2435,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let newScene = OEGameScene(context: context!, size: size)
         newScene.scaleMode = .aspectFill
         view?.presentScene(newScene, transition: SKTransition.fade(withDuration: 1.0))
+        
+        // Start the background music
+        playBackgroundMusic()
     }
 
 }

@@ -1034,7 +1034,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             box.run(SKAction.sequence([wait, makeVisible]))
         }
         let nextPosition = CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)
-        playerNextPosition.y += cellHeight
+        if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
+            playerNextPosition.y += cellHeight
+        }
         moveBox(to: nextPosition)
         
         // Play the move sound effect
@@ -1050,6 +1052,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer) {
+        
+        if isActionInProgress {
+            return
+        }
+        
         guard let box, !isGameOver else { return }
         
         let nextPosition: CGPoint
@@ -1063,7 +1070,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 box.run(SKAction.sequence([wait, makeVisible]))
             }
             nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y + cellHeight)
-            playerNextPosition.y += cellHeight
+            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
+                playerNextPosition.y += cellHeight
+            }
         case .down:
             if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
                 box.alpha = 0
@@ -1072,11 +1081,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 box.run(SKAction.sequence([wait, makeVisible]))
             }
             nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y - cellHeight)
-            playerNextPosition.y -= cellHeight
+            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y - cellHeight)) {
+                playerNextPosition.y -= cellHeight
+            }
             score -= 1
         case .left:
             nextPosition = CGPoint(x: max(playerNextPosition.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
-            playerNextPosition.x -= cellWidth
+            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) {
+                playerNextPosition.x -= cellWidth
+            }
             if currentRock2 != nil && currentRockZone == "Right" {
                 currentRockZone = "Left"
             }
@@ -1090,7 +1103,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         case .right:
             nextPosition = CGPoint(x: min(playerNextPosition.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
-            playerNextPosition.x += cellWidth
+            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x + cellWidth, y: playerNextPosition.y)) {
+                playerNextPosition.x += cellWidth
+            }
             if currentRock2 != nil && currentRockZone == "Left" {
                 currentRockZone = "Right"
             }
@@ -1107,6 +1122,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
         moveBox(to: nextPosition)
+        
     }
     
     func moveBox(to position: CGPoint) {

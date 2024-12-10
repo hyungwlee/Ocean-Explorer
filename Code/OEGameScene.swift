@@ -105,8 +105,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     var firstLane: Bool = true
     
-    var playerNextPosition: CGPoint = .zero
-    
     // Keep track of current latest rock speed and direction
     var currentRockSpeed: String = ""
     
@@ -518,7 +516,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         box?.position = positionFor(row: 0, column: 0)
         if let box = box {
             addChild(box)
-            playerNextPosition = box.position
         }
     }
     let shadowLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
@@ -1027,14 +1024,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
         
-        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
+        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
             box.alpha = 0
             let wait = SKAction.wait(forDuration: 0.04)
             let makeVisible = SKAction.run { box.alpha = 1 }
             box.run(SKAction.sequence([wait, makeVisible]))
         }
-        let nextPosition = CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)
-        playerNextPosition.y += cellHeight
+        let nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
         moveBox(to: nextPosition)
         
         // Play the move sound effect
@@ -1042,7 +1038,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // If an action is already in progress, queue the next tap position
         if isActionInProgress {
-            tapQueue.append(playerNextPosition)
+            tapQueue.append(nextPosition)
         } else {
             // Execute immediately if no action is in progress
             moveBox(to: nextPosition)
@@ -1056,27 +1052,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         playMoveSound()
         switch sender.direction {
         case .up:
-            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
+            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
                 box.alpha = 0
                 let wait = SKAction.wait(forDuration: 0.04)
                 let makeVisible = SKAction.run { box.alpha = 1 }
                 box.run(SKAction.sequence([wait, makeVisible]))
             }
-            nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y + cellHeight)
-            playerNextPosition.y += cellHeight
+            nextPosition = CGPoint(x: box.position.x, y: box.position.y + cellHeight)
         case .down:
-            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
+            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight) {
                 box.alpha = 0
                 let wait = SKAction.wait(forDuration: 0.04)
                 let makeVisible = SKAction.run { box.alpha = 1 }
                 box.run(SKAction.sequence([wait, makeVisible]))
             }
-            nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y - cellHeight)
-            playerNextPosition.y -= cellHeight
+            nextPosition = CGPoint(x: box.position.x, y: box.position.y - cellHeight)
             score -= 1
         case .left:
-            nextPosition = CGPoint(x: max(playerNextPosition.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
-            playerNextPosition.x -= cellWidth
+            nextPosition = CGPoint(x: max(box.position.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
             if currentRock2 != nil && currentRockZone == "Right" {
                 currentRockZone = "Left"
             }
@@ -1089,8 +1082,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         case .right:
-            nextPosition = CGPoint(x: min(playerNextPosition.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
-            playerNextPosition.x += cellWidth
+            nextPosition = CGPoint(x: min(box.position.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
             if currentRock2 != nil && currentRockZone == "Left" {
                 currentRockZone = "Right"
             }
@@ -1124,7 +1116,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Example movement logic using an animation
         UIView.animate(withDuration: 0.3, animations: {
-            box.hop(to: position)
+            box.position = position
         }) { [weak self] _ in
             guard let self = self else { return }
             

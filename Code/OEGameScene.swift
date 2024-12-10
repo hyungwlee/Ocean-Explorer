@@ -2025,6 +2025,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         backgroundMusicPlayer = nil
     }
     
+    func playPufferfishInflateSound() {
+        if let soundURL = Bundle.main.url(forResource: "pufferfish", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.75 // Set to maximum volume
+                audioPlayer?.play()
+            } catch {
+                print("Error playing pufferfish inflate sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Pufferfish sound file not found.")
+        }
+    }
+
     func playElectricitySound() {
         if let soundURL = Bundle.main.url(forResource: "electricity", withExtension: "mp3") {
             do {

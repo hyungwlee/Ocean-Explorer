@@ -13,7 +13,8 @@ class OEBoxNode: SKSpriteNode {
     private let gridSize: CGSize
     private var lastClickTime: TimeInterval = 0
     private var isMoving = false
-
+    private var movementQueue: [CGPoint] = []
+    
     init(gridSize: CGSize) {
         self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Smiley")
@@ -60,8 +61,26 @@ class OEBoxNode: SKSpriteNode {
     }
     
     func snapToGrid(xPosition: CGFloat) {
+        
         let moveAction = SKAction.move(to: CGPoint(x: xPosition, y: self.position.y), duration: 0.01)
         self.run(moveAction)
     }
     
+    func hop(to position: CGPoint) {
+        
+        if position.x != self.position.x && isMoving {
+            return
+        }
+        
+        isMoving = true
+        let scaleDown = SKAction.scale(to: 0.8, duration: 0.1)
+        let scaleUp = SKAction.scale(to: 1.2, duration: 0.1)
+        let scaleDownBack = SKAction.scale(to: 1, duration: 0.1)
+        
+        let move = SKAction.move(to: position, duration: 0.3)
+        let hop = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
+        
+        self.run(SKAction.group([hop, move]))
+        isMoving = false
+    }
 }

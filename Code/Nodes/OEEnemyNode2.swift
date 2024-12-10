@@ -7,6 +7,7 @@
 
 import Foundation
 import SpriteKit
+import AVFoundation
 
 class OEEnemyNode2: SKSpriteNode {
     
@@ -14,6 +15,8 @@ class OEEnemyNode2: SKSpriteNode {
     
     private let detectionRadius: CGFloat = 100.0
     private var isPuffed: Bool = false
+    
+    var audioPlayer: AVAudioPlayer? // Audio player
     
     init(gridSize: CGSize) {
         self.gridSize = gridSize
@@ -31,6 +34,20 @@ class OEEnemyNode2: SKSpriteNode {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func playPufferfishInflateSound() {
+        if let soundURL = Bundle.main.url(forResource: "pufferfish", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.55 // Set to maximum volume
+                audioPlayer?.play()
+            } catch {
+                print("Error playing pufferfish inflate sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Pufferfish sound file not found.")
+        }
+    }
+    
     // Determine if player is close to pufferfish
     func checkProximityToPlayer(playerPosition:CGPoint) {
         let distance = hypot(playerPosition.x - position.x, playerPosition.y - position.y)
@@ -38,6 +55,7 @@ class OEEnemyNode2: SKSpriteNode {
         if distance < detectionRadius {
             if !isPuffed {
                 puff()
+                playPufferfishInflateSound()
             }
         } else {
             if isPuffed {

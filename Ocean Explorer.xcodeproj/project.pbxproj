@@ -57,6 +57,8 @@
 		FA5C76152D07CB440064E475 /* music.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76142D07CB440064E475 /* music.mp3 */; };
 		FA5C76162D07CB440064E475 /* music.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76142D07CB440064E475 /* music.mp3 */; };
 		FAC619EA2CD8BD2300C94F5E /* OEEnemyNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC619E92CD8BD2300C94F5E /* OEEnemyNode.swift */; };
+		FAF2F3B12D08D38E00D19215 /* pufferfish.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */; };
+		FAF2F3B22D08D38E00D19215 /* pufferfish.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -118,6 +120,7 @@
 		FA5C76112D07C87E0064E475 /* shellPickup.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = shellPickup.mp3; sourceTree = "<group>"; };
 		FA5C76142D07CB440064E475 /* music.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = music.mp3; sourceTree = "<group>"; };
 		FAC619E92CD8BD2300C94F5E /* OEEnemyNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode.swift; sourceTree = "<group>"; };
+		FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = pufferfish.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -273,6 +276,7 @@
 		FA5C75E62D0787CB0064E475 /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
+				FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */,
 				FA46185D2D08237E0024A29A /* electricity.mp3 */,
 				FA5C76142D07CB440064E475 /* music.mp3 */,
 				FA5C76112D07C87E0064E475 /* shellPickup.mp3 */,
@@ -422,6 +426,7 @@
 				FA5C76092D07C02A0064E475 /* move.mp3 in Resources */,
 				FA46186B2D0834CB0024A29A /* bubble.mp3 in Resources */,
 				0F28EAE32CCDA52400F16CB4 /* Assets.xcassets in Resources */,
+				FAF2F3B12D08D38E00D19215 /* pufferfish.mp3 in Resources */,
 				FA5C75F22D079BAB0064E475 /* falling.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -440,6 +445,7 @@
 				FA5C760A2D07C02A0064E475 /* move.mp3 in Resources */,
 				FA46186A2D0834CB0024A29A /* bubble.mp3 in Resources */,
 				0F28EAE42CCDA52400F16CB4 /* Assets.xcassets in Resources */,
+				FAF2F3B22D08D38E00D19215 /* pufferfish.mp3 in Resources */,
 				FA5C75F12D079BAB0064E475 /* falling.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -563,7 +563,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if score % 100 == 0 {
             scoreLabel.fontColor = .red // Gold color
         } else if score % 10 == 0 {
-            scoreLabel.fontColor = goldColor
             scoreLabel.run(createPopOutAction()) // Apply the popping effect on multiples of 10
         } else {
             scoreLabel.fontColor = .white
@@ -1034,8 +1033,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
         
-        // Haptic feedback for movement
-        softImpactFeedback.impactOccurred()
+        // Haptic feedback for each movement
+      //  softImpactFeedback.impactOccurred()
         
         if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
             box.alpha = 0
@@ -1449,7 +1448,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
         let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
-        shell.size = CGSize(width: 38, height: 38) // Adjust size as needed
+        shell.size = CGSize(width: 42, height: 42) // Adjust size as needed
         shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         shell.physicsBody = SKPhysicsBody(circleOfRadius: shell.size.width / 2.2)
         shell.physicsBody?.categoryBitMask = PhysicsCategory.shell
@@ -1458,9 +1457,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         shell.physicsBody?.isDynamic = false
         
         // Create the pulsating effect with a pause
-        let scaleUp = SKAction.scale(to: 1.2, duration: 0.5)
+        let scaleUp = SKAction.scale(to: 1.30, duration: 0.5)
         let scaleDown = SKAction.scale(to: 1.0, duration: 0.5)
-        let wait = SKAction.wait(forDuration: 3.0) // Wait for x seconds before animation
+        let wait = SKAction.wait(forDuration: 1.5) // Wait for x seconds before animation
         let pulsate = SKAction.sequence([scaleUp, scaleDown, wait])
         let repeatPulsate = SKAction.repeatForever(pulsate)
         shell.run(repeatPulsate)
@@ -1642,10 +1641,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         slowDownCamera()
     }
     
-    // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {
         // Determine if the bubble should be a GoldBubble
-        let isGoldBubble = Int.random(in: 0..<100) < 10 // Adjust as needed the < XX is % spawn rate
+        let isGoldBubble = Int.random(in: 0..<100) < 10 // Adjust as needed for spawn rate
         
         // Create the bubble (GoldBubble or regular Bubble)
         let bubble: SKSpriteNode
@@ -1657,8 +1655,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.GoldBubble // Ensure this is correct
         } else {
             bubble = SKSpriteNode(imageNamed: "Bubble") // Regular bubble asset
-            bubble.size = CGSize(width: 35, height: 35)
-            bubble.alpha = 0.75
+            bubble.size = CGSize(width: 38, height: 38)
+            bubble.alpha = 0.85
             bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
         }
@@ -1666,6 +1664,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
         bubble.physicsBody?.isDynamic = false
+        
+        // Create the pulsating effect with a pause (added delay between pulsations)
+        let scaleUp = SKAction.scale(to: 1.15, duration: 0.10)
+        let scaleDown = SKAction.scale(to: 1.0, duration: 0.10)
+        let scaleUp2 = SKAction.scale(to: 1.20, duration: 0.10)
+        let scaleDown2 = SKAction.scale(to: 1.0, duration: 0.10)
+        let wait = SKAction.wait(forDuration: 2.0) // Delay between pulsating
+        let pulsate = SKAction.sequence([scaleUp, scaleDown, scaleUp2, scaleDown2, wait])
+        // pulsate twice
+        let repeatPulsate = SKAction.repeatForever(pulsate)
+        bubble.run(repeatPulsate)
         
         // If this is the first bubble, set a fixed position
         if firstBubble == nil {
@@ -1675,7 +1684,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             firstBubble = bubble
             addArrowAndText(to: bubble)
         } else {
-            
             // Used to find the row range to place the bubble in randomly
             guard let box = box else { return }
             
@@ -1687,7 +1695,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Used to find the column range to place the bubble in randomly
             let columns = Int(size.width / cellWidth)
             let columnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
-            let playableColumnRange = columnRange.filter {$0 != playerColumn}
+            let playableColumnRange = columnRange.filter { $0 != playerColumn }
             
             // Create a row range for bubble to be placed randomly
             let min = playerRow - 2
@@ -1701,9 +1709,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Set the bubble position
             bubble.position = positionFor(row: randomRow, column: randomColumn)
             
-            // Check if bubble on the lava or eel lane and make sure it doesnt spawn on seaweed
+            // Check if bubble is on the lava or eel lane and make sure it doesn't spawn on seaweed
             var bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
-            while bubbleLaneType == "eel" ||  bubbleLaneType == "lava" || seaweedPositions.contains(bubble.position) {
+            while bubbleLaneType == "eel" || bubbleLaneType == "lava" || seaweedPositions.contains(bubble.position) {
                 randomRow += 1
                 randomColumn = playableColumnRange.randomElement()!
                 bubble.position = positionFor(row: randomRow, column: randomColumn)

@@ -1239,6 +1239,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             //Keep track of seaweed spots for bubble and shell placement
             seaweedPositions.insert(seaweed.position)
+            seaweed.animate()
         }
     }
     

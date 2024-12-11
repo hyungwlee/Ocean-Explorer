@@ -84,6 +84,12 @@ let hardSets: [[String]] = [
     ["Lava", "Lava", "Lava", "Lava", "Jellyfish", "Jellyfish"],
     ["Jellyfish", "Spike", "Jellyfish", "Spike", "Lava", "Lava", "Lava", "Lava", "Shark", "Lava", "Lava", "Lava", "Lava"]
 ]
+
+// Create haptic feedback generators
+let softImpactFeedback = UIImpactFeedbackGenerator(style: .soft) // For medium feedback
+let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
+let heavyImpactFeedback = UIImpactFeedbackGenerator(style: .heavy)  // For heavy feedback (e.g., death)
+
     
 @available(iOS 18.0, *)
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
@@ -1021,8 +1027,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box, !isGameOver else { return }
         
         // Haptic feedback for movement
-        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-        impactFeedback.impactOccurred()
+        softImpactFeedback.impactOccurred()
         
         if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
             box.alpha = 0
@@ -1050,6 +1055,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         let nextPosition: CGPoint
         playMoveSound()
+        softImpactFeedback.impactOccurred()
         switch sender.direction {
         case .up:
             if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
@@ -2351,6 +2357,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func gameOver(reason: String) {
         isGameOver = true
+        heavyImpactFeedback.impactOccurred()
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
 

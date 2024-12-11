@@ -24,13 +24,13 @@ class OERockNode3: SKSpriteNode {
     var rightSnapZone: CGPoint {
         return CGPoint(x: self.position.x + self.size.width * 0.25, y: self.position.y)
     }
-    
+
     init(height: CGFloat) {
-        
+
         let texture = SKTexture(imageNamed: "Rock3")
-                
-        super.init(texture: texture, color: .gray, size: CGSize(width: texture.size().width * 0.32, height: texture.size().height * 0.45))
-        
+
+        super.init(texture: texture, color: .gray, size: CGSize(width: texture.size().width * 0.32, height: texture.size().height * 0.40))
+
         self.zPosition = 1
 
         self.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: size.width * 0.9, height: height))
@@ -39,21 +39,21 @@ class OERockNode3: SKSpriteNode {
         self.physicsBody?.contactTestBitMask = PhysicsCategory.box
         self.physicsBody?.collisionBitMask = PhysicsCategory.none
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func startMoving(from start: CGPoint, to end: CGPoint, speed: CGFloat) {
         self.position = start
         self.rockSpeed = speed
-        
+
         if end.x > start.x {
             self.direction = CGVector(dx: 1, dy: 0)
         } else {
             self.direction = CGVector(dx: -1, dy: 0)
         }
-        
+
         let moveAction = SKAction.move(to: end, duration: speed)
 
         let removeAction = SKAction.removeFromParent()

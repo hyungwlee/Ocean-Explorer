@@ -14,6 +14,8 @@ class OEBoxNode: SKSpriteNode {
     private var lastClickTime: TimeInterval = 0
     private var isMoving = false
 
+    private var movementQueue: [CGPoint] = []
+    
     init(gridSize: CGSize) {
         self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Smiley")
@@ -64,4 +66,37 @@ class OEBoxNode: SKSpriteNode {
         self.run(moveAction)
     }
     
+
+    func getIsMoving() -> Bool {
+        return isMoving
+    }
+    
+    func hop(to position: CGPoint, inQueue: CGPoint, up: Bool) {
+        
+        if !up && isMoving {
+            return
+        }
+        else if isMoving {
+            movementQueue.append(inQueue)
+            print("QUEUED IT!")
+        } else {
+            
+            isMoving = true
+            let scaleDown = SKAction.scale(to: 0.8, duration: 0.05)
+            let scaleUp = SKAction.scale(to: 1.2, duration: 0.05)
+            let scaleDownBack = SKAction.scale(to: 1, duration: 0.05)
+            
+            let move = SKAction.move(to: position, duration: 0.15)
+            let hopAction = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
+            self.run(SKAction.group([hopAction, move])) {
+                print("NOW IM DONE MOVING")
+                self.isMoving = false
+                if let nextPosition = self.movementQueue.first {
+                    self.movementQueue.removeFirst()
+                    self.hop(to: nextPosition, inQueue: nextPosition, up: true)
+                }
+            }
+        }
+    }
+
 }

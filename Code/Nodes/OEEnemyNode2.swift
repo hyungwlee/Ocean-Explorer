@@ -15,11 +15,13 @@ class OEEnemyNode2: SKSpriteNode {
     private let detectionRadius: CGFloat = 100.0
     private var isPuffed: Bool = false
     
-    init(gridSize: CGSize) {
+    private var flipped: Bool
+    
+    init(gridSize: CGSize, flipped: Bool) {
         self.gridSize = gridSize
+        self.flipped = flipped
         let texture = SKTexture(imageNamed: "Pufferfish")
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.4, height: texture.size().height * 0.4))
-        
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.affectedByGravity = false // Disable gravity for the enemy
         self.physicsBody?.categoryBitMask = PhysicsCategory.enemy
@@ -51,7 +53,12 @@ class OEEnemyNode2: SKSpriteNode {
     func puff() {
         isPuffed = true
         
-        let puffUp = SKAction.scale(to: CGFloat(2.0), duration: 0.4)
+        var puffUp = SKAction.scale(to: CGFloat(2.0), duration: 0.4)
+        if flipped {
+            let puffUpX = SKAction.scaleX(to: CGFloat(-2.0), duration: 0.4)
+            let puffUpY = SKAction.scaleY(to: CGFloat(2.0), duration: 0.4)
+            puffUp = SKAction.group([puffUpX, puffUpY])
+        }
         run(puffUp)
     }
     
@@ -59,7 +66,12 @@ class OEEnemyNode2: SKSpriteNode {
     func deflate() {
         isPuffed = false
         
-        let deflate = SKAction.scale(to: CGFloat(1.0), duration: 1)
+        var deflate = SKAction.scale(to: CGFloat(1.0), duration: 1)
+        if flipped {
+            let deflateX = SKAction.scaleX(to: CGFloat(-1.0), duration: 1)
+            let deflateY = SKAction.scaleY(to: CGFloat(1.0), duration: 1)
+            deflate = SKAction.group([deflateX, deflateY])
+        }
         run(deflate)
     }
     

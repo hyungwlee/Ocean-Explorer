@@ -66,21 +66,35 @@ class OEBoxNode: SKSpriteNode {
         self.run(moveAction)
     }
     
-    func hop(to position: CGPoint) {
+    func getIsMoving() -> Bool {
+        return isMoving
+    }
+    
+    func hop(to position: CGPoint, inQueue: CGPoint, up: Bool) {
         
-        if position.x != self.position.x && isMoving {
+        if !up && isMoving {
             return
         }
-        
-        isMoving = true
-        let scaleDown = SKAction.scale(to: 0.8, duration: 0.1)
-        let scaleUp = SKAction.scale(to: 1.2, duration: 0.1)
-        let scaleDownBack = SKAction.scale(to: 1, duration: 0.1)
-        
-        let move = SKAction.move(to: position, duration: 0.3)
-        let hop = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
-        
-        self.run(SKAction.group([hop, move]))
-        isMoving = false
+        else if isMoving {
+            movementQueue.append(inQueue)
+            print("QUEUED IT!")
+        } else {
+            
+            isMoving = true
+            let scaleDown = SKAction.scale(to: 0.8, duration: 0.05)
+            let scaleUp = SKAction.scale(to: 1.2, duration: 0.05)
+            let scaleDownBack = SKAction.scale(to: 1, duration: 0.05)
+            
+            let move = SKAction.move(to: position, duration: 0.15)
+            let hopAction = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
+            self.run(SKAction.group([hopAction, move])) {
+                print("NOW IM DONE MOVING")
+                self.isMoving = false
+                if let nextPosition = self.movementQueue.first {
+                    self.movementQueue.removeFirst()
+                    self.hop(to: nextPosition, inQueue: nextPosition, up: true)
+                }
+            }
+        }
     }
 }

@@ -243,7 +243,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
-                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 5.0, laneType: "Pufferfish"))
+                lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 5.0, laneType: "Pufferfish"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -633,23 +633,29 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Sync player movement with rock while they are on it
         if let rock = currentRock {
             box.position.x = rock.position.x // Follow the rock horizontally
+            playerNextPosition.x = rock.position.x
         }
         
         if let rock = currentRock2 {
             if currentRockZone == "Left" {
                 box.position.x = rock.position.x - rock.size.width * 0.2
+                playerNextPosition.x = rock.position.x - rock.size.width * 0.2
             } else {
                 box.position.x = rock.position.x + rock.size.width * 0.2
+                playerNextPosition.x = rock.position.x + rock.size.width * 0.2
             }
         }
         
         if let rock = currentRock3 {
             if currentLongRockZone == "Left" {
                 box.position.x = rock.leftSnapZone.x
+                playerNextPosition.x = rock.leftSnapZone.x
             } else if currentLongRockZone == "Center" {
                 box.position.x = rock.centerSnapZone.x
+                playerNextPosition.x = rock.centerSnapZone.x
             } else {
                 box.position.x = rock.rightSnapZone.x
+                playerNextPosition.x = rock.rightSnapZone.x
             }
         }
         
@@ -1036,23 +1042,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let nextPosition = CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)
         if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
             playerNextPosition.y += cellHeight
-        }
-        moveBox(to: nextPosition)
-        
-        // Play the move sound effect
-        playMoveSound()
-        
-        // If an action is already in progress, queue the next tap position
-        if isActionInProgress {
+            
+            
+            // Play the move sound effect
+            playMoveSound()
+            
+            // If an action is already in progress, queue the next tap position
+            print("QUEUING MOVEMENT")
             tapQueue.append(playerNextPosition)
-        } else {
-            // Execute immediately if no action is in progress
-            moveBox(to: nextPosition)
+            box.hop(to: nextPosition, inQueue: playerNextPosition, up: true)
+            updateScore()
         }
     }
     
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer) {
         
+        var hitSeaweed = false
         if isActionInProgress {
             return
         }
@@ -1062,17 +1067,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let nextPosition: CGPoint
         playMoveSound()
         switch sender.direction {
-        case .up:
-            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
-                box.alpha = 0
-                let wait = SKAction.wait(forDuration: 0.04)
-                let makeVisible = SKAction.run { box.alpha = 1 }
-                box.run(SKAction.sequence([wait, makeVisible]))
-            }
-            nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y + cellHeight)
-            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
-                playerNextPosition.y += cellHeight
-            }
+        
         case .down:
             if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
                 box.alpha = 0
@@ -1083,48 +1078,66 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y - cellHeight)
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y - cellHeight)) {
                 playerNextPosition.y -= cellHeight
+            } else {
+                hitSeaweed = true
             }
             score -= 1
         case .left:
             nextPosition = CGPoint(x: max(playerNextPosition.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
-            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) {
+            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) && !box.getIsMoving(){
+                print(isActionInProgress)
+                print("MOVING LEFT")
                 playerNextPosition.x -= cellWidth
+            } else {
+                hitSeaweed = true
             }
             if currentRock2 != nil && currentRockZone == "Right" {
                 currentRockZone = "Left"
+                return
             }
             if currentRock3 != nil {
                 if currentLongRockZone == "Right" {
                     currentLongRockZone = "Center"
+                    return
                 }
                 else if currentLongRockZone == "Center" {
                     currentLongRockZone = "Left"
+                    return
                 }
             }
         case .right:
             nextPosition = CGPoint(x: min(playerNextPosition.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
-            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x + cellWidth, y: playerNextPosition.y)) {
+            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x + cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() {
+                print("MOVING RIGHT")
                 playerNextPosition.x += cellWidth
+            } else {
+                hitSeaweed = true
             }
             if currentRock2 != nil && currentRockZone == "Left" {
                 currentRockZone = "Right"
+                return
             }
             if currentRock3 != nil {
                 if currentLongRockZone == "Left" {
                     currentLongRockZone = "Center"
+                    return
                 }
                 else if currentLongRockZone == "Center" {
                     currentLongRockZone = "Right"
+                    return
                 }
             }
             
         default:
             return
         }
-        moveBox(to: nextPosition)
+        if !hitSeaweed {
+                box.hop(to: nextPosition, inQueue: nextPosition, up: false)
+            }
         
     }
     
+  /*
     func moveBox(to position: CGPoint) {
         guard let box else { return }
         
@@ -1139,25 +1152,29 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         isActionInProgress = true
         
         // Example movement logic using an animation
-        UIView.animate(withDuration: 0.3, animations: {
+        UIView.animate(withDuration: 0.15, animations: {
+            
+            print("HOPPING")
+        
             box.hop(to: position)
+            
         }) { [weak self] _ in
             guard let self = self else { return }
-            
-            // Mark the current action as completed
-            self.isActionInProgress = false
-            
             
             // If there are more actions in the queue, execute the next one
             if let nextPosition = self.tapQueue.first {
                 self.tapQueue.removeFirst()
+                box.run(SKAction.wait(forDuration: 1))
                 self.moveBox(to: nextPosition)
                 // Update the score
                 updateScore()
+            } else {
+                self.isActionInProgress = false
             }
         }
+        
     }
-    
+    */
     func spawnEnemy(in lane: Lane) {
         let enemy = OEEnemyNode(gridSize: gridSize)
         addChild(enemy)
@@ -1182,7 +1199,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func spawnPufferfish(in lane: Lane) {
-        let enemy = OEEnemyNode2(gridSize: gridSize)
+        var flipped = false
+        if lane.direction == CGVector(dx: -1, dy: 0) {
+            flipped = true
+        }
+        let enemy = OEEnemyNode2(gridSize: gridSize, flipped: flipped)
         addChild(enemy)
         if lane.direction == CGVector(dx: -1, dy: 0) {
             enemy.xScale = -1
@@ -2304,6 +2325,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box = box else { return }
         
         box.snapToGrid(xPosition: position)
+        playerNextPosition.x = position
     }
     
     func showStartOverlay() {

@@ -84,6 +84,12 @@ let hardSets: [[String]] = [
     ["Lava", "Lava", "Lava", "Lava", "Jellyfish", "Jellyfish"],
     ["Jellyfish", "Spike", "Jellyfish", "Spike", "Lava", "Lava", "Lava", "Lava", "Shark", "Lava", "Lava", "Lava", "Lava"]
 ]
+
+// Create haptic feedback generators
+let softImpactFeedback = UIImpactFeedbackGenerator(style: .soft) // For medium feedback
+let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
+let heavyImpactFeedback = UIImpactFeedbackGenerator(style: .heavy)  // For heavy feedback (e.g., death)
+
     
 @available(iOS 18.0, *)
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
@@ -104,8 +110,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var hasGameStarted = false
     
     var firstLane: Bool = true
-    
-    var playerNextPosition: CGPoint = .zero
     
     // Keep track of current latest rock speed and direction
     var currentRockSpeed: String = ""
@@ -518,7 +522,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         box?.position = positionFor(row: 0, column: 0)
         if let box = box {
             addChild(box)
-            playerNextPosition = box.position
         }
     }
     let shadowLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
@@ -1030,15 +1033,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box, !isGameOver else { return }
         
         // Haptic feedback for movement
-        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-        impactFeedback.impactOccurred()
+        softImpactFeedback.impactOccurred()
         
-        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
+        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
             box.alpha = 0
             let wait = SKAction.wait(forDuration: 0.04)
             let makeVisible = SKAction.run { box.alpha = 1 }
             box.run(SKAction.sequence([wait, makeVisible]))
         }
+
         let nextPosition = CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)
         if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
             playerNextPosition.y += cellHeight
@@ -1052,6 +1055,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             tapQueue.append(playerNextPosition)
             box.hop(to: nextPosition, inQueue: playerNextPosition, up: true)
             updateScore()
+
         }
     }
     
@@ -1066,10 +1070,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         let nextPosition: CGPoint
         playMoveSound()
+        softImpactFeedback.impactOccurred()
         switch sender.direction {
-        
+
         case .down:
-            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
+            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight) {
                 box.alpha = 0
                 let wait = SKAction.wait(forDuration: 0.04)
                 let makeVisible = SKAction.run { box.alpha = 1 }
@@ -1083,6 +1088,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             score -= 1
         case .left:
+          if isPlayerOnRock { // Check if the player is on the rock
+                playRockJumpSound()
+            }
             nextPosition = CGPoint(x: max(playerNextPosition.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) && !box.getIsMoving(){
                 print(isActionInProgress)
@@ -1091,6 +1099,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             } else {
                 hitSeaweed = true
             }
+
             if currentRock2 != nil && currentRockZone == "Right" {
                 currentRockZone = "Left"
                 return
@@ -1106,6 +1115,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         case .right:
+            if isPlayerOnRock { // Check if the player is on the rock
+                playRockJumpSound()
+            }
             nextPosition = CGPoint(x: min(playerNextPosition.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x + cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() {
                 print("MOVING RIGHT")
@@ -1152,12 +1164,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         isActionInProgress = true
         
         // Example movement logic using an animation
+
         UIView.animate(withDuration: 0.15, animations: {
             
             print("HOPPING")
         
             box.hop(to: position)
             
+
         }) { [weak self] _ in
             guard let self = self else { return }
             
@@ -1215,6 +1229,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let enemy = OEEnemyNode3(gridSize: gridSize)
         addChild(enemy)
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition)
+        
     }
     
     func spawnLava(in lane: Lane) {
@@ -1271,6 +1286,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             //Keep track of seaweed spots for bubble and shell placement
             seaweedPositions.insert(seaweed.position)
+            seaweed.animate()
         }
     }
     
@@ -1288,7 +1304,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         warningLabel.run(sequence) {
             completion()
         }
-        
     }
     
     func startSpawning(lanes: [Lane]) {
@@ -2049,7 +2064,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             do {
                 backgroundMusicPlayer = try AVAudioPlayer(contentsOf: musicURL)
                 backgroundMusicPlayer?.numberOfLoops = -1 // Loop indefinitely
-                backgroundMusicPlayer?.volume = 0.5       // Adjust volume as needed
+                backgroundMusicPlayer?.volume = 0.3       // Adjust volume as needed
                 backgroundMusicPlayer?.play()
             } catch {
                 print("Error playing background music: \(error.localizedDescription)")
@@ -2063,6 +2078,34 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         backgroundMusicPlayer?.stop()
         backgroundMusicPlayer = nil
     }
+    
+    func playPufferfishInflateSound() {
+        if let soundURL = Bundle.main.url(forResource: "pufferfish", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.75 // Set to maximum volume
+                audioPlayer?.play()
+            } catch {
+                print("Error playing pufferfish inflate sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Pufferfish sound file not found.")
+        }
+    }
+
+    func playElectricitySound() {
+        if let soundURL = Bundle.main.url(forResource: "electricity", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.play()
+            } catch {
+                print("Error playing gameOver sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Electricity sound file not found.")
+        }
+    }
+
     
     func playGameOverSound() {
         if let soundURL = Bundle.main.url(forResource: "gameOver", withExtension: "mp3") {
@@ -2094,6 +2137,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let soundURL = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.75 // Set to maximum volume
                 audioPlayer?.play()
             } catch {
                 print("Error playing rockjump sound: \(error.localizedDescription)")
@@ -2120,6 +2164,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let soundURL = Bundle.main.url(forResource: "bubble", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.90 // Set to maximum volume
                 audioPlayer?.play()
             } catch {
                 print("Error playing sound: \(error.localizedDescription)")
@@ -2361,6 +2406,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func gameOver(reason: String) {
         isGameOver = true
+        heavyImpactFeedback.impactOccurred()
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
 

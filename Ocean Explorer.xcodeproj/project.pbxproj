@@ -36,18 +36,20 @@
 		FA02F59A2CD347D200E05631 /* OEGameContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA02F5992CD347D200E05631 /* OEGameContext.swift */; };
 		FA2E04152CD34CE1001DB9FB /* OEGameIdleState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2E04142CD34CE1001DB9FB /* OEGameIdleState.swift */; };
 		FA2E04172CD34D6D001DB9FB /* OEBoxNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2E04162CD34D6D001DB9FB /* OEBoxNode.swift */; };
+		FA46185E2D08237E0024A29A /* electricity.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA46185D2D08237E0024A29A /* electricity.mp3 */; };
+		FA46185F2D08237E0024A29A /* electricity.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA46185D2D08237E0024A29A /* electricity.mp3 */; };
+		FA4618672D082D210024A29A /* rockjump.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA4618662D082D210024A29A /* rockjump.mp3 */; };
+		FA4618682D082D210024A29A /* rockjump.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA4618662D082D210024A29A /* rockjump.mp3 */; };
+		FA46186A2D0834CB0024A29A /* bubble.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA4618692D0834CB0024A29A /* bubble.mp3 */; };
+		FA46186B2D0834CB0024A29A /* bubble.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA4618692D0834CB0024A29A /* bubble.mp3 */; };
 		FA5C75E82D078A550064E475 /* burned.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75E72D078A550064E475 /* burned.mp3 */; };
 		FA5C75E92D078A550064E475 /* burned.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75E72D078A550064E475 /* burned.mp3 */; };
 		FA5C75F12D079BAB0064E475 /* falling.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75F02D079BAB0064E475 /* falling.mp3 */; };
 		FA5C75F22D079BAB0064E475 /* falling.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75F02D079BAB0064E475 /* falling.mp3 */; };
-		FA5C75FD2D07A1AB0064E475 /* bubble.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75FC2D07A1AB0064E475 /* bubble.mp3 */; };
-		FA5C75FE2D07A1AB0064E475 /* bubble.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75FC2D07A1AB0064E475 /* bubble.mp3 */; };
 		FA5C76002D07AF2C0064E475 /* contact.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75FF2D07AF2C0064E475 /* contact.mp3 */; };
 		FA5C76012D07AF2C0064E475 /* contact.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C75FF2D07AF2C0064E475 /* contact.mp3 */; };
 		FA5C76092D07C02A0064E475 /* move.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76082D07C02A0064E475 /* move.mp3 */; };
 		FA5C760A2D07C02A0064E475 /* move.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76082D07C02A0064E475 /* move.mp3 */; };
-		FA5C760C2D07C2B10064E475 /* rockjump.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C760B2D07C2B10064E475 /* rockjump.mp3 */; };
-		FA5C760D2D07C2B10064E475 /* rockjump.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C760B2D07C2B10064E475 /* rockjump.mp3 */; };
 		FA5C760F2D07C6E40064E475 /* gameOver.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C760E2D07C6E40064E475 /* gameOver.mp3 */; };
 		FA5C76102D07C6E40064E475 /* gameOver.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C760E2D07C6E40064E475 /* gameOver.mp3 */; };
 		FA5C76122D07C87E0064E475 /* shellPickup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76112D07C87E0064E475 /* shellPickup.mp3 */; };
@@ -55,6 +57,8 @@
 		FA5C76152D07CB440064E475 /* music.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76142D07CB440064E475 /* music.mp3 */; };
 		FA5C76162D07CB440064E475 /* music.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76142D07CB440064E475 /* music.mp3 */; };
 		FAC619EA2CD8BD2300C94F5E /* OEEnemyNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC619E92CD8BD2300C94F5E /* OEEnemyNode.swift */; };
+		FAF2F3B12D08D38E00D19215 /* pufferfish.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */; };
+		FAF2F3B22D08D38E00D19215 /* pufferfish.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -105,16 +109,18 @@
 		FA02F5992CD347D200E05631 /* OEGameContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEGameContext.swift; sourceTree = "<group>"; };
 		FA2E04142CD34CE1001DB9FB /* OEGameIdleState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEGameIdleState.swift; sourceTree = "<group>"; };
 		FA2E04162CD34D6D001DB9FB /* OEBoxNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEBoxNode.swift; sourceTree = "<group>"; };
+		FA46185D2D08237E0024A29A /* electricity.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = electricity.mp3; sourceTree = "<group>"; };
+		FA4618662D082D210024A29A /* rockjump.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = rockjump.mp3; sourceTree = "<group>"; };
+		FA4618692D0834CB0024A29A /* bubble.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bubble.mp3; sourceTree = "<group>"; };
 		FA5C75E72D078A550064E475 /* burned.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = burned.mp3; sourceTree = "<group>"; };
 		FA5C75F02D079BAB0064E475 /* falling.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = falling.mp3; sourceTree = "<group>"; };
-		FA5C75FC2D07A1AB0064E475 /* bubble.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bubble.mp3; sourceTree = "<group>"; };
 		FA5C75FF2D07AF2C0064E475 /* contact.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = contact.mp3; sourceTree = "<group>"; };
 		FA5C76082D07C02A0064E475 /* move.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = move.mp3; sourceTree = "<group>"; };
-		FA5C760B2D07C2B10064E475 /* rockjump.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = rockjump.mp3; sourceTree = "<group>"; };
 		FA5C760E2D07C6E40064E475 /* gameOver.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = gameOver.mp3; sourceTree = "<group>"; };
 		FA5C76112D07C87E0064E475 /* shellPickup.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = shellPickup.mp3; sourceTree = "<group>"; };
 		FA5C76142D07CB440064E475 /* music.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = music.mp3; sourceTree = "<group>"; };
 		FAC619E92CD8BD2300C94F5E /* OEEnemyNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode.swift; sourceTree = "<group>"; };
+		FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = pufferfish.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -270,15 +276,17 @@
 		FA5C75E62D0787CB0064E475 /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
+				FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */,
+				FA46185D2D08237E0024A29A /* electricity.mp3 */,
 				FA5C76142D07CB440064E475 /* music.mp3 */,
 				FA5C76112D07C87E0064E475 /* shellPickup.mp3 */,
 				FA5C760E2D07C6E40064E475 /* gameOver.mp3 */,
-				FA5C760B2D07C2B10064E475 /* rockjump.mp3 */,
 				FA5C75FF2D07AF2C0064E475 /* contact.mp3 */,
 				FA5C75E72D078A550064E475 /* burned.mp3 */,
+				FA4618692D0834CB0024A29A /* bubble.mp3 */,
+				FA4618662D082D210024A29A /* rockjump.mp3 */,
 				FA5C75F02D079BAB0064E475 /* falling.mp3 */,
 				FA5C76082D07C02A0064E475 /* move.mp3 */,
-				FA5C75FC2D07A1AB0064E475 /* bubble.mp3 */,
 			);
 			path = Sounds;
 			sourceTree = "<group>";
@@ -411,12 +419,14 @@
 				FA5C76162D07CB440064E475 /* music.mp3 in Resources */,
 				FA5C76102D07C6E40064E475 /* gameOver.mp3 in Resources */,
 				FA5C76122D07C87E0064E475 /* shellPickup.mp3 in Resources */,
-				FA5C75FE2D07A1AB0064E475 /* bubble.mp3 in Resources */,
+				FA4618672D082D210024A29A /* rockjump.mp3 in Resources */,
 				FA5C76002D07AF2C0064E475 /* contact.mp3 in Resources */,
-				FA5C760D2D07C2B10064E475 /* rockjump.mp3 in Resources */,
 				FA5C75E82D078A550064E475 /* burned.mp3 in Resources */,
+				FA46185E2D08237E0024A29A /* electricity.mp3 in Resources */,
 				FA5C76092D07C02A0064E475 /* move.mp3 in Resources */,
+				FA46186B2D0834CB0024A29A /* bubble.mp3 in Resources */,
 				0F28EAE32CCDA52400F16CB4 /* Assets.xcassets in Resources */,
+				FAF2F3B12D08D38E00D19215 /* pufferfish.mp3 in Resources */,
 				FA5C75F22D079BAB0064E475 /* falling.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -428,12 +438,14 @@
 				FA5C76152D07CB440064E475 /* music.mp3 in Resources */,
 				FA5C760F2D07C6E40064E475 /* gameOver.mp3 in Resources */,
 				FA5C76132D07C87E0064E475 /* shellPickup.mp3 in Resources */,
-				FA5C75FD2D07A1AB0064E475 /* bubble.mp3 in Resources */,
+				FA4618682D082D210024A29A /* rockjump.mp3 in Resources */,
 				FA5C76012D07AF2C0064E475 /* contact.mp3 in Resources */,
-				FA5C760C2D07C2B10064E475 /* rockjump.mp3 in Resources */,
 				FA5C75E92D078A550064E475 /* burned.mp3 in Resources */,
+				FA46185F2D08237E0024A29A /* electricity.mp3 in Resources */,
 				FA5C760A2D07C02A0064E475 /* move.mp3 in Resources */,
+				FA46186A2D0834CB0024A29A /* bubble.mp3 in Resources */,
 				0F28EAE42CCDA52400F16CB4 /* Assets.xcassets in Resources */,
+				FAF2F3B22D08D38E00D19215 /* pufferfish.mp3 in Resources */,
 				FA5C75F12D079BAB0064E475 /* falling.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -645,6 +657,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NU5TQU2WVT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -674,6 +687,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NU5TQU2WVT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

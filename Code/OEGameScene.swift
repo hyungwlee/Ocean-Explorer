@@ -1049,7 +1049,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             
             // Play the move sound effect
-            playMoveSound()
+        //    playMoveSound()
             
             // If an action is already in progress, queue the next tap position
             print("QUEUING MOVEMENT")
@@ -1070,8 +1070,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box, !isGameOver else { return }
         
         let nextPosition: CGPoint
-        playMoveSound()
-        softImpactFeedback.impactOccurred()
+        // playMoveSound()
+        // softImpactFeedback.impactOccurred() // HAPTICS for swiping left/right
         switch sender.direction {
 
         case .down:
@@ -1762,7 +1762,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
     }
-    
+
     func setupAirDisplay() {
         // Remove existing airIcon and airLabel if they exist
         airIcon?.removeFromParent()

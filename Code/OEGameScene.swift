@@ -1238,6 +1238,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let lava = OELavaNode(size: CGSize(width: size.width * 2, height: cellHeight))
         addChild(lava)
         lava.position = CGPoint(x: 0, y: lane.startPosition.y)
+        lava.animate()
     }
     
     func spawnRock(in lane: Lane) {

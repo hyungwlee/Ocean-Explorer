@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "LAVA.png",
+      "filename" : "LAVA4.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "LAVA@2x.png",
+      "filename" : "LAVA4@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "LAVA@3x.png",
+      "filename" : "LAVA4@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

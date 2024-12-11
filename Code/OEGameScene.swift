@@ -138,6 +138,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
     var isActionInProgress = false // Flag to indicate if a movement is in progress
     
+    var playerNextPosition: CGPoint = .zero
     
     // Game state variable
     var isGameOver = false
@@ -522,6 +523,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         box?.position = positionFor(row: 0, column: 0)
         if let box = box {
             addChild(box)
+            playerNextPosition = box.position
         }
     }
     let shadowLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
@@ -1035,7 +1037,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Haptic feedback for movement
         softImpactFeedback.impactOccurred()
         
-        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
+        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
             box.alpha = 0
             let wait = SKAction.wait(forDuration: 0.04)
             let makeVisible = SKAction.run { box.alpha = 1 }
@@ -1074,7 +1076,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         switch sender.direction {
 
         case .down:
-            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight) {
+            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
                 box.alpha = 0
                 let wait = SKAction.wait(forDuration: 0.04)
                 let makeVisible = SKAction.run { box.alpha = 1 }

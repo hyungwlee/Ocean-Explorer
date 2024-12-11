@@ -14,6 +14,8 @@ class OEBoxNode: SKSpriteNode {
     private var lastClickTime: TimeInterval = 0
     private var isMoving = false
 
+    private var movementQueue: [CGPoint] = []
+    
     init(gridSize: CGSize) {
         self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Smiley")

@@ -9,6 +9,7 @@ import SpriteKit
 import AVFoundation
 import CoreHaptics
 import UIKit
+import AudioToolbox
 
 struct PhysicsCategory {
     static let none: UInt32 = 0
@@ -163,8 +164,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     var highestRowDrawn: Int = 15 // Track the highest row drawn for grid
     var audioPlayer: AVAudioPlayer? // Audio player
-    var playerMovementAudio: AVAudioPlayer?
     var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
+    var playerMovementAudio: SystemSoundID = 0
     
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -180,16 +181,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Initially slow rock speed
         currentRockSpeed = "Slow"
  
-        if let soundURL = Bundle.main.url(forResource: "move", withExtension: "mp3") {
-            do {
-                playerMovementAudio = try AVAudioPlayer(contentsOf: soundURL)
-                playerMovementAudio?.prepareToPlay()
-            } catch {
-                print("Error playing move sound: \(error.localizedDescription)")
+        guard let url = Bundle.main.url(forResource: "move", withExtension: "mp3") else {
+                return
             }
-        } else {
-            print("Move sound file not found.")
-        }
+            let osstatus = AudioServicesCreateSystemSoundID(url as CFURL, &playerMovementAudio)
+            if osstatus != noErr { // or kAudioServicesNoError. same thing.
+                print("could not create system sound")
+                print("osstatus: \(osstatus)")
+            }
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
@@ -2161,8 +2160,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func playMoveSound() {
     
-        playerMovementAudio?.play()
-        
+        AudioServicesPlaySystemSound(playerMovementAudio)
     }
     
     func playBubbleSound() {

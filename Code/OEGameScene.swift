@@ -88,7 +88,7 @@ let hardSets: [[String]] = [
 
 // Create haptic feedback generators
 let softImpactFeedback = UIImpactFeedbackGenerator(style: .soft) // For medium feedback
-let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
+// let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
 let heavyImpactFeedback = UIImpactFeedbackGenerator(style: .heavy)  // For heavy feedback (e.g., death)
 
     
@@ -1618,7 +1618,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func didBeginShellContact(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB
-        
         print("Contact: \(bodyA.categoryBitMask) <-> \(bodyB.categoryBitMask)")  // Debugging collision
         
         let shellNode: SKNode
@@ -1633,6 +1632,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Play the shell pickup sound
         playShellPickupSound()
+        
+        softImpactFeedback.impactOccurred()
         
         // Show a new shell next to the score
         shellAnimation()
@@ -1824,15 +1825,39 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airIcon.colorBlendFactor = 0.0
         }
         
+        if airAmount < 6 {
+            if !mediumHapticActive { // Prevents multiple haptic generators
+                mediumHapticActive = true
+                startMediumHapticFeedback()
+            }
+        } else {
+            mediumHapticActive = false // Stops haptic feedback if airAmount goes above 6
+        }
+        
         if airAmount <= 0 {
+            mediumHapticActive = false // Ensures haptic stops when game ends
             gameOver(reason: "You Ran Out of Air and Drowned")
+        }
+    }
+
+    // Property to track haptic state
+    var mediumHapticActive = false
+    let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
+
+    // Function to handle medium haptic feedback
+    func startMediumHapticFeedback() {
+        DispatchQueue.global().async {
+            while self.mediumHapticActive {
+                self.mediumImpactFeedback.impactOccurred()
+                usleep(500_000) // 0.5-second interval
+            }
         }
     }
         
     // Function to increase air by a specific amount
     func increaseAir(by amount: Int) {
         guard !isGameOver else { return }
-
+        
         airAmount += amount
         if airAmount > 30 {
             airAmount = 30 // Cap the air at 30
@@ -1885,6 +1910,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             // Play the bubble sound effect
             playBubbleSound()
+            softImpactFeedback.impactOccurred()
             
             increaseAir(by: 5) // Regular bubble increases air by 5
             
@@ -2453,7 +2479,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Display the reason for game over
         let reasonLabel = SKLabelNode(text: reason)
-        reasonLabel.fontSize = 22
+        reasonLabel.fontSize = 19
         reasonLabel.fontColor = .white
         reasonLabel.zPosition = 1101 // Ensure top visibility
         reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font

@@ -32,9 +32,9 @@ class OELavaNode: SKSpriteNode {
         // Load lava textures
         let textures = [
             SKTexture(imageNamed: "Lava"),
-            SKTexture(imageNamed: "Lava2"),
-            SKTexture(imageNamed: "Lava3"),
-            SKTexture(imageNamed: "Lava4"),
+            SKTexture(imageNamed: "LAVA2"),
+            SKTexture(imageNamed: "LAVA3"),
+            SKTexture(imageNamed: "LAVA4"),
         ]
         
         // Create animation action

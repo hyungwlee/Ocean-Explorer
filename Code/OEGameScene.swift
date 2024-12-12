@@ -163,6 +163,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     var highestRowDrawn: Int = 15 // Track the highest row drawn for grid
     var audioPlayer: AVAudioPlayer? // Audio player
+    var playerMovementAudio: AVAudioPlayer?
     var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
     
     init(context: OEGameContext, size: CGSize) {
@@ -179,6 +180,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Initially slow rock speed
         currentRockSpeed = "Slow"
  
+        if let soundURL = Bundle.main.url(forResource: "move", withExtension: "mp3") {
+            do {
+                playerMovementAudio = try AVAudioPlayer(contentsOf: soundURL)
+                playerMovementAudio?.prepareToPlay()
+            } catch {
+                print("Error playing move sound: \(error.localizedDescription)")
+            }
+        } else {
+            print("Move sound file not found.")
+        }
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
@@ -2149,18 +2160,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func playMoveSound() {
-        if let soundURL = Bundle.main.url(forResource: "move", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                DispatchQueue.global().async {
-                    self.audioPlayer?.play()
-                }
-            } catch {
-                print("Error playing move sound: \(error.localizedDescription)")
-            }
-        } else {
-            print("Move sound file not found.")
-        }
+    
+        playerMovementAudio?.play()
+        
     }
     
     func playBubbleSound() {

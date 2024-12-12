@@ -1429,7 +1429,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let laneColor = SKShapeNode(rect: CGRect(x: -size.width, y: lane.startPosition.y - cellHeight / 2, width: size.width * 2, height: cellHeight))
         if lane.laneType == "Empty" {
             laneColor.fillColor = .white
-            laneColor.fillTexture = SKTexture(imageNamed: "Sand")
+            laneColor.fillTexture = SKTexture(imageNamed: "SAND")
         }
         else if lane.laneType == "Eel" {
             laneColor.fillColor = .white
@@ -1731,7 +1731,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         addChild(arrow!)
         
         // Create the text label
-        bubbleText = SKLabelNode(text: "Collect Bubbles to Increase Air!")
+        bubbleText = SKLabelNode(text: "collect bubbles to increase air")
         bubbleText?.fontName = "Helvetica Neue"
         bubbleText?.fontSize = 25
         bubbleText?.fontColor = .white
@@ -2391,17 +2391,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         backgroundBox.position = CGPoint(x: 0, y: 0) // Centered on screen
         backgroundBox.fillColor = .black
         backgroundBox.alpha = 0.7 // Set appropriate opacity
-        backgroundBox.zPosition = 999 // Ensure it is behind the text but above other nodes
+        backgroundBox.zPosition = 1001 // Ensure it is behind the text but above other nodes
         cameraNode.addChild(backgroundBox)
 
         // Add the game logo
-        let logoTexture = SKTexture(imageNamed: "Logo")
+        let logoTexture = SKTexture(imageNamed: "Logo1")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.name = "logoSprite"
         logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the "Tap to Begin" text
-        logoSprite.zPosition = 1000 // Make logo be the top visible layer
-        logoSprite.xScale = 0.6 // Scale width to 60%
-        logoSprite.yScale = 0.6 // Scale height to 60%
+        logoSprite.zPosition = 1010 // Make logo be the top visible layer
+        logoSprite.xScale = 0.35 // Scale width
+        logoSprite.yScale = 0.35 // Scale height
         cameraNode.addChild(logoSprite)
 
         // Display "Tap to Begin" message
@@ -2409,7 +2409,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         startLabel.name = "startLabel"
         startLabel.fontSize = 38
         startLabel.fontColor = .white
-        startLabel.zPosition = 1000 // Ensure top visibility
+        startLabel.zPosition = 1002 // Ensure top visibility
         startLabel.fontName = "Arial-BoldMT" // Use bold font
         startLabel.position = CGPoint(x: 0, y: 40) // Centered on screen
         cameraNode.addChild(startLabel)
@@ -2438,12 +2438,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.addChild(backgroundBox)
 
         // Add the game logo
-        let logoTexture = SKTexture(imageNamed: "Logo")
+        let logoTexture = SKTexture(imageNamed: "Logo1")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
         logoSprite.zPosition = 1000 // Make logo be the top visible layer
-        logoSprite.xScale = 0.6 // Scale width to 60%
-        logoSprite.yScale = 0.6 // Scale height to 60%
+        logoSprite.xScale = 0.35 // Scale width
+        logoSprite.yScale = 0.35 // Scale height
+        
         cameraNode.addChild(logoSprite)
 
         // Display the reason for game over

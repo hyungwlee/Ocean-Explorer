@@ -78,7 +78,6 @@ class OEBoxNode: SKSpriteNode {
         }
         else if isMoving {
             movementQueue.append(inQueue)
-            print("QUEUED IT!")
         } else {
             
             isMoving = true
@@ -89,7 +88,6 @@ class OEBoxNode: SKSpriteNode {
             let move = SKAction.move(to: position, duration: 0.15)
             let hopAction = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
             self.run(SKAction.group([hopAction, move])) {
-                print("NOW IM DONE MOVING")
                 self.isMoving = false
                 if let nextPosition = self.movementQueue.first {
                     self.movementQueue.removeFirst()

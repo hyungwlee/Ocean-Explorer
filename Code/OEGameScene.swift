@@ -9,6 +9,7 @@ import SpriteKit
 import AVFoundation
 import CoreHaptics
 import UIKit
+import AudioToolbox
 
 struct PhysicsCategory {
     static let none: UInt32 = 0
@@ -164,6 +165,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var highestRowDrawn: Int = 15 // Track the highest row drawn for grid
     var audioPlayer: AVAudioPlayer? // Audio player
     var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
+    var playerMovementAudio: SystemSoundID = 0
     
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -179,6 +181,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Initially slow rock speed
         currentRockSpeed = "Slow"
  
+        guard let url = Bundle.main.url(forResource: "move", withExtension: "mp3") else {
+                return
+            }
+            let osstatus = AudioServicesCreateSystemSoundID(url as CFURL, &playerMovementAudio)
+            if osstatus != noErr { // or kAudioServicesNoError. same thing.
+                print("could not create system sound")
+                print("osstatus: \(osstatus)")
+            }
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
@@ -1036,12 +1046,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Haptic feedback for each movement
       //  softImpactFeedback.impactOccurred()
         
-        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
-            box.alpha = 0
-            let wait = SKAction.wait(forDuration: 0.04)
-            let makeVisible = SKAction.run { box.alpha = 1 }
-            box.run(SKAction.sequence([wait, makeVisible]))
-        }
+
 
         let nextPosition = CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)
         if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
@@ -1049,7 +1054,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             
             // Play the move sound effect
-        //    playMoveSound()
+                playMoveSound()
             
             // If an action is already in progress, queue the next tap position
             print("QUEUING MOVEMENT")
@@ -1075,12 +1080,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         switch sender.direction {
 
         case .down:
-            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
-                box.alpha = 0
-                let wait = SKAction.wait(forDuration: 0.04)
-                let makeVisible = SKAction.run { box.alpha = 1 }
-                box.run(SKAction.sequence([wait, makeVisible]))
-            }
+    
             nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y - cellHeight)
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y - cellHeight)) {
                 playerNextPosition.y -= cellHeight
@@ -2160,16 +2160,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func playMoveSound() {
-        if let soundURL = Bundle.main.url(forResource: "move", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.play()
-            } catch {
-                print("Error playing move sound: \(error.localizedDescription)")
-            }
-        } else {
-            print("Move sound file not found.")
-        }
+    
+        AudioServicesPlaySystemSound(playerMovementAudio)
     }
     
     func playBubbleSound() {

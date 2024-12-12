@@ -1726,30 +1726,31 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create the arrow
         arrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
         arrow?.size = CGSize(width: 40, height: 40) // Adjust size as needed
-        arrow?.position = CGPoint(x: bubble.position.x - 35, y: bubble.position.y - 35) // Adjust position
+        arrow?.position = CGPoint(x: bubble.position.x - 30, y: bubble.position.y - 30) // Adjust position
         arrow?.zPosition = 1000
+        arrow?.alpha = 0.5 // Set transparency (50% opacity)
         addChild(arrow!)
         
         // Create the text label
-        bubbleText = SKLabelNode(text: "collect bubbles to increase air")
-        bubbleText?.fontName = "Helvetica Neue"
-        bubbleText?.fontSize = 25
+        bubbleText = SKLabelNode(text: "collect bubbles for air")
+        bubbleText?.fontName = "Helvetica Neue Bold"
+        bubbleText?.fontSize = 15
         bubbleText?.fontColor = .white
-        bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 85)
+        bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 72) // Slightly higher for vertical centering
         bubbleText?.zPosition = 1
         
         // Create a background rectangle for the text
-        bubbleTextBackground = SKShapeNode(rectOf: CGSize(width: bubbleText!.frame.width + 20, height: bubbleText!.frame.height + 10), cornerRadius: 10)
-        bubbleTextBackground?.fillColor = .black
+        bubbleTextBackground = SKShapeNode(rectOf: CGSize(width: bubbleText!.frame.width + 20, height: bubbleText!.frame.height + 5), cornerRadius: 8)
+        bubbleTextBackground?.fillColor = SKColor.black.withAlphaComponent(0.5) // Black with 50% transparency
         bubbleTextBackground?.strokeColor = .clear // No border
-        bubbleTextBackground?.position = CGPoint(x: bubbleText!.position.x, y: bubbleText!.position.y + 10)
+        bubbleTextBackground?.position = CGPoint(x: bubbleText!.position.x, y: bubbleText!.position.y + bubbleText!.frame.height / 2) // Adjust for vertical centering
         bubbleTextBackground?.zPosition = bubbleText!.zPosition - 1 // Put it behind the text
         
         // Add the background and the text to the scene
         addChild(bubbleTextBackground!)
         addChild(bubbleText!)
     }
-    
+
     func includeBubbles() {
         guard hasGameStarted else { return }
         let bubbleSpawnAction = SKAction.repeatForever(
@@ -2429,32 +2430,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             self.playGameOverSound()
         }
         
-        // Create semi-transparent black background
-        let backgroundBox = SKShapeNode(rectOf: CGSize(width: 1000, height: 1000))
-        backgroundBox.position = CGPoint(x: 0, y: 0) // Centered on screen
-        backgroundBox.fillColor = .black
-        backgroundBox.alpha = 1.00 // Set full opacity
-        backgroundBox.zPosition = 999 // Ensure it is behind the text but above other nodes
-        cameraNode.addChild(backgroundBox)
+        // Create a background sprite for the end screen using the ocean image
+        let backgroundSprite = SKSpriteNode(imageNamed: "gameOver")
+        backgroundSprite.position = CGPoint(x: 0, y: 0) // Centered on screen
+        backgroundSprite.zPosition = 1100 // Ensure it is behind the text but above other nodes
+        backgroundSprite.size = self.size // Adjust to fill the screen
+        cameraNode.addChild(backgroundSprite)
 
         // Add the game logo
         let logoTexture = SKTexture(imageNamed: "Logo1")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
-        logoSprite.zPosition = 1000 // Make logo be the top visible layer
+        logoSprite.zPosition = 1101 // Make logo be the top visible layer
         logoSprite.xScale = 0.35 // Scale width
         logoSprite.yScale = 0.35 // Scale height
         
         cameraNode.addChild(logoSprite)
-
-        // Display the reason for game over
-        let reasonLabel = SKLabelNode(text: reason)
-        reasonLabel.fontSize = 22
-        reasonLabel.fontColor = .lightGray
-        reasonLabel.zPosition = 1000 // Ensure top visibility
-        reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font
-        reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
-        cameraNode.addChild(reasonLabel)
 
         // Save the current score
         let finalScore = score
@@ -2463,11 +2454,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
         finalScoreLabel.fontSize = 38
         finalScoreLabel.fontColor = .white
-        finalScoreLabel.zPosition = 1000 // Make text be the top visible layer
+        finalScoreLabel.zPosition = 1101 // Make text be the top visible layer
         finalScoreLabel.fontName = "Helvetica Neue Bold" // Use bold font
         finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
         cameraNode.addChild(finalScoreLabel)
-
+        
+        // Display the reason for game over
+        let reasonLabel = SKLabelNode(text: reason)
+        reasonLabel.fontSize = 22
+        reasonLabel.fontColor = .white
+        reasonLabel.zPosition = 1101 // Ensure top visibility
+        reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font
+        reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
+        cameraNode.addChild(reasonLabel)
+        
         // Display asset based on reason
         let reasonAsset: SKSpriteNode
         switch reason {
@@ -2487,7 +2487,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Position the reason asset below the final score
         reasonAsset.position = CGPoint(x: 0, y: -50)
-        reasonAsset.zPosition = 1000
+        reasonAsset.zPosition = 1101
         reasonAsset.xScale = 1.0 // Adjust scale as needed
         reasonAsset.yScale = 1.0
         cameraNode.addChild(reasonAsset)
@@ -2496,7 +2496,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let restartLabel = SKLabelNode(text: "Tap to Restart")
         restartLabel.fontSize = 20
         restartLabel.fontColor = .white
-        restartLabel.zPosition = 1000 // Make text be the top visible layer
+        restartLabel.zPosition = 1101 // Make text be the top visible layer
         restartLabel.fontName = "Arial-BoldMT" // Use bold font
         restartLabel.position = CGPoint(x: 0, y: -350) // Positioned below the final score
         cameraNode.addChild(restartLabel)

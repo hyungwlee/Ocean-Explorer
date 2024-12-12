@@ -1036,12 +1036,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Haptic feedback for each movement
       //  softImpactFeedback.impactOccurred()
         
-        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
-            box.alpha = 0
-            let wait = SKAction.wait(forDuration: 0.04)
-            let makeVisible = SKAction.run { box.alpha = 1 }
-            box.run(SKAction.sequence([wait, makeVisible]))
-        }
+
 
         let nextPosition = CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)
         if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
@@ -1049,7 +1044,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             
             // Play the move sound effect
-        //    playMoveSound()
+                playMoveSound()
             
             // If an action is already in progress, queue the next tap position
             print("QUEUING MOVEMENT")
@@ -1075,12 +1070,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         switch sender.direction {
 
         case .down:
-            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
-                box.alpha = 0
-                let wait = SKAction.wait(forDuration: 0.04)
-                let makeVisible = SKAction.run { box.alpha = 1 }
-                box.run(SKAction.sequence([wait, makeVisible]))
-            }
+    
             nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y - cellHeight)
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y - cellHeight)) {
                 playerNextPosition.y -= cellHeight
@@ -2162,7 +2152,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let soundURL = Bundle.main.url(forResource: "move", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.play()
+                DispatchQueue.global().async {
+                    self.audioPlayer?.play()
+                }
             } catch {
                 print("Error playing move sound: \(error.localizedDescription)")
             }

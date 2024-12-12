@@ -2436,6 +2436,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func gameOver(reason: String) {
         isGameOver = true
+        mediumHapticActive = false // Ensures haptic stops incase u die whilst on low air
+
         heavyImpactFeedback.impactOccurred()
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies

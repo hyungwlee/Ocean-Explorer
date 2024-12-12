@@ -88,7 +88,7 @@ let hardSets: [[String]] = [
 
 // Create haptic feedback generators
 let softImpactFeedback = UIImpactFeedbackGenerator(style: .soft) // For medium feedback
-let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
+// let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
 let heavyImpactFeedback = UIImpactFeedbackGenerator(style: .heavy)  // For heavy feedback (e.g., death)
 
     
@@ -1824,8 +1824,32 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airIcon.colorBlendFactor = 0.0
         }
         
+        if airAmount < 6 {
+            if !mediumHapticActive { // Prevents multiple haptic generators
+                mediumHapticActive = true
+                startMediumHapticFeedback()
+            }
+        } else {
+            mediumHapticActive = false // Stops haptic feedback if airAmount goes above 6
+        }
+        
         if airAmount <= 0 {
+            mediumHapticActive = false // Ensures haptic stops when game ends
             gameOver(reason: "You Ran Out of Air and Drowned")
+        }
+    }
+
+    // Property to track haptic state
+    var mediumHapticActive = false
+    let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
+
+    // Function to handle medium haptic feedback
+    func startMediumHapticFeedback() {
+        DispatchQueue.global().async {
+            while self.mediumHapticActive {
+                self.mediumImpactFeedback.impactOccurred()
+                usleep(500_000) // 0.5-second interval
+            }
         }
     }
         

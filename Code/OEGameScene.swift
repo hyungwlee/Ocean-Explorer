@@ -1450,7 +1450,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
         shell.size = CGSize(width: 42, height: 42) // Adjust size as needed
         shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
-        shell.physicsBody = SKPhysicsBody(circleOfRadius: shell.size.width / 2.2)
+        shell.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
         shell.physicsBody?.categoryBitMask = PhysicsCategory.shell
         shell.physicsBody?.contactTestBitMask = PhysicsCategory.box
         shell.physicsBody?.collisionBitMask = PhysicsCategory.none
@@ -1649,15 +1649,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let bubble: SKSpriteNode
         if isGoldBubble && firstBubble != nil {
             bubble = SKSpriteNode(imageNamed: "GoldBubble") // GoldBubble asset
-            bubble.size = CGSize(width: 38, height: 38) // Larger for GoldBubble
+            bubble.size = CGSize(width: 40, height: 40) // Larger for GoldBubble
             bubble.alpha = 0.90
-            bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
+            bubble.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.GoldBubble // Ensure this is correct
         } else {
             bubble = SKSpriteNode(imageNamed: "Bubble") // Regular bubble asset
             bubble.size = CGSize(width: 38, height: 38)
             bubble.alpha = 0.85
-            bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
+            bubble.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
         }
         

@@ -9,6 +9,7 @@ import SpriteKit
 import AVFoundation
 import CoreHaptics
 import UIKit
+import AudioToolbox
 
 struct PhysicsCategory {
     static let none: UInt32 = 0
@@ -87,7 +88,7 @@ let hardSets: [[String]] = [
 
 // Create haptic feedback generators
 let softImpactFeedback = UIImpactFeedbackGenerator(style: .soft) // For medium feedback
-let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
+// let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
 let heavyImpactFeedback = UIImpactFeedbackGenerator(style: .heavy)  // For heavy feedback (e.g., death)
 
     
@@ -166,6 +167,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var highestRowDrawn: Int = 15 // Track the highest row drawn for grid
     var audioPlayer: AVAudioPlayer? // Audio player
     var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
+    var playerMovementAudio: SystemSoundID = 0
     
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -181,6 +183,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Initially slow rock speed
         currentRockSpeed = "Slow"
  
+        guard let url = Bundle.main.url(forResource: "move", withExtension: "mp3") else {
+                return
+            }
+            let osstatus = AudioServicesCreateSystemSoundID(url as CFURL, &playerMovementAudio)
+            if osstatus != noErr { // or kAudioServicesNoError. same thing.
+                print("could not create system sound")
+                print("osstatus: \(osstatus)")
+            }
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.cameraNode = SKCameraNode()
@@ -565,7 +575,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if score % 100 == 0 {
             scoreLabel.fontColor = .red // Gold color
         } else if score % 10 == 0 {
-            scoreLabel.fontColor = goldColor
             scoreLabel.run(createPopOutAction()) // Apply the popping effect on multiples of 10
         } else {
             scoreLabel.fontColor = .white
@@ -1036,15 +1045,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     @objc func handleTap() {
         guard let box, !isGameOver else { return }
         
-        // Haptic feedback for movement
-        softImpactFeedback.impactOccurred()
+        // Haptic feedback for each movement
+      //  softImpactFeedback.impactOccurred()
         
-        if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
-            box.alpha = 0
-            let wait = SKAction.wait(forDuration: 0.04)
-            let makeVisible = SKAction.run { box.alpha = 1 }
-            box.run(SKAction.sequence([wait, makeVisible]))
-        }
+
 
         let nextPosition = CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)
         if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
@@ -1052,7 +1056,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             
             // Play the move sound effect
-            playMoveSound()
+                playMoveSound()
             
             // If an action is already in progress, queue the next tap position
             print("QUEUING MOVEMENT")
@@ -1073,17 +1077,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box, !isGameOver else { return }
         
         let nextPosition: CGPoint
-        playMoveSound()
-        softImpactFeedback.impactOccurred()
+        // playMoveSound()
+        // softImpactFeedback.impactOccurred() // HAPTICS for swiping left/right
         switch sender.direction {
 
         case .down:
-            if isPlayerOnRock || isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
-                box.alpha = 0
-                let wait = SKAction.wait(forDuration: 0.04)
-                let makeVisible = SKAction.run { box.alpha = 1 }
-                box.run(SKAction.sequence([wait, makeVisible]))
-            }
+    
             nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y - cellHeight)
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y - cellHeight)) {
                 playerNextPosition.y -= cellHeight
@@ -1451,18 +1450,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
         let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
-        shell.size = CGSize(width: 38, height: 38) // Adjust size as needed
+        shell.size = CGSize(width: 42, height: 42) // Adjust size as needed
         shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
-        shell.physicsBody = SKPhysicsBody(circleOfRadius: shell.size.width / 2.2)
+        shell.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
         shell.physicsBody?.categoryBitMask = PhysicsCategory.shell
         shell.physicsBody?.contactTestBitMask = PhysicsCategory.box
         shell.physicsBody?.collisionBitMask = PhysicsCategory.none
         shell.physicsBody?.isDynamic = false
         
         // Create the pulsating effect with a pause
-        let scaleUp = SKAction.scale(to: 1.2, duration: 0.5)
+        let scaleUp = SKAction.scale(to: 1.30, duration: 0.5)
         let scaleDown = SKAction.scale(to: 1.0, duration: 0.5)
-        let wait = SKAction.wait(forDuration: 3.0) // Wait for x seconds before animation
+        let wait = SKAction.wait(forDuration: 1.5) // Wait for x seconds before animation
         let pulsate = SKAction.sequence([scaleUp, scaleDown, wait])
         let repeatPulsate = SKAction.repeatForever(pulsate)
         shell.run(repeatPulsate)
@@ -1621,7 +1620,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func didBeginShellContact(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
         let bodyB = contact.bodyB
-        
         print("Contact: \(bodyA.categoryBitMask) <-> \(bodyB.categoryBitMask)")  // Debugging collision
         
         let shellNode: SKNode
@@ -1637,6 +1635,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Play the shell pickup sound
         playShellPickupSound()
         
+        softImpactFeedback.impactOccurred()
+        
         // Show a new shell next to the score
         shellAnimation()
         
@@ -1644,30 +1644,40 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         slowDownCamera()
     }
     
-    // Function to spawn the bubbles randomly in grid spaces
     func spawnBubble() {
         // Determine if the bubble should be a GoldBubble
-        let isGoldBubble = Int.random(in: 0..<100) < 10 // Adjust as needed the < XX is % spawn rate
+        let isGoldBubble = Int.random(in: 0..<100) < 10 // Adjust as needed for spawn rate
         
         // Create the bubble (GoldBubble or regular Bubble)
         let bubble: SKSpriteNode
         if isGoldBubble && firstBubble != nil {
             bubble = SKSpriteNode(imageNamed: "GoldBubble") // GoldBubble asset
-            bubble.size = CGSize(width: 38, height: 38) // Larger for GoldBubble
+            bubble.size = CGSize(width: 40, height: 40) // Larger for GoldBubble
             bubble.alpha = 0.90
-            bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
+            bubble.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.GoldBubble // Ensure this is correct
         } else {
             bubble = SKSpriteNode(imageNamed: "Bubble") // Regular bubble asset
-            bubble.size = CGSize(width: 35, height: 35)
-            bubble.alpha = 0.75
-            bubble.physicsBody = SKPhysicsBody(circleOfRadius: bubble.size.width / 2.2)
+            bubble.size = CGSize(width: 38, height: 38)
+            bubble.alpha = 0.85
+            bubble.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.bubble
         }
         
         bubble.physicsBody?.contactTestBitMask = PhysicsCategory.box
         bubble.physicsBody?.collisionBitMask = PhysicsCategory.none
         bubble.physicsBody?.isDynamic = false
+        
+        // Create the pulsating effect with a pause (added delay between pulsations)
+        let scaleUp = SKAction.scale(to: 1.15, duration: 0.10)
+        let scaleDown = SKAction.scale(to: 1.0, duration: 0.10)
+        let scaleUp2 = SKAction.scale(to: 1.20, duration: 0.10)
+        let scaleDown2 = SKAction.scale(to: 1.0, duration: 0.10)
+        let wait = SKAction.wait(forDuration: 2.0) // Delay between pulsating
+        let pulsate = SKAction.sequence([scaleUp, scaleDown, scaleUp2, scaleDown2, wait])
+        // pulsate twice
+        let repeatPulsate = SKAction.repeatForever(pulsate)
+        bubble.run(repeatPulsate)
         
         // If this is the first bubble, set a fixed position
         if firstBubble == nil {
@@ -1677,7 +1687,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             firstBubble = bubble
             addArrowAndText(to: bubble)
         } else {
-            
             // Used to find the row range to place the bubble in randomly
             guard let box = box else { return }
             
@@ -1689,7 +1698,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Used to find the column range to place the bubble in randomly
             let columns = Int(size.width / cellWidth)
             let columnRange = ((-columns / 2) + 1)...((columns / 2) - 1)
-            let playableColumnRange = columnRange.filter {$0 != playerColumn}
+            let playableColumnRange = columnRange.filter { $0 != playerColumn }
             
             // Create a row range for bubble to be placed randomly
             let min = playerRow - 2
@@ -1703,9 +1712,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Set the bubble position
             bubble.position = positionFor(row: randomRow, column: randomColumn)
             
-            // Check if bubble on the lava or eel lane and make sure it doesnt spawn on seaweed
+            // Check if bubble is on the lava or eel lane and make sure it doesn't spawn on seaweed
             var bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
-            while bubbleLaneType == "eel" ||  bubbleLaneType == "lava" || seaweedPositions.contains(bubble.position) {
+            while bubbleLaneType == "eel" || bubbleLaneType == "lava" || seaweedPositions.contains(bubble.position) {
                 randomRow += 1
                 randomColumn = playableColumnRange.randomElement()!
                 bubble.position = positionFor(row: randomRow, column: randomColumn)
@@ -1720,30 +1729,31 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create the arrow
         arrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
         arrow?.size = CGSize(width: 40, height: 40) // Adjust size as needed
-        arrow?.position = CGPoint(x: bubble.position.x - 35, y: bubble.position.y - 35) // Adjust position
+        arrow?.position = CGPoint(x: bubble.position.x - 30, y: bubble.position.y - 30) // Adjust position
         arrow?.zPosition = 1000
+        arrow?.alpha = 0.5 // Set transparency (50% opacity)
         addChild(arrow!)
         
         // Create the text label
-        bubbleText = SKLabelNode(text: "Collect Bubbles to Increase Air!")
-        bubbleText?.fontName = "Helvetica Neue"
-        bubbleText?.fontSize = 25
+        bubbleText = SKLabelNode(text: "collect bubbles for air")
+        bubbleText?.fontName = "Helvetica Neue Bold"
+        bubbleText?.fontSize = 15
         bubbleText?.fontColor = .white
-        bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 85)
+        bubbleText?.position = CGPoint(x: bubble.position.x - 10, y: bubble.position.y - 72) // Slightly higher for vertical centering
         bubbleText?.zPosition = 1
         
         // Create a background rectangle for the text
-        bubbleTextBackground = SKShapeNode(rectOf: CGSize(width: bubbleText!.frame.width + 20, height: bubbleText!.frame.height + 10), cornerRadius: 10)
-        bubbleTextBackground?.fillColor = .black
+        bubbleTextBackground = SKShapeNode(rectOf: CGSize(width: bubbleText!.frame.width + 20, height: bubbleText!.frame.height + 5), cornerRadius: 8)
+        bubbleTextBackground?.fillColor = SKColor.black.withAlphaComponent(0.5) // Black with 50% transparency
         bubbleTextBackground?.strokeColor = .clear // No border
-        bubbleTextBackground?.position = CGPoint(x: bubbleText!.position.x, y: bubbleText!.position.y + 10)
+        bubbleTextBackground?.position = CGPoint(x: bubbleText!.position.x, y: bubbleText!.position.y + bubbleText!.frame.height / 2) // Adjust for vertical centering
         bubbleTextBackground?.zPosition = bubbleText!.zPosition - 1 // Put it behind the text
         
         // Add the background and the text to the scene
         addChild(bubbleTextBackground!)
         addChild(bubbleText!)
     }
-    
+
     func includeBubbles() {
         guard hasGameStarted else { return }
         let bubbleSpawnAction = SKAction.repeatForever(
@@ -1756,7 +1766,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
     }
-    
+
     func setupAirDisplay() {
         // Remove existing airIcon and airLabel if they exist
         airIconBackground?.removeFromParent()
@@ -1856,16 +1866,40 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             red = false
         }
         
+        if airAmount < 6 {
+            if !mediumHapticActive { // Prevents multiple haptic generators
+                mediumHapticActive = true
+                startMediumHapticFeedback()
+            }
+        } else {
+            mediumHapticActive = false // Stops haptic feedback if airAmount goes above 6
+        }
+        
         if airAmount <= 0 {
+            mediumHapticActive = false // Ensures haptic stops when game ends
             gameOver(reason: "You Ran Out of Air and Drowned")
         }
         
+    }
+
+    // Property to track haptic state
+    var mediumHapticActive = false
+    let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
+
+    // Function to handle medium haptic feedback
+    func startMediumHapticFeedback() {
+        DispatchQueue.global().async {
+            while self.mediumHapticActive {
+                self.mediumImpactFeedback.impactOccurred()
+                usleep(500_000) // 0.5-second interval
+            }
+        }
     }
         
     // Function to increase air by a specific amount
     func increaseAir(by amount: Int) {
         guard !isGameOver else { return }
-
+        
         airAmount += amount
         if airAmount > 30 {
             airAmount = 30 // Cap the air at 30
@@ -1922,6 +1956,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             // Play the bubble sound effect
             playBubbleSound()
+            softImpactFeedback.impactOccurred()
             
             increaseAir(by: 5) // Regular bubble increases air by 5
             
@@ -2197,16 +2232,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func playMoveSound() {
-        if let soundURL = Bundle.main.url(forResource: "move", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.play()
-            } catch {
-                print("Error playing move sound: \(error.localizedDescription)")
-            }
-        } else {
-            print("Move sound file not found.")
-        }
+    
+        AudioServicesPlaySystemSound(playerMovementAudio)
     }
     
     func playBubbleSound() {
@@ -2429,17 +2456,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         backgroundBox.position = CGPoint(x: 0, y: 0) // Centered on screen
         backgroundBox.fillColor = .black
         backgroundBox.alpha = 0.7 // Set appropriate opacity
-        backgroundBox.zPosition = 999 // Ensure it is behind the text but above other nodes
+        backgroundBox.zPosition = 1001 // Ensure it is behind the text but above other nodes
         cameraNode.addChild(backgroundBox)
 
         // Add the game logo
-        let logoTexture = SKTexture(imageNamed: "Logo")
+        let logoTexture = SKTexture(imageNamed: "Logo1")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.name = "logoSprite"
+
         logoSprite.position = CGPoint(x: 0, y: 240) // Positioned above the "Tap to Begin" text
         logoSprite.zPosition = 1000 // Make logo be the top visible layer
         logoSprite.xScale = 0.6 // Scale width to 60%
         logoSprite.yScale = 0.6 // Scale height to 60%
+
         cameraNode.addChild(logoSprite)
 
         // Display "Tap to Begin" message
@@ -2447,7 +2476,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         startLabel.name = "startLabel"
         startLabel.fontSize = 38
         startLabel.fontColor = .white
-        startLabel.zPosition = 1000 // Ensure top visibility
+        startLabel.zPosition = 1002 // Ensure top visibility
         startLabel.fontName = "Arial-BoldMT" // Use bold font
         startLabel.position = CGPoint(x: 0, y: 40) // Centered on screen
         cameraNode.addChild(startLabel)
@@ -2455,6 +2484,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func gameOver(reason: String) {
         isGameOver = true
+        mediumHapticActive = false // Ensures haptic stops incase u die whilst on low air
+
         heavyImpactFeedback.impactOccurred()
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
@@ -2467,31 +2498,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             self.playGameOverSound()
         }
         
-        // Create semi-transparent black background
-        let backgroundBox = SKShapeNode(rectOf: CGSize(width: 1000, height: 1000))
-        backgroundBox.position = CGPoint(x: 0, y: 0) // Centered on screen
-        backgroundBox.fillColor = .black
-        backgroundBox.alpha = 1.00 // Set full opacity
-        backgroundBox.zPosition = 999 // Ensure it is behind the text but above other nodes
-        cameraNode.addChild(backgroundBox)
+        // Create a background sprite for the end screen using the ocean image
+        let backgroundSprite = SKSpriteNode(imageNamed: "gameOver")
+        backgroundSprite.position = CGPoint(x: 0, y: 0) // Centered on screen
+        backgroundSprite.zPosition = 1100 // Ensure it is behind the text but above other nodes
+        backgroundSprite.size = self.size // Adjust to fill the screen
+        cameraNode.addChild(backgroundSprite)
 
         // Add the game logo
-        let logoTexture = SKTexture(imageNamed: "Logo")
+        let logoTexture = SKTexture(imageNamed: "Logo1")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
-        logoSprite.zPosition = 1000 // Make logo be the top visible layer
-        logoSprite.xScale = 0.6 // Scale width to 60%
-        logoSprite.yScale = 0.6 // Scale height to 60%
+        logoSprite.zPosition = 1101 // Make logo be the top visible layer
+        logoSprite.xScale = 0.35 // Scale width
+        logoSprite.yScale = 0.35 // Scale height
+        
         cameraNode.addChild(logoSprite)
-
-        // Display the reason for game over
-        let reasonLabel = SKLabelNode(text: reason)
-        reasonLabel.fontSize = 22
-        reasonLabel.fontColor = .lightGray
-        reasonLabel.zPosition = 1000 // Ensure top visibility
-        reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font
-        reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
-        cameraNode.addChild(reasonLabel)
 
         // Save the current score
         let finalScore = score
@@ -2500,11 +2522,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
         finalScoreLabel.fontSize = 38
         finalScoreLabel.fontColor = .white
-        finalScoreLabel.zPosition = 1000 // Make text be the top visible layer
+        finalScoreLabel.zPosition = 1101 // Make text be the top visible layer
         finalScoreLabel.fontName = "Helvetica Neue Bold" // Use bold font
         finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
         cameraNode.addChild(finalScoreLabel)
-
+        
+        // Display the reason for game over
+        let reasonLabel = SKLabelNode(text: reason)
+        reasonLabel.fontSize = 19
+        reasonLabel.fontColor = .white
+        reasonLabel.zPosition = 1101 // Ensure top visibility
+        reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font
+        reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
+        cameraNode.addChild(reasonLabel)
+        
         // Display asset based on reason
         let reasonAsset: SKSpriteNode
         switch reason {
@@ -2524,7 +2555,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Position the reason asset below the final score
         reasonAsset.position = CGPoint(x: 0, y: -50)
-        reasonAsset.zPosition = 1000
+        reasonAsset.zPosition = 1101
         reasonAsset.xScale = 1.0 // Adjust scale as needed
         reasonAsset.yScale = 1.0
         cameraNode.addChild(reasonAsset)
@@ -2533,7 +2564,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let restartLabel = SKLabelNode(text: "Tap to Restart")
         restartLabel.fontSize = 20
         restartLabel.fontColor = .white
-        restartLabel.zPosition = 1000 // Make text be the top visible layer
+        restartLabel.zPosition = 1101 // Make text be the top visible layer
         restartLabel.fontName = "Arial-BoldMT" // Use bold font
         restartLabel.position = CGPoint(x: 0, y: -350) // Positioned below the final score
         cameraNode.addChild(restartLabel)

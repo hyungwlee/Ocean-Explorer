@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "sign.png",
+      "filename" : "Eel Warning.jpg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "sign@2x.png",
+      "filename" : "Eel Warning@2x.jpg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "sign@3x.png",
+      "filename" : "Eel Warning@3x.jpg",
       "idiom" : "universal",
       "scale" : "3x"
     }

@@ -126,13 +126,15 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var scoreLabel: SKLabelNode!
     
     // Air properties
-    var airAmount = 21
+    var airAmount = 20
     var airLabel: SKLabelNode!
-    var airIcon: SKSpriteNode!
+    var airIconBackground: SKSpriteNode!
+    var airIconFill: SKSpriteNode!
     var firstBubble: SKSpriteNode? = nil
     var arrow: SKSpriteNode?
     var bubbleText: SKLabelNode?
     var bubbleTextBackground: SKShapeNode?
+    var red = false
     
     // Tapping properties
     var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
@@ -1430,7 +1432,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let laneColor = SKShapeNode(rect: CGRect(x: -size.width, y: lane.startPosition.y - cellHeight / 2, width: size.width * 2, height: cellHeight))
         if lane.laneType == "Empty" {
             laneColor.fillColor = .white
-            laneColor.fillTexture = SKTexture(imageNamed: "Sand")
+            laneColor.fillTexture = SKTexture(imageNamed: "SAND")
         }
         else if lane.laneType == "Eel" {
             laneColor.fillColor = .white
@@ -1757,22 +1759,31 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func setupAirDisplay() {
         // Remove existing airIcon and airLabel if they exist
-        airIcon?.removeFromParent()
+        airIconBackground?.removeFromParent()
+        airIconFill?.removeFromParent()
         airLabel?.removeFromParent()
 
         // Create and configure the air icon
-        airIcon = SKSpriteNode(imageNamed: "AirMeter")
-        airIcon.size = CGSize(width: 80, height: 110) // Increased size
-        airIcon.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 70)
-        airIcon.zPosition = 1000
-        cameraNode.addChild(airIcon)
+        airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
+        airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
+        airIconBackground.size = CGSize(width: 35, height: 150) // Increased size
+        airIconFill.size = CGSize(width: 35, height: 150)
+        airIconBackground.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 90)
+        airIconFill.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 165)
+        airIconBackground.zPosition = 90
+        airIconFill.zPosition = 100
+        airIconFill.anchorPoint = CGPoint(x: 0.5, y: 0.0) // Anchor at the bottom-center for decreasing the air amount
+
+        cameraNode.addChild(airIconFill)
+        cameraNode.addChild(airIconBackground)
+        
         
         // Create and configure the air label
         airLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
-        airLabel.fontSize = 48 // Increased font size
-        airLabel.fontColor = UIColor(red: 0.678, green: 0.847, blue: 0.902, alpha: 1.0) // Light blue color
+        airLabel.fontSize = 30 // Increased font size
+        airLabel.fontColor = UIColor.black
         airLabel.zPosition = 1000
-        airLabel.position = CGPoint(x: airIcon.position.x + 25, y: airIcon.position.y)
+        airLabel.position = CGPoint(x: airIconBackground.position.x + 60, y: airIconBackground.position.y)
         airLabel.horizontalAlignmentMode = .right
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
@@ -1780,11 +1791,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     // Continuously decreases air during game
     func airCountDown() {
-    guard hasGameStarted else { return } // Ensure countdown starts only if game has started
+        guard hasGameStarted else { return } // Ensure countdown starts only if game has started
         let countdownAction = SKAction.repeatForever(
             SKAction.sequence([
                 SKAction.run { [weak self] in
-                    self?.decreaseAir()
+                    guard let self = self else { return }
+                    
+                    self.decreaseAir()
                 },
                 SKAction.wait(forDuration: 1)
             ])
@@ -1792,32 +1805,61 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         run(countdownAction, withKey: "airCountdown")
     }
     
+    func calculateScaleFactor(airAmount: Int) -> CGFloat {
+        let fullCapacity = 30 // The maximum capacity of your meter
+        let currentPercentage = CGFloat(airAmount) / CGFloat(fullCapacity)
+        
+        // Ensure the percentage doesn't exceed 100%
+        let maxPercentage = min(currentPercentage, 1.0)
+        
+        // Calculate the scale factor (between 0 and 1)
+        let scaleFactor = maxPercentage
+        
+        return scaleFactor
+    }
+    
     // Function to decrease air by 1 (called in aircountdown) // Air Meter Animation for Low Air
     func decreaseAir() {
         guard !isGameOver else { return }
         
+        // Decrease the air amount immediately
         airAmount -= 1
         airLabel.text = "\(airAmount)"
+        // Update the meter right after
+        let targetScaleFactor = calculateScaleFactor(airAmount: airAmount)
+        airIconFill.yScale = targetScaleFactor
         
-        if airAmount < 17 {
+        if airAmount < 15  && !red {
             airLabel.fontColor = .red
-            let enlargeAction = SKAction.scale(to: CGSize(width: 95, height: 125), duration: 0.2)
-            airIcon.run(enlargeAction)
+            let enlargeActionBackground = SKAction.scale(to: CGSize(width: 45, height: 165), duration: 0.05)
+            let enlargeActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
+            airIconBackground.run(enlargeActionBackground)
+            airIconFill.run(enlargeActionFill)
+            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 83)
             let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
             let normalAction = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
             let pulsateAction = SKAction.sequence([redAction, normalAction])
-            airIcon.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
-        } else {
+            airIconFill.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
+            airIconBackground.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
+            red = true
+        } else if airAmount >= 15 && red {
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 1.0) // Darker blue color
-            let shrinkAction = SKAction.scale(to: CGSize(width: 80, height: 110), duration: 0.2)
-            airIcon.run(shrinkAction)
-            airIcon.removeAction(forKey: "pulsateRed")
-            airIcon.colorBlendFactor = 0.0
+            let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 150), duration: 0.05)
+            let shrinkActionFill = SKAction.scaleX(to: 1.0, duration: 0.05)
+            airIconBackground.run(shrinkAction)
+            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 75)
+            airIconFill.run(shrinkActionFill)
+            airIconBackground.removeAction(forKey: "pulsateRed")
+            airIconBackground.colorBlendFactor = 0.0
+            airIconFill.removeAction(forKey: "pulsateRed")
+            airIconFill.colorBlendFactor = 0.0
+            red = false
         }
         
         if airAmount <= 0 {
             gameOver(reason: "You Ran Out of Air and Drowned")
         }
+        
     }
         
     // Function to increase air by a specific amount
@@ -1828,6 +1870,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if airAmount > 30 {
             airAmount = 30 // Cap the air at 30
         }
+        // Update air meter
+        let scaleFactor = calculateScaleFactor(airAmount: airAmount)
+        airIconFill.yScale = scaleFactor
+        
         airLabel.text = "\(airAmount)"
     }
     
@@ -2390,7 +2436,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let logoTexture = SKTexture(imageNamed: "Logo")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.name = "logoSprite"
-        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the "Tap to Begin" text
+        logoSprite.position = CGPoint(x: 0, y: 240) // Positioned above the "Tap to Begin" text
         logoSprite.zPosition = 1000 // Make logo be the top visible layer
         logoSprite.xScale = 0.6 // Scale width to 60%
         logoSprite.yScale = 0.6 // Scale height to 60%
@@ -2536,7 +2582,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Reset the game state
         isGameOver = false
         score = 0
-        airAmount = 26
+        airAmount = 25
 
         // Load a new instance of the scene
         let newScene = OEGameScene(context: context!, size: size)

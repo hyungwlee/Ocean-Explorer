@@ -1296,7 +1296,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func warn(in lane: Lane, completion: @escaping () -> Void) {
         
-        let warningLabel = SKSpriteNode(imageNamed: "Warning")
+        let warningLabel = SKSpriteNode(imageNamed: "EelWarning")
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
         warningLabel.size = CGSize(width: warningLabel.size.width * 0.75, height: warningLabel.size.height * 0.75)
         addChild(warningLabel)

@@ -2465,9 +2465,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         logoSprite.name = "logoSprite"
 
         logoSprite.position = CGPoint(x: 0, y: 240) // Positioned above the "Tap to Begin" text
-        logoSprite.zPosition = 1000 // Make logo be the top visible layer
-        logoSprite.xScale = 0.6 // Scale width to 60%
-        logoSprite.yScale = 0.6 // Scale height to 60%
+        logoSprite.zPosition = 1002 // Make logo be the top visible layer
+        logoSprite.xScale = 0.4 // Scale width to 60%
+        logoSprite.yScale = 0.4 // Scale height to 60%
 
         cameraNode.addChild(logoSprite)
 

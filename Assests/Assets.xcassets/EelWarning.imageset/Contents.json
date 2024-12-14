@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Eel Warning.jpg",
+      "filename" : "eel warning.jpg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Eel Warning@2x.jpg",
+      "filename" : "eel warning@2x.jpg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Eel Warning@3x.jpg",
+      "filename" : "eel warning@3x.jpg",
       "idiom" : "universal",
       "scale" : "3x"
     }

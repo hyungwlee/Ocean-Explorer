@@ -1298,7 +1298,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         let warningLabel = SKSpriteNode(imageNamed: "EelWarning")
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
-        warningLabel.size = CGSize(width: warningLabel.size.width * 0.75, height: warningLabel.size.height * 0.75)
+        warningLabel.size = CGSize(width: warningLabel.size.width * 0.85, height: warningLabel.size.height * 0.70)
         addChild(warningLabel)
         let fadeOut = SKAction.fadeOut(withDuration: 0.25)
         let fadeIn = SKAction.fadeIn(withDuration: 0.25)
@@ -1776,8 +1776,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create and configure the air icon
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
-        airIconBackground.size = CGSize(width: 35, height: 150) // Increased size
-        airIconFill.size = CGSize(width: 35, height: 150)
+        airIconBackground.size = CGSize(width: 30, height: 150) // Increased size
+        airIconFill.size = CGSize(width: 30, height: 150)
         airIconBackground.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 90)
         airIconFill.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 165)
         airIconBackground.zPosition = 90
@@ -1786,15 +1786,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         cameraNode.addChild(airIconFill)
         cameraNode.addChild(airIconBackground)
-        
-        
+
         // Create and configure the air label
         airLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
-        airLabel.fontSize = 30 // Increased font size
-        airLabel.fontColor = UIColor.black
+        airLabel.fontSize = 23 // Increased font size
+        airLabel.fontColor = UIColor.black.withAlphaComponent(0.50) // Slightly transparent text
         airLabel.zPosition = 1000
-        airLabel.position = CGPoint(x: airIconBackground.position.x + 60, y: airIconBackground.position.y)
-        airLabel.horizontalAlignmentMode = .right
+        
+        // Position the air label at the center of the airIconBackground
+        airLabel.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y)
+        airLabel.horizontalAlignmentMode = .center // Align horizontally to the center
+        airLabel.verticalAlignmentMode = .center   // Align vertically to the center
+        
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
     }
@@ -1831,29 +1834,36 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Function to decrease air by 1 (called in aircountdown) // Air Meter Animation for Low Air
     func decreaseAir() {
         guard !isGameOver else { return }
-        
+
         // Decrease the air amount immediately
         airAmount -= 1
         airLabel.text = "\(airAmount)"
         // Update the meter right after
         let targetScaleFactor = calculateScaleFactor(airAmount: airAmount)
         airIconFill.yScale = targetScaleFactor
-        
-        if airAmount < 15  && !red {
-            airLabel.fontColor = .red
+
+        if airAmount < 12 && !red {
+            // Keep the air label text unchanged but make it transparent
+            airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Darker blue with transparency
+
+            // Enlarge and adjust the position of the background and fill
             let enlargeActionBackground = SKAction.scale(to: CGSize(width: 45, height: 165), duration: 0.05)
             let enlargeActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
             airIconBackground.run(enlargeActionBackground)
             airIconFill.run(enlargeActionFill)
             airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 83)
+
+            // Pulsate the background and fill to red
             let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
             let normalAction = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
             let pulsateAction = SKAction.sequence([redAction, normalAction])
             airIconFill.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
             airIconBackground.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
             red = true
-        } else if airAmount >= 15 && red {
-            airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 1.0) // Darker blue color
+        } else if airAmount >= 12 && red {
+            // Reset the visuals for air level above 12
+            airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Restore transparency
+
             let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 150), duration: 0.05)
             let shrinkActionFill = SKAction.scaleX(to: 1.0, duration: 0.05)
             airIconBackground.run(shrinkAction)
@@ -1865,7 +1875,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airIconFill.colorBlendFactor = 0.0
             red = false
         }
-        
+
+        // Trigger haptic feedback when air gets critically low
         if airAmount < 6 {
             if !mediumHapticActive { // Prevents multiple haptic generators
                 mediumHapticActive = true
@@ -1874,12 +1885,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             mediumHapticActive = false // Stops haptic feedback if airAmount goes above 6
         }
-        
+
+        // End the game if airAmount reaches 0
         if airAmount <= 0 {
             mediumHapticActive = false // Ensures haptic stops when game ends
             gameOver(reason: "You Ran Out of Air and Drowned")
         }
-        
     }
 
     // Property to track haptic state

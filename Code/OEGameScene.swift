@@ -1077,7 +1077,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box, !isGameOver else { return }
         
         let nextPosition: CGPoint
-        // playMoveSound()
         // softImpactFeedback.impactOccurred() // HAPTICS for swiping left/right
         switch sender.direction {
 
@@ -1086,59 +1085,64 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y - cellHeight)
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y - cellHeight)) {
                 playerNextPosition.y -= cellHeight
+                playMoveSound()
             } else {
                 hitSeaweed = true
             }
             score -= 1
         case .left:
-          if isPlayerOnRock { // Check if the player is on the rock
-                playRockJumpSound()
-            }
+          
             nextPosition = CGPoint(x: max(playerNextPosition.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
-            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) && !box.getIsMoving(){
+            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() && !isPlayerOnRock {
                 print(isActionInProgress)
                 print("MOVING LEFT")
                 playerNextPosition.x -= cellWidth
+                playMoveSound()
             } else {
                 hitSeaweed = true
             }
 
             if currentRock2 != nil && currentRockZone == "Right" {
                 currentRockZone = "Left"
+                playRockJumpSound()
                 return
             }
             if currentRock3 != nil {
                 if currentLongRockZone == "Right" {
                     currentLongRockZone = "Center"
+                    playRockJumpSound()
                     return
                 }
                 else if currentLongRockZone == "Center" {
                     currentLongRockZone = "Left"
+                    playRockJumpSound()
                     return
                 }
             }
         case .right:
-            if isPlayerOnRock { // Check if the player is on the rock
-                playRockJumpSound()
-            }
+            
             nextPosition = CGPoint(x: min(playerNextPosition.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
-            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x + cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() {
+            if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x + cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() && !isPlayerOnRock {
                 print("MOVING RIGHT")
                 playerNextPosition.x += cellWidth
+                playMoveSound()
             } else {
                 hitSeaweed = true
             }
             if currentRock2 != nil && currentRockZone == "Left" {
                 currentRockZone = "Right"
+                playRockJumpSound()
                 return
             }
             if currentRock3 != nil {
                 if currentLongRockZone == "Left" {
                     currentLongRockZone = "Center"
+                    playRockJumpSound()
                     return
                 }
                 else if currentLongRockZone == "Center" {
                     currentLongRockZone = "Right"
+                    playRockJumpSound()
                     return
                 }
             }
@@ -2021,7 +2025,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 // Correctly place the player on top of the rock
                 box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
-                
+                print("LANDED ON ROCK1-PLAYING SOUND")
+                playRockJumpSound()
             }
         }
         
@@ -2041,7 +2046,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
                 // Correctly place the player on top of the rock
                 box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
-                
+                print("LANED ON ROCK2-PLAYING SOUND")
+                playRockJumpSound()
+
                 // Determine the closest snap zone
                 let playerX = box?.position.x ?? 0
                 let rockX = rock.position.x
@@ -2053,7 +2060,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 } else {
                     currentRockZone = "Right"
                 }
-                
+
             }
             
         }
@@ -2074,7 +2081,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
                 // Correctly place the player on top of the rock
                 box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
-                
+                print("LANDED ON ROCK3-PLAYING SOUND")
+                playRockJumpSound()
+
                 // Calculate distances to each snap zone
                 let playerX = box?.position.x ?? 0
                 
@@ -2321,10 +2330,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 for lane in lanes {
                     if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
-                        if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
-                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
-                        } else {
-                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
+                        if lane.laneType != "Lava" {
+                            if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
+                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                            } else {
+                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
+                            }
                         }
                     }
                 }
@@ -2343,10 +2354,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 for lane in lanes {
                     if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
-                        if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
-                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
-                        } else {
-                            snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
+                        if lane.laneType != "Lava" {
+                            if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
+                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
+                            } else {
+                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
+                            }
                         }
                     }
                 }
@@ -2389,9 +2402,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if box.frame.intersects(rock.frame) {
                 print("PLAYER ON ROCK CONFIRMED")
                 
-                // Play the rock jump sound
-                playRockJumpSound()
-                
                 return true
             }
         }
@@ -2410,9 +2420,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if box.frame.intersects(rock.frame) {
                 print("PLAYER ON ROCK CONFIRMED")
                 
-                // Play the rock jump sound
-                playRockJumpSound()
-                
                 return true
             }
         }
@@ -2430,10 +2437,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         for rock in rocks {
             if box.frame.intersects(rock.frame) {
                 print("PLAYER ON ROCK CONFIRMED")
-                
-                // Play the rock jump sound
-                playRockJumpSound()
-                
+
                 return true
             }
         }
@@ -2444,7 +2448,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func snapToGrid(position: CGFloat) {
         
         guard let box = box else { return }
-        
         box.snapToGrid(xPosition: position)
         playerNextPosition.x = position
     }

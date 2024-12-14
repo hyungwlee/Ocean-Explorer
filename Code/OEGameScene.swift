@@ -1848,10 +1848,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
             // Enlarge and adjust the position of the background and fill
             let enlargeActionBackground = SKAction.scale(to: CGSize(width: 45, height: 165), duration: 0.05)
-            let enlargeActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
+            let enlargeActionFill = SKAction.scaleX(to: 1.4, duration: 0.05)
             airIconBackground.run(enlargeActionBackground)
             airIconFill.run(enlargeActionFill)
-            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 83)
+            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 82)
 
             // Pulsate the background and fill to red
             let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
@@ -1865,7 +1865,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Restore transparency
 
             let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 150), duration: 0.05)
-            let shrinkActionFill = SKAction.scaleX(to: 1.0, duration: 0.05)
+            let shrinkActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
             airIconBackground.run(shrinkAction)
             airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 75)
             airIconFill.run(shrinkActionFill)

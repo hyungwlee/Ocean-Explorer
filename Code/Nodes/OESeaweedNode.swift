@@ -32,8 +32,20 @@ class OESeaweedNode: SKSpriteNode {
             SKTexture(imageNamed: "Seaweed"),
         ]
         
+        // Define different animation orders
+        let animationOrders = [
+            [textures[0], textures[1], textures[2], textures[3], textures[4], textures[5], textures[6], textures[7]], // Default order
+            [textures[7], textures[6], textures[5], textures[4], textures[3], textures[2], textures[1], textures[0]], // Reverse order
+            [textures[3], textures[4], textures[5], textures[6], textures[7], textures[0], textures[1], textures[2]],
+            [textures[6], textures[7], textures[0], textures[1], textures[2], textures[3], textures[4], textures[5]],
+            [textures[0], textures[0], textures[0], textures[0], textures[0], textures[0], textures[0], textures[0]],
+        ]
+        
+        // Randomly select an animation order
+        let randomOrder = animationOrders.randomElement() ?? animationOrders[0]
+        
         // Create animation action
-        let animation = SKAction.animate(with: textures, timePerFrame: 0.20)
+        let animation = SKAction.animate(with: randomOrder, timePerFrame: 0.20)
         let repeatAnimation = SKAction.repeatForever(animation)
         
         // Run the animation

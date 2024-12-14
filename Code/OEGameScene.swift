@@ -1264,7 +1264,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let numberOfSeaweed = Int.random(in: 1...4)
         
         // Exclude the 0 in the middle
-        let validColumns = (-4...4).filter { $0 != 0 }
+        let validColumns = (-4...3).filter { $0 != 0 }
         
         // Randomly select distinct columns for seaweed placement
         var selectedColumns = Set<Int>()

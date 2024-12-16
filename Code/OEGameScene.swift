@@ -1767,19 +1767,21 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
     }
+    var meterShadow: SKSpriteNode?
 
     func setupAirDisplay() {
-        // Remove existing airIcon, airLabel, and O2 icon if they exist
+        // Remove existing airIcon, airLabel, O2 icon, and shadow if they exist
         airIconBackground?.removeFromParent()
         airIconFill?.removeFromParent()
         airLabel?.removeFromParent()
         o2Icon?.removeFromParent()
+        meterShadow?.removeFromParent()
 
         // Create and configure the air icon
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
-        airIconBackground.size = CGSize(width: 28, height: 175) // Increased size
-        airIconFill.size = CGSize(width: 28, height: 175)
+        airIconBackground.size = CGSize(width: 30, height: 175) // Increased size
+        airIconFill.size = CGSize(width: 30, height: 175)
 
         // Adjust positions for moving the meter
         airIconBackground.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
@@ -1791,6 +1793,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         cameraNode.addChild(airIconFill)
         cameraNode.addChild(airIconBackground)
+
+        // Create and configure the shadow for the air meter
+        let shadowOffset = CGPoint(x: 3, y: -3) // Adjust offset as desired
+        meterShadow = SKSpriteNode(imageNamed: "meterShadow") // Replace with your actual shadow asset name
+        meterShadow?.size = CGSize(width: 30, height: 175) // Adjust size to fit behind the air meter
+        meterShadow?.position = CGPoint(x: airIconBackground.position.x + shadowOffset.x, y: airIconBackground.position.y + shadowOffset.y)
+        meterShadow?.zPosition = 80 // Place it behind the air meter
+        meterShadow?.alpha = 0.45 // Make it semi-transparent for a realistic shadow effect
+        if let shadow = meterShadow {
+            cameraNode.addChild(shadow)
+        }
 
         // Create and configure the air label
         airLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
@@ -1815,6 +1828,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             cameraNode.addChild(o2Icon)
         }
     }
+
 
     // Continuously decreases air during game
     func airCountDown() {
@@ -1878,7 +1892,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Reset the visuals for air level above 12
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Restore transparency
 
-            let shrinkAction = SKAction.scale(to: CGSize(width: 28, height: 160), duration: 0.05)
+            let shrinkAction = SKAction.scale(to: CGSize(width: 30, height: 160), duration: 0.05)
             let shrinkActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
             airIconBackground.run(shrinkAction)
             airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 75)

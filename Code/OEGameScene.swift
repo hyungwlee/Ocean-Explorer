@@ -138,6 +138,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var bubbleTextBackground: SKShapeNode?
     var red = false
     
+    var warningIcon: SKSpriteNode?
+
+    
     // Tapping properties
     var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
     var isActionInProgress = false // Flag to indicate if a movement is in progress
@@ -1776,6 +1779,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airLabel?.removeFromParent()
         o2Icon?.removeFromParent()
         meterShadow?.removeFromParent()
+        warningIcon?.removeFromParent()
 
         // Create and configure the air icon
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
@@ -1818,6 +1822,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
+        
+    
+        // Create and configure the warning icon
+        warningIcon = SKSpriteNode(imageNamed: "Warning") // Replace with your actual warning asset name
+        if let warningIcon = warningIcon {
+            let scorePosition = scoreLabel.position
+            warningIcon.size = CGSize(width: 170, height: 60) // Adjust size as needed
+            warningIcon.position = CGPoint(x: scorePosition.x, y: scorePosition.y - 50) // Adjust y offset as needed
+            warningIcon.zPosition = 110
+            warningIcon.alpha = 0.90 // transparent value
+            warningIcon.isHidden = true // Initially hide the warning icon
+            cameraNode.addChild(warningIcon)
+            }
+        
 
         // Add the O2 icon to the left of the air meter
         o2Icon = SKSpriteNode(imageNamed: "O2") // Replace with your actual asset name
@@ -1859,6 +1877,30 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return scaleFactor
     }
     
+    func startWarningFlash() {
+        guard let warningIcon = warningIcon else { return }
+        
+        if warningIcon.action(forKey: "flashWarning") == nil { // Prevent multiple actions
+            let flashOn = SKAction.run { [weak self] in
+                self?.warningIcon?.isHidden = false
+            }
+            let flashOff = SKAction.run { [weak self] in
+                self?.warningIcon?.isHidden = true
+            }
+            let wait = SKAction.wait(forDuration: 0.75)
+            let flashSequence = SKAction.sequence([flashOn, wait, flashOff, wait])
+            let repeatFlash = SKAction.repeatForever(flashSequence)
+            
+            warningIcon.run(repeatFlash, withKey: "flashWarning")
+        }
+    }
+    
+    func stopWarningFlash() {
+        warningIcon?.removeAction(forKey: "flashWarning")
+        warningIcon?.isHidden = true // Ensure the warning icon is hidden
+    }
+    
+    
     // Function to decrease air by 1 (called in aircountdown) // Air Meter Animation for Low Air
     func decreaseAir() {
         guard !isGameOver else { return }
@@ -1874,44 +1916,48 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Keep the air label text unchanged but make it transparent
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Darker blue with transparency
 
-            // Enlarge and adjust the position of the background and fill
-            let enlargeActionBackground = SKAction.scale(to: CGSize(width: 38, height: 165), duration: 0.05)
-            let enlargeActionFill = SKAction.scaleX(to: 1.4, duration: 0.05)
-            airIconBackground.run(enlargeActionBackground)
-            airIconFill.run(enlargeActionFill)
-            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 82)
-
-            // Pulsate the background and fill to red
+            // Flash the air meter red without changing size
             let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
             let normalAction = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
-            let pulsateAction = SKAction.sequence([redAction, normalAction])
-            airIconFill.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
-            airIconBackground.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
+            let flashAction = SKAction.sequence([redAction, normalAction])
+            airIconBackground.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
+            airIconFill.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
             red = true
+
+            // Add pulsating effect to the O2 icon
+            if let o2Icon = o2Icon {
+                let enlargeO2 = SKAction.scale(to: 1.15, duration: 0.5)
+                let shrinkO2 = SKAction.scale(to: 1.0, duration: 0.75)
+                let pulsateO2 = SKAction.sequence([enlargeO2, shrinkO2])
+                o2Icon.run(SKAction.repeatForever(pulsateO2), withKey: "pulsateO2")
+            }
         } else if airAmount >= 12 && red {
             // Reset the visuals for air level above 12
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Restore transparency
 
-            let shrinkAction = SKAction.scale(to: CGSize(width: 30, height: 160), duration: 0.05)
-            let shrinkActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
-            airIconBackground.run(shrinkAction)
-            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 75)
-            airIconFill.run(shrinkActionFill)
-            airIconBackground.removeAction(forKey: "pulsateRed")
+            airIconBackground.removeAction(forKey: "flashRed")
             airIconBackground.colorBlendFactor = 0.0
-            airIconFill.removeAction(forKey: "pulsateRed")
+            airIconFill.removeAction(forKey: "flashRed")
             airIconFill.colorBlendFactor = 0.0
             red = false
+
+            // Stop pulsating the O2 icon
+            o2Icon?.removeAction(forKey: "pulsateO2")
         }
 
         // Trigger haptic feedback when air gets critically low
-        if airAmount < 6 {
+        if airAmount < 8 {
             if !mediumHapticActive { // Prevents multiple haptic generators
                 mediumHapticActive = true
                 startMediumHapticFeedback()
             }
+            
+            startWarningFlash() // Start flashing the warning icon
+
         } else {
             mediumHapticActive = false // Stops haptic feedback if airAmount goes above 6
+            
+            stopWarningFlash() // Stop flashing the warning icon
         }
 
         // End the game if airAmount reaches 0
@@ -1920,6 +1966,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             gameOver(reason: "You Ran Out of Air and Drowned")
         }
     }
+
+    
 
     // Property to track haptic state
     var mediumHapticActive = false

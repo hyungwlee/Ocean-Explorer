@@ -1285,8 +1285,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Spawn seaweed in the selected columns
         for columnIndex in selectedColumns {
             
-            //Set size of seaweed
-            let seaweed = OESeaweedNode(size: CGSize(width: 48, height: 52))
+            // Randomly choose between OESeaweedNode and OESeaweedNode2
+            let seaweed: SKSpriteNode
+            
+            if Bool.random() {
+                seaweed = OESeaweedNode(size: CGSize(width: 48, height: 52))
+            } else {
+                seaweed = OESeaweedNode2(size: CGSize(width: 48, height: 52))
+            }
+            
+            // Add the seaweed to the scene
             addChild(seaweed)
             
             
@@ -1298,7 +1306,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             //Keep track of seaweed spots for bubble and shell placement
             seaweedPositions.insert(seaweed.position)
-            seaweed.animate()
+            
+            //Trigger seaweed animation
+            if let animatableSeaweed = seaweed as? AnimatableSeaweed {
+                animatableSeaweed.animate()
+            }
         }
     }
     

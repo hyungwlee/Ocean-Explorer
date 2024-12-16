@@ -128,6 +128,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     // Air properties
     var airAmount = 20
+    var o2Icon: SKSpriteNode?
     var airLabel: SKLabelNode!
     var airIconBackground: SKSpriteNode!
     var airIconFill: SKSpriteNode!
@@ -136,6 +137,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var bubbleText: SKLabelNode?
     var bubbleTextBackground: SKShapeNode?
     var red = false
+    
+    var warningIcon: SKSpriteNode?
+
     
     // Tapping properties
     var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
@@ -1770,20 +1774,27 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
     }
+    var meterShadow: SKSpriteNode?
 
     func setupAirDisplay() {
-        // Remove existing airIcon and airLabel if they exist
+        // Remove existing airIcon, airLabel, O2 icon, and shadow if they exist
         airIconBackground?.removeFromParent()
         airIconFill?.removeFromParent()
         airLabel?.removeFromParent()
+        o2Icon?.removeFromParent()
+        meterShadow?.removeFromParent()
+        warningIcon?.removeFromParent()
 
         // Create and configure the air icon
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
-        airIconBackground.size = CGSize(width: 30, height: 150) // Increased size
-        airIconFill.size = CGSize(width: 30, height: 150)
-        airIconBackground.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 90)
-        airIconFill.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 165)
+        airIconBackground.size = CGSize(width: 30, height: 175) // Increased size
+        airIconFill.size = CGSize(width: 30, height: 175)
+
+        // Adjust positions for moving the meter
+        airIconBackground.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
+        airIconFill.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 185)
+
         airIconBackground.zPosition = 90
         airIconFill.zPosition = 100
         airIconFill.anchorPoint = CGPoint(x: 0.5, y: 0.0) // Anchor at the bottom-center for decreasing the air amount
@@ -1791,20 +1802,55 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.addChild(airIconFill)
         cameraNode.addChild(airIconBackground)
 
+        // Create and configure the shadow for the air meter
+        let shadowOffset = CGPoint(x: 3, y: -3) // Adjust offset as desired
+        meterShadow = SKSpriteNode(imageNamed: "meterShadow") // Replace with your actual shadow asset name
+        meterShadow?.size = CGSize(width: 30, height: 175) // Adjust size to fit behind the air meter
+        meterShadow?.position = CGPoint(x: airIconBackground.position.x + shadowOffset.x, y: airIconBackground.position.y + shadowOffset.y)
+        meterShadow?.zPosition = 80 // Place it behind the air meter
+        meterShadow?.alpha = 0.45 // Make it semi-transparent for a realistic shadow effect
+        if let shadow = meterShadow {
+            cameraNode.addChild(shadow)
+        }
+
         // Create and configure the air label
         airLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
         airLabel.fontSize = 23 // Increased font size
         airLabel.fontColor = UIColor.black.withAlphaComponent(0.50) // Slightly transparent text
         airLabel.zPosition = 1000
-        
+
         // Position the air label at the center of the airIconBackground
         airLabel.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y)
         airLabel.horizontalAlignmentMode = .center // Align horizontally to the center
         airLabel.verticalAlignmentMode = .center   // Align vertically to the center
-        
+
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
+        
+    
+        // Create and configure the warning icon
+        warningIcon = SKSpriteNode(imageNamed: "Warning") // Replace with your actual warning asset name
+        if let warningIcon = warningIcon {
+            let scorePosition = scoreLabel.position
+            warningIcon.size = CGSize(width: 170, height: 60) // Adjust size as needed
+            warningIcon.position = CGPoint(x: scorePosition.x, y: scorePosition.y - 50) // Adjust y offset as needed
+            warningIcon.zPosition = 110
+            warningIcon.alpha = 0.90 // transparent value
+            warningIcon.isHidden = true // Initially hide the warning icon
+            cameraNode.addChild(warningIcon)
+            }
+        
+
+        // Add the O2 icon to the left of the air meter
+        o2Icon = SKSpriteNode(imageNamed: "O2") // Replace with your actual asset name
+        if let o2Icon = o2Icon {
+            o2Icon.size = CGSize(width: 52, height: 50) // Adjust size as needed
+            o2Icon.position = CGPoint(x: airIconBackground.position.x - 55, y: airIconBackground.position.y - 10)
+            o2Icon.zPosition = 100
+            cameraNode.addChild(o2Icon)
+        }
     }
+
 
     // Continuously decreases air during game
     func airCountDown() {
@@ -1835,6 +1881,30 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return scaleFactor
     }
     
+    func startWarningFlash() {
+        guard let warningIcon = warningIcon else { return }
+        
+        if warningIcon.action(forKey: "flashWarning") == nil { // Prevent multiple actions
+            let flashOn = SKAction.run { [weak self] in
+                self?.warningIcon?.isHidden = false
+            }
+            let flashOff = SKAction.run { [weak self] in
+                self?.warningIcon?.isHidden = true
+            }
+            let wait = SKAction.wait(forDuration: 0.75)
+            let flashSequence = SKAction.sequence([flashOn, wait, flashOff, wait])
+            let repeatFlash = SKAction.repeatForever(flashSequence)
+            
+            warningIcon.run(repeatFlash, withKey: "flashWarning")
+        }
+    }
+    
+    func stopWarningFlash() {
+        warningIcon?.removeAction(forKey: "flashWarning")
+        warningIcon?.isHidden = true // Ensure the warning icon is hidden
+    }
+    
+    
     // Function to decrease air by 1 (called in aircountdown) // Air Meter Animation for Low Air
     func decreaseAir() {
         guard !isGameOver else { return }
@@ -1850,44 +1920,48 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Keep the air label text unchanged but make it transparent
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Darker blue with transparency
 
-            // Enlarge and adjust the position of the background and fill
-            let enlargeActionBackground = SKAction.scale(to: CGSize(width: 45, height: 165), duration: 0.05)
-            let enlargeActionFill = SKAction.scaleX(to: 1.4, duration: 0.05)
-            airIconBackground.run(enlargeActionBackground)
-            airIconFill.run(enlargeActionFill)
-            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 82)
-
-            // Pulsate the background and fill to red
+            // Flash the air meter red without changing size
             let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
             let normalAction = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
-            let pulsateAction = SKAction.sequence([redAction, normalAction])
-            airIconFill.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
-            airIconBackground.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
+            let flashAction = SKAction.sequence([redAction, normalAction])
+            airIconBackground.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
+            airIconFill.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
             red = true
+
+            // Add pulsating effect to the O2 icon
+            if let o2Icon = o2Icon {
+                let enlargeO2 = SKAction.scale(to: 1.15, duration: 0.5)
+                let shrinkO2 = SKAction.scale(to: 1.0, duration: 0.75)
+                let pulsateO2 = SKAction.sequence([enlargeO2, shrinkO2])
+                o2Icon.run(SKAction.repeatForever(pulsateO2), withKey: "pulsateO2")
+            }
         } else if airAmount >= 12 && red {
             // Reset the visuals for air level above 12
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Restore transparency
 
-            let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 150), duration: 0.05)
-            let shrinkActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
-            airIconBackground.run(shrinkAction)
-            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 75)
-            airIconFill.run(shrinkActionFill)
-            airIconBackground.removeAction(forKey: "pulsateRed")
+            airIconBackground.removeAction(forKey: "flashRed")
             airIconBackground.colorBlendFactor = 0.0
-            airIconFill.removeAction(forKey: "pulsateRed")
+            airIconFill.removeAction(forKey: "flashRed")
             airIconFill.colorBlendFactor = 0.0
             red = false
+
+            // Stop pulsating the O2 icon
+            o2Icon?.removeAction(forKey: "pulsateO2")
         }
 
         // Trigger haptic feedback when air gets critically low
-        if airAmount < 6 {
+        if airAmount < 8 {
             if !mediumHapticActive { // Prevents multiple haptic generators
                 mediumHapticActive = true
                 startMediumHapticFeedback()
             }
+            
+            startWarningFlash() // Start flashing the warning icon
+
         } else {
             mediumHapticActive = false // Stops haptic feedback if airAmount goes above 6
+            
+            stopWarningFlash() // Stop flashing the warning icon
         }
 
         // End the game if airAmount reaches 0
@@ -1896,6 +1970,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             gameOver(reason: "You Ran Out of Air and Drowned")
         }
     }
+
+    
 
     // Property to track haptic state
     var mediumHapticActive = false
@@ -2157,7 +2233,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-    
     func isPlayerOnLava() -> Bool {
         guard let box = box else { return false }
         let playerPosition = box.position.y

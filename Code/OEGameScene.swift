@@ -2221,6 +2221,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
+        if isPlayerOnLava() {
+            if let boxNode = box {
+                dissolveCharacter(boxNode)
+            }
+        }
+        
         // Handle contact with lava
         else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
                     (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {

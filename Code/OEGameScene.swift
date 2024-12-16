@@ -128,6 +128,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     // Air properties
     var airAmount = 20
+    var o2Icon: SKSpriteNode?
     var airLabel: SKLabelNode!
     var airIconBackground: SKSpriteNode!
     var airIconFill: SKSpriteNode!
@@ -1768,18 +1769,22 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func setupAirDisplay() {
-        // Remove existing airIcon and airLabel if they exist
+        // Remove existing airIcon, airLabel, and O2 icon if they exist
         airIconBackground?.removeFromParent()
         airIconFill?.removeFromParent()
         airLabel?.removeFromParent()
+        o2Icon?.removeFromParent()
 
         // Create and configure the air icon
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
-        airIconBackground.size = CGSize(width: 30, height: 150) // Increased size
-        airIconFill.size = CGSize(width: 30, height: 150)
-        airIconBackground.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 90)
-        airIconFill.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 165)
+        airIconBackground.size = CGSize(width: 28, height: 175) // Increased size
+        airIconFill.size = CGSize(width: 28, height: 175)
+
+        // Adjust positions for moving the meter
+        airIconBackground.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
+        airIconFill.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 185)
+
         airIconBackground.zPosition = 90
         airIconFill.zPosition = 100
         airIconFill.anchorPoint = CGPoint(x: 0.5, y: 0.0) // Anchor at the bottom-center for decreasing the air amount
@@ -1792,14 +1797,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airLabel.fontSize = 23 // Increased font size
         airLabel.fontColor = UIColor.black.withAlphaComponent(0.50) // Slightly transparent text
         airLabel.zPosition = 1000
-        
+
         // Position the air label at the center of the airIconBackground
         airLabel.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y)
         airLabel.horizontalAlignmentMode = .center // Align horizontally to the center
         airLabel.verticalAlignmentMode = .center   // Align vertically to the center
-        
+
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
+
+        // Add the O2 icon to the left of the air meter
+        o2Icon = SKSpriteNode(imageNamed: "O2") // Replace with your actual asset name
+        if let o2Icon = o2Icon {
+            o2Icon.size = CGSize(width: 52, height: 50) // Adjust size as needed
+            o2Icon.position = CGPoint(x: airIconBackground.position.x - 55, y: airIconBackground.position.y - 10)
+            o2Icon.zPosition = 100
+            cameraNode.addChild(o2Icon)
+        }
     }
 
     // Continuously decreases air during game
@@ -1847,7 +1861,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Darker blue with transparency
 
             // Enlarge and adjust the position of the background and fill
-            let enlargeActionBackground = SKAction.scale(to: CGSize(width: 45, height: 165), duration: 0.05)
+            let enlargeActionBackground = SKAction.scale(to: CGSize(width: 38, height: 165), duration: 0.05)
             let enlargeActionFill = SKAction.scaleX(to: 1.4, duration: 0.05)
             airIconBackground.run(enlargeActionBackground)
             airIconFill.run(enlargeActionFill)
@@ -1864,7 +1878,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Reset the visuals for air level above 12
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Restore transparency
 
-            let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 150), duration: 0.05)
+            let shrinkAction = SKAction.scale(to: CGSize(width: 28, height: 160), duration: 0.05)
             let shrinkActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
             airIconBackground.run(shrinkAction)
             airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 75)
@@ -2148,7 +2162,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-    
     func isPlayerOnLava() -> Bool {
         guard let box = box else { return false }
         let playerPosition = box.position.y

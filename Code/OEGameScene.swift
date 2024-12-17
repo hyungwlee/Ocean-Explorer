@@ -133,6 +133,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var airLabel: SKLabelNode!
     var airIconBackground: SKSpriteNode!
     var airIconFill: SKSpriteNode!
+    var airIconTicks : SKSpriteNode!
     var firstBubble: SKSpriteNode? = nil
     var arrow: SKSpriteNode?
     var bubbleText: SKLabelNode?
@@ -1848,6 +1849,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Remove existing airIcon, airLabel, O2 icon, and shadow if they exist
         airIconBackground?.removeFromParent()
         airIconFill?.removeFromParent()
+        airIconTicks?.removeFromParent()
         airLabel?.removeFromParent()
         o2Icon?.removeFromParent()
         meterShadow?.removeFromParent()
@@ -1856,19 +1858,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create and configure the air icon
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
+        airIconTicks = SKSpriteNode(imageNamed: "AirMeterTicks")
         airIconBackground.size = CGSize(width: 30, height: 175) // Increased size
         airIconFill.size = CGSize(width: 30, height: 175)
+        airIconTicks.size = CGSize(width: 55, height: 198)
 
         // Adjust positions for moving the meter
         airIconBackground.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
         airIconFill.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 185)
+        airIconTicks.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
 
         airIconBackground.zPosition = 90
+        airIconTicks.zPosition = 95
         airIconFill.zPosition = 100
         airIconFill.anchorPoint = CGPoint(x: 0.5, y: 0.0) // Anchor at the bottom-center for decreasing the air amount
 
         cameraNode.addChild(airIconFill)
         cameraNode.addChild(airIconBackground)
+        cameraNode.addChild(airIconTicks)
 
         // Create and configure the shadow for the air meter
         let shadowOffset = CGPoint(x: 3, y: -3) // Adjust offset as desired
@@ -1994,6 +2001,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let flashAction = SKAction.sequence([redAction, normalAction])
             airIconBackground.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
             airIconFill.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
+            airIconTicks.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
             red = true
 
             // Add pulsating effect to the O2 icon
@@ -2011,6 +2019,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             airIconBackground.colorBlendFactor = 0.0
             airIconFill.removeAction(forKey: "flashRed")
             airIconFill.colorBlendFactor = 0.0
+            airIconTicks.removeAction(forKey: "flashRed")
+            airIconTicks.colorBlendFactor = 0.0
             red = false
 
             // Stop pulsating the O2 icon

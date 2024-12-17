@@ -23,6 +23,7 @@ struct PhysicsCategory {
     static let seaweed: UInt32 = 0b10000000 // 128
     static let rock2: UInt32 = 0b100000000 // 256
     static let rock3: UInt32 = 0b1000000000 // 532
+    static let coral: UInt32 = 0b100000000000 //
 }
 
 struct Lane {
@@ -128,14 +129,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     // Air properties
     var airAmount = 20
+    var o2Icon: SKSpriteNode?
     var airLabel: SKLabelNode!
     var airIconBackground: SKSpriteNode!
     var airIconFill: SKSpriteNode!
+    var airIconTicks : SKSpriteNode!
     var firstBubble: SKSpriteNode? = nil
     var arrow: SKSpriteNode?
     var bubbleText: SKLabelNode?
     var bubbleTextBackground: SKShapeNode?
     var red = false
+    
+    var warningIcon: SKSpriteNode?
+
     
     // Tapping properties
     var tapQueue: [CGPoint] = [] // Queue to hold pending tap positions
@@ -149,10 +155,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var lanes: [Lane] = []  // Added this line to define lanes
     var laneDirection: Int = 0
     var prevLane: Lane? = nil
-    
-    var playableWidthRange: ClosedRange<CGFloat> {
-        return ((-size.width / 2) + cellWidth)...((size.width / 2) - cellWidth)
-    }
     
     var viewableHeightRange: ClosedRange<CGFloat> {
         guard let boxPositionY = box?.position.y else { return 0...0 }
@@ -169,6 +171,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var audioPlayer: AVAudioPlayer? // Audio player
     var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
     var playerMovementAudio: SystemSoundID = 0
+    var heartbeatSound: SystemSoundID = 0
+
     
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -184,13 +188,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Initially slow rock speed
         currentRockSpeed = "Slow"
  
+        
         guard let url = Bundle.main.url(forResource: "move", withExtension: "mp3") else {
                 return
             }
-            let osstatus = AudioServicesCreateSystemSoundID(url as CFURL, &playerMovementAudio)
-            if osstatus != noErr { // or kAudioServicesNoError. same thing.
+            let osstatus2 = AudioServicesCreateSystemSoundID(url as CFURL, &playerMovementAudio)
+            if osstatus2 != noErr { // or kAudioServicesNoError. same thing.
                 print("could not create system sound")
-                print("osstatus: \(osstatus)")
+                print("osstatus2: \(osstatus2)")
+            }
+        
+        guard let url = Bundle.main.url(forResource: "heartbeat", withExtension: "mp3") else {
+                return
+            }
+            let osstatus = AudioServicesCreateSystemSoundID(url as CFURL, &heartbeatSound)
+            if osstatus != noErr { // or kAudioServicesNoError. same thing.
+                    print("could not create system sound")
+                    print("osstatus: \(osstatus)")
             }
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
@@ -713,6 +727,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if box.position.y < cameraNode.position.y - size.height / 2 {
             // Play the "fell" sound effect
             playFellSound()
+            startMediumHapticFeedback()
             
             // Trigger game over with the appropriate reason
             gameOver(reason: "You sank into the depths and disappeared!")
@@ -1259,7 +1274,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             
             // Play the move sound effect
-                playMoveSound()
+            playMoveSound()
             
             // If an action is already in progress, queue the next tap position
             print("QUEUING MOVEMENT")
@@ -1287,7 +1302,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         guard let box, !isGameOver else { return }
         
-        let nextPosition: CGPoint
+        var nextPosition: CGPoint
         // softImpactFeedback.impactOccurred() // HAPTICS for swiping left/right
         switch sender.direction {
 
@@ -1486,10 +1501,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             score -= 1
             handleLavaContact()
         case .left:
-            
-            print("IS PLAYER MOVING: \(box.getIsMoving())")
-            print("IS PLAYER ON ROCK: \(isPlayerOnRock)")
-            nextPosition = CGPoint(x: max(playerNextPosition.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
+          
+            nextPosition = CGPoint(x: playerNextPosition.x - cellWidth, y: box.position.y)
+            // Check the column the player is moving into
+            let targetColumn = gridPosition(for: nextPosition).column
+            if targetColumn == -4 {
+                return // Stop movement
+            }
+
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() && !isPlayerOnRock {
                 print(isActionInProgress)
                 print("MOVING LEFT")
@@ -1521,7 +1540,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         case .right:
             
-            nextPosition = CGPoint(x: min(playerNextPosition.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
+            nextPosition = CGPoint(x: playerNextPosition.x + cellWidth, y: box.position.y)
+            // Check the column the player is moving into
+            let targetColumn = gridPosition(for: nextPosition).column
+            if targetColumn == 4 {
+                return // Stop movement
+            }
+            
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x + cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() && !isPlayerOnRock {
                 print("MOVING RIGHT")
                 playerNextPosition.x += cellWidth
@@ -1691,8 +1716,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Spawn seaweed in the selected columns
         for columnIndex in selectedColumns {
             
-            //Set size of seaweed
-            let seaweed = OESeaweedNode(size: CGSize(width: 48, height: 52))
+            // Randomly choose between OESeaweedNode and OESeaweedNode2
+            let seaweed: SKSpriteNode
+            
+            if Bool.random() {
+                seaweed = OESeaweedNode(size: CGSize(width: 48, height: 52))
+            } else {
+                seaweed = OESeaweedNode2(size: CGSize(width: 48, height: 52))
+            }
+            
+            // Add the seaweed to the scene
             addChild(seaweed)
             
             
@@ -1704,9 +1737,32 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             //Keep track of seaweed spots for bubble and shell placement
             seaweedPositions.insert(seaweed.position)
-            seaweed.animate()
+            
+            //Trigger seaweed animation
+            if let animatableSeaweed = seaweed as? AnimatableSeaweed {
+                animatableSeaweed.animate()
+            }
         }
     }
+    
+    func spawnCoral(in lane: Lane) {
+        
+        let coralR : SKSpriteNode
+        let coralL : SKSpriteNode
+        
+        coralL = OECoralNode(size: CGSize(width: 48, height: 50))
+        coralR = OECoralNode(size: CGSize(width: 48, height: 50))
+        
+        addChild(coralR)
+        addChild(coralL)
+        
+        let leftCoralX = (CGFloat(-5) + 0.5) * cellWidth
+        let rightCoralX = (CGFloat(4) + 0.5) * cellWidth
+        
+        coralL.position = CGPoint(x: leftCoralX, y: lane.startPosition.y)
+        coralR.position = CGPoint(x: rightCoralX, y: lane.startPosition.y)
+    }
+    
     
     func warn(in lane: Lane, completion: @escaping () -> Void) {
         
@@ -1737,6 +1793,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnSeaweed(in: lane)
+                    self?.spawnCoral(in: lane)
                 }
                 run(spawn)
             }
@@ -1841,25 +1898,39 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     // Color lanes that are empty or eel type
+    // Variable to track texture alternation
+    var sandTextureToggle = true // Tracks which texture to use (true -> "SAND", false -> "SAND2")
+
     func colorLane(in lane: Lane) {
-        let laneColor = SKShapeNode(rect: CGRect(x: -size.width, y: lane.startPosition.y - cellHeight / 2, width: size.width * 2, height: cellHeight))
+        let laneColor = SKShapeNode(rect: CGRect(
+            x: -size.width,
+            y: lane.startPosition.y - cellHeight / 2,
+            width: size.width * 2,
+            height: cellHeight
+        ))
+        
         if lane.laneType == "Empty" {
             laneColor.fillColor = .white
-            laneColor.fillTexture = SKTexture(imageNamed: "SAND")
-        }
-        else if lane.laneType == "Eel" {
+            // Alternate between SAND and SAND2
+            let textureName = sandTextureToggle ? "SAND" : "SAND2"
+            laneColor.fillTexture = SKTexture(imageNamed: textureName)
+            laneColor.fillTexture?.filteringMode = .nearest
+            
+            sandTextureToggle.toggle() // Switch to the other texture for next lane
+        } else if lane.laneType == "Eel" {
             laneColor.fillColor = .white
             laneColor.fillTexture = SKTexture(imageNamed: "eelLane")
-            
-        }
-        else {
+            laneColor.fillTexture?.filteringMode = .nearest
+        } else {
             laneColor.fillColor = .red
         }
-        laneColor.alpha = 0.55
+        
+        laneColor.strokeColor = .clear // Remove the border
+        laneColor.alpha = 0.50
         laneColor.zPosition = 0
         addChild(laneColor)
-        //        print("Lane position: \(lane.startPosition.y)")
     }
+
     
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
@@ -2180,41 +2251,89 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         )
         run(bubbleSpawnAction, withKey: "spawnBubbles")
     }
+    var meterShadow: SKSpriteNode?
 
     func setupAirDisplay() {
-        // Remove existing airIcon and airLabel if they exist
+        // Remove existing airIcon, airLabel, O2 icon, and shadow if they exist
         airIconBackground?.removeFromParent()
         airIconFill?.removeFromParent()
+        airIconTicks?.removeFromParent()
         airLabel?.removeFromParent()
+        o2Icon?.removeFromParent()
+        meterShadow?.removeFromParent()
+        warningIcon?.removeFromParent()
 
         // Create and configure the air icon
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
-        airIconBackground.size = CGSize(width: 30, height: 150) // Increased size
-        airIconFill.size = CGSize(width: 30, height: 150)
-        airIconBackground.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 90)
-        airIconFill.position = CGPoint(x: size.width / 2 - 80, y: size.height / 2 - 165)
+        airIconTicks = SKSpriteNode(imageNamed: "AirMeterTicks")
+        airIconBackground.size = CGSize(width: 30, height: 175) // Increased size
+        airIconFill.size = CGSize(width: 30, height: 175)
+        airIconTicks.size = CGSize(width: 55, height: 198)
+
+        // Adjust positions for moving the meter
+        airIconBackground.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
+        airIconFill.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 185)
+        airIconTicks.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
+
         airIconBackground.zPosition = 90
+        airIconTicks.zPosition = 95
         airIconFill.zPosition = 100
         airIconFill.anchorPoint = CGPoint(x: 0.5, y: 0.0) // Anchor at the bottom-center for decreasing the air amount
 
         cameraNode.addChild(airIconFill)
         cameraNode.addChild(airIconBackground)
+        cameraNode.addChild(airIconTicks)
+
+        // Create and configure the shadow for the air meter
+        let shadowOffset = CGPoint(x: 3, y: -3) // Adjust offset as desired
+        meterShadow = SKSpriteNode(imageNamed: "meterShadow") // Replace with your actual shadow asset name
+        meterShadow?.size = CGSize(width: 30, height: 175) // Adjust size to fit behind the air meter
+        meterShadow?.position = CGPoint(x: airIconBackground.position.x + shadowOffset.x, y: airIconBackground.position.y + shadowOffset.y)
+        meterShadow?.zPosition = 80 // Place it behind the air meter
+        meterShadow?.alpha = 0.45 // Make it semi-transparent for a realistic shadow effect
+        if let shadow = meterShadow {
+            cameraNode.addChild(shadow)
+        }
 
         // Create and configure the air label
         airLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
         airLabel.fontSize = 23 // Increased font size
         airLabel.fontColor = UIColor.black.withAlphaComponent(0.50) // Slightly transparent text
         airLabel.zPosition = 1000
-        
+
         // Position the air label at the center of the airIconBackground
         airLabel.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y)
         airLabel.horizontalAlignmentMode = .center // Align horizontally to the center
         airLabel.verticalAlignmentMode = .center   // Align vertically to the center
-        
+
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
+        
+    
+        // Create and configure the warning icon
+        warningIcon = SKSpriteNode(imageNamed: "Warning") // Replace with your actual warning asset name
+        if let warningIcon = warningIcon {
+            let scorePosition = scoreLabel.position
+            warningIcon.size = CGSize(width: 170, height: 60) // Adjust size as needed
+            warningIcon.position = CGPoint(x: scorePosition.x, y: scorePosition.y - 50) // Adjust y offset as needed
+            warningIcon.zPosition = 110
+            warningIcon.alpha = 0.90 // transparent value
+            warningIcon.isHidden = true // Initially hide the warning icon
+            cameraNode.addChild(warningIcon)
+            }
+        
+
+        // Add the O2 icon to the left of the air meter
+        o2Icon = SKSpriteNode(imageNamed: "O2") // Replace with your actual asset name
+        if let o2Icon = o2Icon {
+            o2Icon.size = CGSize(width: 52, height: 50) // Adjust size as needed
+            o2Icon.position = CGPoint(x: airIconBackground.position.x - 55, y: airIconBackground.position.y - 10)
+            o2Icon.zPosition = 100
+            cameraNode.addChild(o2Icon)
+        }
     }
+
 
     // Continuously decreases air during game
     func airCountDown() {
@@ -2245,6 +2364,30 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return scaleFactor
     }
     
+    func startWarningFlash() {
+        guard let warningIcon = warningIcon else { return }
+        
+        if warningIcon.action(forKey: "flashWarning") == nil { // Prevent multiple actions
+            let flashOn = SKAction.run { [weak self] in
+                self?.warningIcon?.isHidden = false
+            }
+            let flashOff = SKAction.run { [weak self] in
+                self?.warningIcon?.isHidden = true
+            }
+            let wait = SKAction.wait(forDuration: 0.75)
+            let flashSequence = SKAction.sequence([flashOn, wait, flashOff, wait])
+            let repeatFlash = SKAction.repeatForever(flashSequence)
+            
+            warningIcon.run(repeatFlash, withKey: "flashWarning")
+        }
+    }
+    
+    func stopWarningFlash() {
+        warningIcon?.removeAction(forKey: "flashWarning")
+        warningIcon?.isHidden = true // Ensure the warning icon is hidden
+    }
+    
+    
     // Function to decrease air by 1 (called in aircountdown) // Air Meter Animation for Low Air
     func decreaseAir() {
         guard !isGameOver else { return }
@@ -2256,48 +2399,56 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let targetScaleFactor = calculateScaleFactor(airAmount: airAmount)
         airIconFill.yScale = targetScaleFactor
 
-        if airAmount < 12 && !red {
+        if airAmount < 11 && !red {
             // Keep the air label text unchanged but make it transparent
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Darker blue with transparency
 
-            // Enlarge and adjust the position of the background and fill
-            let enlargeActionBackground = SKAction.scale(to: CGSize(width: 45, height: 165), duration: 0.05)
-            let enlargeActionFill = SKAction.scaleX(to: 1.4, duration: 0.05)
-            airIconBackground.run(enlargeActionBackground)
-            airIconFill.run(enlargeActionFill)
-            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 82)
-
-            // Pulsate the background and fill to red
+            // Flash the air meter red without changing size
             let redAction = SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.5)
             let normalAction = SKAction.colorize(withColorBlendFactor: 0.0, duration: 0.5)
-            let pulsateAction = SKAction.sequence([redAction, normalAction])
-            airIconFill.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
-            airIconBackground.run(SKAction.repeatForever(pulsateAction), withKey: "pulsateRed")
+            let flashAction = SKAction.sequence([redAction, normalAction])
+            airIconBackground.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
+            airIconFill.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
+            airIconTicks.run(SKAction.repeatForever(flashAction), withKey: "flashRed")
             red = true
+
+            // Add pulsating effect to the O2 icon
+            if let o2Icon = o2Icon {
+                let enlargeO2 = SKAction.scale(to: 1.15, duration: 0.5)
+                let shrinkO2 = SKAction.scale(to: 1.0, duration: 0.75)
+                let pulsateO2 = SKAction.sequence([enlargeO2, shrinkO2])
+                o2Icon.run(SKAction.repeatForever(pulsateO2), withKey: "pulsateO2")
+            }
         } else if airAmount >= 12 && red {
             // Reset the visuals for air level above 12
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Restore transparency
 
-            let shrinkAction = SKAction.scale(to: CGSize(width: 35, height: 150), duration: 0.05)
-            let shrinkActionFill = SKAction.scaleX(to: 1.2, duration: 0.05)
-            airIconBackground.run(shrinkAction)
-            airIconFill.position = CGPoint(x: airIconBackground.position.x, y: airIconBackground.position.y - 75)
-            airIconFill.run(shrinkActionFill)
-            airIconBackground.removeAction(forKey: "pulsateRed")
+            airIconBackground.removeAction(forKey: "flashRed")
             airIconBackground.colorBlendFactor = 0.0
-            airIconFill.removeAction(forKey: "pulsateRed")
+            airIconFill.removeAction(forKey: "flashRed")
             airIconFill.colorBlendFactor = 0.0
+            airIconTicks.removeAction(forKey: "flashRed")
+            airIconTicks.colorBlendFactor = 0.0
             red = false
+
+            // Stop pulsating the O2 icon
+            o2Icon?.removeAction(forKey: "pulsateO2")
         }
 
         // Trigger haptic feedback when air gets critically low
-        if airAmount < 6 {
+        if airAmount < 8 {
             if !mediumHapticActive { // Prevents multiple haptic generators
                 mediumHapticActive = true
                 startMediumHapticFeedback()
             }
+            
+            startWarningFlash() // Start flashing the warning icon
+            playHeartbeatSound()
+
         } else {
             mediumHapticActive = false // Stops haptic feedback if airAmount goes above 6
+            
+            stopWarningFlash() // Stop flashing the warning icon
         }
 
         // End the game if airAmount reaches 0
@@ -2306,6 +2457,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             gameOver(reason: "You Ran Out of Air and Drowned")
         }
     }
+
+    
 
     // Property to track haptic state
     var mediumHapticActive = false
@@ -2358,6 +2511,29 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     */
     
+    func dissolveCharacter(_ characterNode: SKSpriteNode) {
+        // Disable the character's physics to prevent further interactions
+        characterNode.physicsBody?.isDynamic = false
+        
+        // Create a dissolve animation using fade and scale actions
+        let fadeOut = SKAction.fadeOut(withDuration: 0.5)  // Gradual fade
+        let scaleDown = SKAction.scale(to: 0.0, duration: 0.5)  // Shrink down
+        let dissolveAction = SKAction.group([fadeOut, scaleDown])  // Combine actions
+        let removeNode = SKAction.removeFromParent()  // Remove from scene after dissolve
+        
+        // Run the dissolve and removal sequence
+        characterNode.run(SKAction.sequence([dissolveAction, removeNode]))
+    }
+    
+    func dissolveEnemy(_ enemy: SKNode, after delay: TimeInterval = 0.0) {
+        let dissolveAction = SKAction.sequence([
+            SKAction.wait(forDuration: delay),
+            SKAction.fadeOut(withDuration: 0.5),
+            SKAction.removeFromParent()
+        ])
+        enemy.run(dissolveAction)
+    }
+    
     // Handles player contact with bubbles, enemies, shells, and rocks
     func didBegin(_ contact: SKPhysicsContact) {
         let bodyA = contact.bodyA
@@ -2367,11 +2543,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isGameOver {
+                // Dissolve the main character
+                if let boxNode = box {
+                    heavyImpactFeedback.impactOccurred()
+                    dissolveCharacter(boxNode)
+                }
+                
+                // Freeze the enemy
+                let enemyNode: SKNode
+                if bodyA.categoryBitMask == PhysicsCategory.enemy {
+                    enemyNode = bodyA.node!
+                } else {
+                    enemyNode = bodyB.node!
+                }
+                enemyNode.physicsBody?.isDynamic = false
+                
                 // Play the contact sound effect
                 playEnemyContactSound()
-
-                // Trigger game over
-                gameOver(reason: "A sea creature stopped your adventure!")
+                
+                // Trigger game over (after the dissolve)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.gameOver(reason: "A sea creature stopped your adventure!")
+                }
             }
         }
         
@@ -2379,26 +2572,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.bubble) ||
            (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
             
-            // Play the bubble sound effect
             playBubbleSound()
-            softImpactFeedback.impactOccurred()
+            mediumImpactFeedback.impactOccurred()
+            increaseAir(by: 5)
             
-            increaseAir(by: 5) // Regular bubble increases air by 5
-            
-            // Check which body is the bubble
             let bubbleNode: SKNode
             if bodyA.categoryBitMask == PhysicsCategory.bubble {
                 bubbleNode = bodyA.node!
             } else {
                 bubbleNode = bodyB.node!
             }
-            
-            // Remove the bubble from the scene
             bubbleNode.removeFromParent()
             
-            // Check if this was the first bubble
             if bubbleNode == firstBubble {
-                // Remove the arrow and text
                 arrow?.removeFromParent()
                 bubbleText?.removeFromParent()
                 bubbleTextBackground?.removeFromParent()
@@ -2408,6 +2594,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Handle contact with GoldBubble
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.GoldBubble) ||
            (bodyA.categoryBitMask == PhysicsCategory.GoldBubble && bodyB.categoryBitMask == PhysicsCategory.box) {
+            mediumImpactFeedback.impactOccurred()
             increaseAir(by: 30) // GoldBubble increases air by 30
             playBubbleSound() // sound for picking up bubbles
             
@@ -2427,6 +2614,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.shell) ||
            (bodyA.categoryBitMask == PhysicsCategory.shell && bodyB.categoryBitMask == PhysicsCategory.box) {
             didBeginShellContact(contact)
+            mediumImpactFeedback.impactOccurred()
         }
         
         // Handle contact with rocks
@@ -2440,6 +2628,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 print("PLAYER ON ROCK")
                 if isPlayerOnLava() {
                     print("PLAYER ON LAVA")
+                    heavyImpactFeedback.impactOccurred()
                     handleLavaContact()
                 }
 
@@ -2486,16 +2675,25 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
+        if isPlayerOnLava() {
+            if let boxNode = box {
+                heavyImpactFeedback.impactOccurred()
+                dissolveCharacter(boxNode)
+            }
+        }
+        
         // Handle contact with lava
         else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
                     (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isPlayerOnRock {
                 handleLavaContact()
-
+                if let boxNode = box {
+                    dissolveCharacter(boxNode)
+                }
             }
         }
     }
-    
+
     func isPlayerOnLava() -> Bool {
         guard let box = box else { return false }
         let playerPosition = box.position.y
@@ -2596,6 +2794,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let soundURL = Bundle.main.url(forResource: "gameOver", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.20 // Set the volume to % (range: 0.0 to 1.0)
                 audioPlayer?.play()
             } catch {
                 print("Error playing gameOver sound: \(error.localizedDescription)")
@@ -2617,7 +2816,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Shell pickup sound file not found.")
         }
     }
-    
+
+    // Call this method to play the sound
+    func playHeartbeatSound() {
+        AudioServicesPlaySystemSound(heartbeatSound)
+    }
+
+
     func playRockJumpSound() {
         if let soundURL = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") {
             do {
@@ -2655,6 +2860,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if let soundURL = Bundle.main.url(forResource: "contact", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.75 // Set the volume to 50% (range: 0.0 to 1.0)
                 audioPlayer?.play()
             } catch {
                 print("Error playing sound: \(error.localizedDescription)")
@@ -2663,6 +2869,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Contact sound file not found.")
         }
     }
+
     
     // Function to play the burned sound
     func playBurnedSound() {
@@ -2695,6 +2902,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Check for collision with any seaweed node
         let seaweedNodes = children.filter { $0 is OESeaweedNode }
+        let seaweedNodes2 = children.filter { $0 is OESeaweedNode2}
         
         for node in seaweedNodes {
             if let seaweed = node as? OESeaweedNode {
@@ -2704,6 +2912,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
+        
+        for node in seaweedNodes2 {
+            if let seaweed = node as? OESeaweedNode2 {
+                // Use the node's frame to check for intersection
+                if seaweed.frame.contains(nextPosition) {
+                    return true // Collision detected
+                }
+            }
+        }
+        
         return false // No collision
     }
     
@@ -2888,94 +3106,113 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func gameOver(reason: String) {
         isGameOver = true
-        mediumHapticActive = false // Ensures haptic stops incase u die whilst on low air
+        mediumHapticActive = false // Ensures haptic stops in case you die whilst on low air
 
-        heavyImpactFeedback.impactOccurred()
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
 
         // Stop the background music
         stopBackgroundMusic()
         
-        // Delay the game over sound effect by 2 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.38) {
+        // Enable gravity for the player to make them fall
+        if let playerBox = box {
+            playerBox.physicsBody?.affectedByGravity = true
+            playerBox.physicsBody?.velocity = CGVector(dx: 0, dy: 0) // Reset any current velocity
+            playerBox.physicsBody?.angularVelocity = 0 // Stop rotation
+        }
+
+        // Delay the game over sound effect
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
             self.playGameOverSound()
         }
         
-        // Create a background sprite for the end screen using the ocean image
-        let backgroundSprite = SKSpriteNode(imageNamed: "gameOver")
-        backgroundSprite.position = CGPoint(x: 0, y: 0) // Centered on screen
-        backgroundSprite.zPosition = 1100 // Ensure it is behind the text but above other nodes
-        backgroundSprite.size = self.size // Adjust to fill the screen
-        cameraNode.addChild(backgroundSprite)
+        // Show the game over overlay after a delay to allow the player to fall
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            // Create a background sprite for the end screen using the ocean image
+            let backgroundSprite = SKSpriteNode(imageNamed: "gameOver")
+            backgroundSprite.position = CGPoint(x: 0, y: 0) // Centered on screen
+            backgroundSprite.zPosition = 1100 // Ensure it is behind the text but above other nodes
+            backgroundSprite.size = self.size // Adjust to fill the screen
+            self.cameraNode.addChild(backgroundSprite)
 
-        // Add the game logo
-        let logoTexture = SKTexture(imageNamed: "Logo1")
-        let logoSprite = SKSpriteNode(texture: logoTexture)
-        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
-        logoSprite.zPosition = 1101 // Make logo be the top visible layer
-        logoSprite.xScale = 0.35 // Scale width
-        logoSprite.yScale = 0.35 // Scale height
-        
-        cameraNode.addChild(logoSprite)
+            // Add the game logo
+            let logoTexture = SKTexture(imageNamed: "Logo1")
+            let logoSprite = SKSpriteNode(texture: logoTexture)
+            logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
+            logoSprite.zPosition = 1101 // Make logo be the top visible layer
+            logoSprite.xScale = 0.35 // Scale width
+            logoSprite.yScale = 0.35 // Scale height
+            
+            self.cameraNode.addChild(logoSprite)
 
-        // Save the current score
-        let finalScore = score
+            // Save the current score
+            let finalScore = self.score
 
-        // Display Final Score
-        let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
-        finalScoreLabel.fontSize = 38
-        finalScoreLabel.fontColor = .white
-        finalScoreLabel.zPosition = 1101 // Make text be the top visible layer
-        finalScoreLabel.fontName = "Helvetica Neue Bold" // Use bold font
-        finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
-        cameraNode.addChild(finalScoreLabel)
-        
-        // Display the reason for game over
-        let reasonLabel = SKLabelNode(text: reason)
-        reasonLabel.fontSize = 19
-        reasonLabel.fontColor = .white
-        reasonLabel.zPosition = 1101 // Ensure top visibility
-        reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font
-        reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
-        cameraNode.addChild(reasonLabel)
-        
-        // Display asset based on reason
-        let reasonAsset: SKSpriteNode
-        switch reason {
-        case "You burned to death underwater!":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameBurned")
-        case "A sea creature stopped your adventure!":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameContact")
-        case "You Ran Out of Air and Drowned":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameDrowned")
-        case "You were swept away by the rocks!":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
-        case "You sank into the depths and disappeared!":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
-        default:
-            reasonAsset = SKSpriteNode() // Fallback to an empty node
+            // Display Final Score
+            let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
+            finalScoreLabel.fontSize = 38
+            finalScoreLabel.fontColor = .white
+            finalScoreLabel.zPosition = 1101 // Make text be the top visible layer
+            finalScoreLabel.fontName = "Helvetica Neue Bold" // Use bold font
+            finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
+            self.cameraNode.addChild(finalScoreLabel)
+            
+            // Display the reason for game over
+            let reasonLabel = SKLabelNode(text: reason)
+            reasonLabel.fontSize = 19
+            reasonLabel.fontColor = .white
+            reasonLabel.zPosition = 1101 // Ensure top visibility
+            reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font
+            reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
+            self.cameraNode.addChild(reasonLabel)
+            
+            // Display asset based on reason
+            let reasonAsset: SKSpriteNode
+            switch reason {
+            case "You burned to death underwater!":
+                reasonAsset = SKSpriteNode(imageNamed: "endGameBurned")
+            case "A sea creature stopped your adventure!":
+                reasonAsset = SKSpriteNode(imageNamed: "endGameContact")
+            case "You Ran Out of Air and Drowned":
+                reasonAsset = SKSpriteNode(imageNamed: "endGameDrowned")
+            case "You were swept away by the rocks!":
+                reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+            case "You sank into the depths and disappeared!":
+                reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+            default:
+                reasonAsset = SKSpriteNode() // Fallback to an empty node
+            }
+            
+            // Position the reason asset below the final score
+            reasonAsset.position = CGPoint(x: 0, y: -50)
+            reasonAsset.zPosition = 1101
+            reasonAsset.xScale = 1.0 // Adjust scale as needed
+            reasonAsset.yScale = 1.0
+            self.cameraNode.addChild(reasonAsset)
+
+            // Display "Tap to Restart" message
+            let restartLabel = SKLabelNode(text: "Tap to Restart")
+            restartLabel.fontSize = 20
+            restartLabel.fontColor = .white
+            restartLabel.zPosition = 1101 // Make text be the top visible layer
+            restartLabel.fontName = "Arial-BoldMT" // Use bold font
+            restartLabel.position = CGPoint(x: 0, y: -350) // Positioned below the final score
+            self.cameraNode.addChild(restartLabel)
+
+            // Create a blink action with a 2-second interval
+            let fadeOut = SKAction.fadeOut(withDuration: 1.0) // Fade out over 1.0 seconds
+            let fadeIn = SKAction.fadeIn(withDuration: 1.0)   // Fade in over 1.0 seconds
+            let blinkSequence = SKAction.sequence([fadeOut, fadeIn]) // Create a sequence of fade-out and fade-in
+            let blinkForever = SKAction.repeatForever(blinkSequence) // Repeat the sequence forever
+
+            // Apply the blink action to the label
+            restartLabel.run(blinkForever)
+
+            // Pause the scene to stop further actions
+            self.isPaused = true
         }
-        
-        // Position the reason asset below the final score
-        reasonAsset.position = CGPoint(x: 0, y: -50)
-        reasonAsset.zPosition = 1101
-        reasonAsset.xScale = 1.0 // Adjust scale as needed
-        reasonAsset.yScale = 1.0
-        cameraNode.addChild(reasonAsset)
-
-        // Display "Tap to Restart" message
-        let restartLabel = SKLabelNode(text: "Tap to Restart")
-        restartLabel.fontSize = 20
-        restartLabel.fontColor = .white
-        restartLabel.zPosition = 1101 // Make text be the top visible layer
-        restartLabel.fontName = "Arial-BoldMT" // Use bold font
-        restartLabel.position = CGPoint(x: 0, y: -350) // Positioned below the final score
-        cameraNode.addChild(restartLabel)
-
-        // Pause the scene to stop further actions
-        self.isPaused = true
     }
+
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if isGameOver{

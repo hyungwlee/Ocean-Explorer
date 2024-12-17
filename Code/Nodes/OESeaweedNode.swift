@@ -18,7 +18,9 @@ class OESeaweedNode: SKSpriteNode {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+}
+
+extension OESeaweedNode: AnimatableSeaweed {
     func animate() {
         // Load seaweed textures
         let textures = [

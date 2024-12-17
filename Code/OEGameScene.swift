@@ -172,6 +172,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var audioPlayer: AVAudioPlayer? // Audio player
     var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
     var playerMovementAudio: SystemSoundID = 0
+    var heartbeatSound: SystemSoundID = 0
+
     
     init(context: OEGameContext, size: CGSize) {
         self.context = context
@@ -187,13 +189,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Initially slow rock speed
         currentRockSpeed = "Slow"
  
+        
         guard let url = Bundle.main.url(forResource: "move", withExtension: "mp3") else {
                 return
             }
-            let osstatus = AudioServicesCreateSystemSoundID(url as CFURL, &playerMovementAudio)
-            if osstatus != noErr { // or kAudioServicesNoError. same thing.
+            let osstatus2 = AudioServicesCreateSystemSoundID(url as CFURL, &playerMovementAudio)
+            if osstatus2 != noErr { // or kAudioServicesNoError. same thing.
                 print("could not create system sound")
-                print("osstatus: \(osstatus)")
+                print("osstatus2: \(osstatus2)")
+            }
+        
+        guard let url = Bundle.main.url(forResource: "heartbeat", withExtension: "mp3") else {
+                return
+            }
+            let osstatus = AudioServicesCreateSystemSoundID(url as CFURL, &heartbeatSound)
+            if osstatus != noErr { // or kAudioServicesNoError. same thing.
+                    print("could not create system sound")
+                    print("osstatus: \(osstatus)")
             }
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
@@ -1969,6 +1981,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             startWarningFlash() // Start flashing the warning icon
+            playHeartbeatSound()
 
         } else {
             mediumHapticActive = false // Stops haptic feedback if airAmount goes above 6
@@ -2233,6 +2246,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         
+        if isPlayerOnLava() {
+            if let boxNode = box {
+                dissolveCharacter(boxNode)
+            }
+        }
+        
         // Handle contact with lava
         else if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.lava) ||
                     (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
@@ -2359,7 +2378,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Shell pickup sound file not found.")
         }
     }
-    
+
+    // Call this method to play the sound
+    func playHeartbeatSound() {
+        AudioServicesPlaySystemSound(heartbeatSound)
+    }
+
+
     func playRockJumpSound() {
         if let soundURL = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") {
             do {

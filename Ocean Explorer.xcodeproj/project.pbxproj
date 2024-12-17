@@ -58,6 +58,8 @@
 		FA5C76102D07C6E40064E475 /* gameOver.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C760E2D07C6E40064E475 /* gameOver.mp3 */; };
 		FA5C76122D07C87E0064E475 /* shellPickup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76112D07C87E0064E475 /* shellPickup.mp3 */; };
 		FA5C76132D07C87E0064E475 /* shellPickup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA5C76112D07C87E0064E475 /* shellPickup.mp3 */; };
+		FA74B1B02D11224F00B04DFD /* heartbeat.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA74B1AF2D11224E00B04DFD /* heartbeat.mp3 */; };
+		FA74B1B12D11224F00B04DFD /* heartbeat.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA74B1AF2D11224E00B04DFD /* heartbeat.mp3 */; };
 		FAC619EA2CD8BD2300C94F5E /* OEEnemyNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC619E92CD8BD2300C94F5E /* OEEnemyNode.swift */; };
 		FAF2F3B12D08D38E00D19215 /* pufferfish.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */; };
 		FAF2F3B22D08D38E00D19215 /* pufferfish.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */; };
@@ -123,6 +125,7 @@
 		FA5C75FF2D07AF2C0064E475 /* contact.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = contact.mp3; sourceTree = "<group>"; };
 		FA5C760E2D07C6E40064E475 /* gameOver.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = gameOver.mp3; sourceTree = "<group>"; };
 		FA5C76112D07C87E0064E475 /* shellPickup.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = shellPickup.mp3; sourceTree = "<group>"; };
+		FA74B1AF2D11224E00B04DFD /* heartbeat.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = heartbeat.mp3; sourceTree = "<group>"; };
 		FAC619E92CD8BD2300C94F5E /* OEEnemyNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode.swift; sourceTree = "<group>"; };
 		FAF2F3B02D08D38E00D19215 /* pufferfish.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = pufferfish.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -286,6 +289,7 @@
 				FA46185D2D08237E0024A29A /* electricity.mp3 */,
 				FA5C76112D07C87E0064E475 /* shellPickup.mp3 */,
 				FA5C760E2D07C6E40064E475 /* gameOver.mp3 */,
+				FA74B1AF2D11224E00B04DFD /* heartbeat.mp3 */,
 				FA32ECD22D0CBC37000AE578 /* music.mp3 */,
 				FA5C75FF2D07AF2C0064E475 /* contact.mp3 */,
 				FA5C75E72D078A550064E475 /* burned.mp3 */,
@@ -425,6 +429,7 @@
 				FA5C76102D07C6E40064E475 /* gameOver.mp3 in Resources */,
 				FA5C76122D07C87E0064E475 /* shellPickup.mp3 in Resources */,
 				FA4618672D082D210024A29A /* rockjump.mp3 in Resources */,
+				FA74B1B02D11224F00B04DFD /* heartbeat.mp3 in Resources */,
 				FA5C76002D07AF2C0064E475 /* contact.mp3 in Resources */,
 				FA5C75E82D078A550064E475 /* burned.mp3 in Resources */,
 				FA46185E2D08237E0024A29A /* electricity.mp3 in Resources */,
@@ -444,6 +449,7 @@
 				FA5C760F2D07C6E40064E475 /* gameOver.mp3 in Resources */,
 				FA5C76132D07C87E0064E475 /* shellPickup.mp3 in Resources */,
 				FA4618682D082D210024A29A /* rockjump.mp3 in Resources */,
+				FA74B1B12D11224F00B04DFD /* heartbeat.mp3 in Resources */,
 				FA5C76012D07AF2C0064E475 /* contact.mp3 in Resources */,
 				FA5C75E92D078A550064E475 /* burned.mp3 in Resources */,
 				FA46185F2D08237E0024A29A /* electricity.mp3 in Resources */,

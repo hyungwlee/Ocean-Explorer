@@ -716,6 +716,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if box.position.y < cameraNode.position.y - size.height / 2 {
             // Play the "fell" sound effect
             playFellSound()
+            startMediumHapticFeedback()
             
             // Trigger game over with the appropriate reason
             gameOver(reason: "You sank into the depths and disappeared!")
@@ -2083,6 +2084,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if !isGameOver {
                 // Dissolve the main character
                 if let boxNode = box {
+                    heavyImpactFeedback.impactOccurred()
                     dissolveCharacter(boxNode)
                 }
                 
@@ -2110,7 +2112,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
            (bodyA.categoryBitMask == PhysicsCategory.bubble && bodyB.categoryBitMask == PhysicsCategory.box) {
             
             playBubbleSound()
-            softImpactFeedback.impactOccurred()
+            mediumImpactFeedback.impactOccurred()
             increaseAir(by: 5)
             
             let bubbleNode: SKNode
@@ -2131,6 +2133,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Handle contact with GoldBubble
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.GoldBubble) ||
            (bodyA.categoryBitMask == PhysicsCategory.GoldBubble && bodyB.categoryBitMask == PhysicsCategory.box) {
+            mediumImpactFeedback.impactOccurred()
             increaseAir(by: 30) // GoldBubble increases air by 30
             playBubbleSound() // sound for picking up bubbles
             
@@ -2150,6 +2153,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.shell) ||
            (bodyA.categoryBitMask == PhysicsCategory.shell && bodyB.categoryBitMask == PhysicsCategory.box) {
             didBeginShellContact(contact)
+            mediumImpactFeedback.impactOccurred()
         }
         
         // Handle contact with rocks
@@ -2162,6 +2166,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 print("PLAYER ON ROCK")
                 if isPlayerOnLava() {
                     print("PLAYER ON LAVA")
+                    heavyImpactFeedback.impactOccurred()
                     handleLavaContact()
                 }
                 
@@ -2248,6 +2253,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         if isPlayerOnLava() {
             if let boxNode = box {
+                heavyImpactFeedback.impactOccurred()
                 dissolveCharacter(boxNode)
             }
         }
@@ -2650,7 +2656,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         isGameOver = true
         mediumHapticActive = false // Ensures haptic stops in case you die whilst on low air
 
-        heavyImpactFeedback.impactOccurred()
         cameraNode.removeAllActions() // Stop camera movement
         removeAction(forKey: "spawnEnemies") // Stop spawning enemies
 

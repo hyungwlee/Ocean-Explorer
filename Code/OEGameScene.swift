@@ -23,6 +23,7 @@ struct PhysicsCategory {
     static let seaweed: UInt32 = 0b10000000 // 128
     static let rock2: UInt32 = 0b100000000 // 256
     static let rock3: UInt32 = 0b1000000000 // 532
+    static let coral: UInt32 = 0b100000000000 //
 }
 
 struct Lane {
@@ -152,10 +153,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var lanes: [Lane] = []  // Added this line to define lanes
     var laneDirection: Int = 0
     var prevLane: Lane? = nil
-    
-    var playableWidthRange: ClosedRange<CGFloat> {
-        return ((-size.width / 2) + cellWidth)...((size.width / 2) - cellWidth)
-    }
     
     var viewableHeightRange: ClosedRange<CGFloat> {
         guard let boxPositionY = box?.position.y else { return 0...0 }
@@ -1073,7 +1070,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             
             // Play the move sound effect
-                playMoveSound()
+            playMoveSound()
             
             // If an action is already in progress, queue the next tap position
             print("QUEUING MOVEMENT")
@@ -1093,7 +1090,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         guard let box, !isGameOver else { return }
         
-        let nextPosition: CGPoint
+        var nextPosition: CGPoint
         // softImpactFeedback.impactOccurred() // HAPTICS for swiping left/right
         switch sender.direction {
 
@@ -1109,7 +1106,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             score -= 1
         case .left:
           
-            nextPosition = CGPoint(x: max(playerNextPosition.x - cellWidth, playableWidthRange.lowerBound), y: box.position.y)
+            nextPosition = CGPoint(x: playerNextPosition.x - cellWidth, y: box.position.y)
+            // Check the column the player is moving into
+            let targetColumn = gridPosition(for: nextPosition).column
+            if targetColumn == -4 {
+                return // Stop movement
+            }
+            
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() && !isPlayerOnRock {
                 print(isActionInProgress)
                 print("MOVING LEFT")
@@ -1138,7 +1141,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         case .right:
             
-            nextPosition = CGPoint(x: min(playerNextPosition.x + cellWidth, playableWidthRange.upperBound), y: box.position.y)
+            nextPosition = CGPoint(x: playerNextPosition.x + cellWidth, y: box.position.y)
+            // Check the column the player is moving into
+            let targetColumn = gridPosition(for: nextPosition).column
+            if targetColumn == 4 {
+                return // Stop movement
+            }
+            
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x + cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() && !isPlayerOnRock {
                 print("MOVING RIGHT")
                 playerNextPosition.x += cellWidth
@@ -1327,6 +1336,25 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func spawnCoral(in lane: Lane) {
+        
+        let coralR : SKSpriteNode
+        let coralL : SKSpriteNode
+        
+        coralL = OECoralNode(size: CGSize(width: 48, height: 50))
+        coralR = OECoralNode(size: CGSize(width: 48, height: 50))
+        
+        addChild(coralR)
+        addChild(coralL)
+        
+        let leftCoralX = (CGFloat(-5) + 0.5) * cellWidth
+        let rightCoralX = (CGFloat(4) + 0.5) * cellWidth
+        
+        coralL.position = CGPoint(x: leftCoralX, y: lane.startPosition.y)
+        coralR.position = CGPoint(x: rightCoralX, y: lane.startPosition.y)
+    }
+    
+    
     func warn(in lane: Lane, completion: @escaping () -> Void) {
         
         let warningLabel = SKSpriteNode(imageNamed: "EelWarning")
@@ -1356,6 +1384,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnSeaweed(in: lane)
+                    self?.spawnCoral(in: lane)
                 }
                 run(spawn)
             }
@@ -2470,6 +2499,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Check for collision with any seaweed node
         let seaweedNodes = children.filter { $0 is OESeaweedNode }
+        let seaweedNodes2 = children.filter { $0 is OESeaweedNode2}
         
         for node in seaweedNodes {
             if let seaweed = node as? OESeaweedNode {
@@ -2479,6 +2509,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
+        
+        for node in seaweedNodes2 {
+            if let seaweed = node as? OESeaweedNode2 {
+                // Use the node's frame to check for intersection
+                if seaweed.frame.contains(nextPosition) {
+                    return true // Collision detected
+                }
+            }
+        }
+        
         return false // No collision
     }
     

@@ -1314,7 +1314,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if Bool.random() {
                 seaweed = OESeaweedNode(size: CGSize(width: 48, height: 52))
             } else {
-                seaweed = OESeaweedNode2(size: CGSize(width: 48, height: 52))
+                seaweed = OESeaweedNode2(size: CGSize(width: 45, height: 50))
             }
             
             // Add the seaweed to the scene
@@ -1859,6 +1859,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
         airIconTicks = SKSpriteNode(imageNamed: "AirMeterTicks")
+        airIconTicks.alpha = 0.15
         airIconBackground.size = CGSize(width: 30, height: 175) // Increased size
         airIconFill.size = CGSize(width: 30, height: 175)
         airIconTicks.size = CGSize(width: 55, height: 198)
@@ -1891,7 +1892,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create and configure the air label
         airLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
         airLabel.fontSize = 23 // Increased font size
-        airLabel.fontColor = UIColor.black.withAlphaComponent(0.50) // Slightly transparent text
+        airLabel.fontColor = UIColor.black.withAlphaComponent(0.65) // Slightly transparent text
         airLabel.zPosition = 1000
 
         // Position the air label at the center of the airIconBackground

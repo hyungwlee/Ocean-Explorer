@@ -1489,25 +1489,39 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     // Color lanes that are empty or eel type
+    // Variable to track texture alternation
+    var sandTextureToggle = true // Tracks which texture to use (true -> "SAND", false -> "SAND2")
+
     func colorLane(in lane: Lane) {
-        let laneColor = SKShapeNode(rect: CGRect(x: -size.width, y: lane.startPosition.y - cellHeight / 2, width: size.width * 2, height: cellHeight))
+        let laneColor = SKShapeNode(rect: CGRect(
+            x: -size.width,
+            y: lane.startPosition.y - cellHeight / 2,
+            width: size.width * 2,
+            height: cellHeight
+        ))
+        
         if lane.laneType == "Empty" {
             laneColor.fillColor = .white
-            laneColor.fillTexture = SKTexture(imageNamed: "SAND")
-        }
-        else if lane.laneType == "Eel" {
+            // Alternate between SAND and SAND2
+            let textureName = sandTextureToggle ? "SAND" : "SAND2"
+            laneColor.fillTexture = SKTexture(imageNamed: textureName)
+            laneColor.fillTexture?.filteringMode = .nearest
+            
+            sandTextureToggle.toggle() // Switch to the other texture for next lane
+        } else if lane.laneType == "Eel" {
             laneColor.fillColor = .white
             laneColor.fillTexture = SKTexture(imageNamed: "eelLane")
-            
-        }
-        else {
+            laneColor.fillTexture?.filteringMode = .nearest
+        } else {
             laneColor.fillColor = .red
         }
-        laneColor.alpha = 0.55
+        
+        laneColor.strokeColor = .clear // Remove the border
+        laneColor.alpha = 0.50
         laneColor.zPosition = 0
         addChild(laneColor)
-        //        print("Lane position: \(lane.startPosition.y)")
     }
+
     
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
@@ -1970,7 +1984,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let targetScaleFactor = calculateScaleFactor(airAmount: airAmount)
         airIconFill.yScale = targetScaleFactor
 
-        if airAmount < 12 && !red {
+        if airAmount < 11 && !red {
             // Keep the air label text unchanged but make it transparent
             airLabel.fontColor = UIColor(red: 0.19, green: 0.44, blue: 0.50, alpha: 0.5) // Darker blue with transparency
 

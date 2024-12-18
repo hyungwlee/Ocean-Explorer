@@ -249,7 +249,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
-                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Lava"))
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Tutorial"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -268,9 +268,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
                 if i == 6 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Lava"))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Jellyfish"))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Lava"))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Shark"))
                 }
                 yPositionLanes = yPosition
                 i += 1
@@ -1540,6 +1540,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
 
             if currentRock2 != nil && currentRockZone == "Right" {
+                
+                guard let rock = currentRock2 else { return }
+                let dx = rock.velocity * CGFloat(0.15)
+                let rockPositionX = rock.position.x + dx
+                currentRock2 = nil
+                
+                let nextPosition = CGPoint(x: rockPositionX - rock.size.width * 0.2, y: playerNextPosition.y)
+                box.hop(to: nextPosition, inQueue: nextPosition, up: "Left")
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    self.currentRock2 = rock
+                }
+                
                 print("SWITCHING ROCK ZONE")
                 currentRockZone = "Left"
                 playRockJumpSound()
@@ -1547,12 +1560,38 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             if currentRock3 != nil {
                 if currentLongRockZone == "Right" {
+                    
+                    guard let rock = currentRock3 else { return }
+                    let dx = rock.velocity * CGFloat(0.15)
+                    let rockPositionX = rock.position.x + dx
+                    currentRock3 = nil
+                    
+                    let nextPosition = CGPoint(x: rockPositionX, y: playerNextPosition.y)
+                    box.hop(to: nextPosition, inQueue: nextPosition, up: "Left")
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        self.currentRock3 = rock
+                    }
+                    
                     print("SWITCHING ROCK ZONE")
                     currentLongRockZone = "Center"
                     playRockJumpSound()
                     return
                 }
                 else if currentLongRockZone == "Center" {
+                    
+                    guard let rock = currentRock3 else { return }
+                    let dx = rock.velocity * CGFloat(0.15)
+                    let rockPositionX = rock.position.x + dx
+                    currentRock3 = nil
+                    
+                    let nextPosition = CGPoint(x: rockPositionX - rock.size.width * 0.25, y: playerNextPosition.y)
+                    box.hop(to: nextPosition, inQueue: nextPosition, up: "Left")
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        self.currentRock3 = rock
+                    }
+                    
                     print("SWITCHING ROCK ZONE")
                     currentLongRockZone = "Left"
                     playRockJumpSound()
@@ -1576,6 +1615,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 hitSeaweed = true
             }
             if currentRock2 != nil && currentRockZone == "Left" {
+                
+                guard let rock = currentRock2 else { return }
+                let dx = rock.velocity * CGFloat(0.15)
+                let rockPositionX = rock.position.x + dx
+                currentRock2 = nil
+                
+                let nextPosition = CGPoint(x: rockPositionX + rock.size.width * 0.2, y: playerNextPosition.y)
+                box.hop(to: nextPosition, inQueue: nextPosition, up: "Right")
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    self.currentRock2 = rock
+                }
+                
                 print("SWITCHING ROCK ZONE")
                 currentRockZone = "Right"
                 playRockJumpSound()
@@ -1583,12 +1635,38 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             if currentRock3 != nil {
                 if currentLongRockZone == "Left" {
+                    
+                    guard let rock = currentRock3 else { return }
+                    let dx = rock.velocity * CGFloat(0.15)
+                    let rockPositionX = rock.position.x + dx
+                    currentRock3 = nil
+                    
+                    let nextPosition = CGPoint(x: rockPositionX, y: playerNextPosition.y)
+                    box.hop(to: nextPosition, inQueue: nextPosition, up: "Right")
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        self.currentRock3 = rock
+                    }
+                    
                     print("SWITCHING ROCK ZONE")
                     currentLongRockZone = "Center"
                     playRockJumpSound()
                     return
                 }
                 else if currentLongRockZone == "Center" {
+                    
+                    guard let rock = currentRock3 else { return }
+                    let dx = rock.velocity * CGFloat(0.15)
+                    let rockPositionX = rock.position.x + dx
+                    currentRock3 = nil
+                    
+                    let nextPosition = CGPoint(x: rockPositionX + rock.size.width * 0.25, y: playerNextPosition.y)
+                    box.hop(to: nextPosition, inQueue: nextPosition, up: "Right")
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        self.currentRock3 = rock
+                    }
+                    
                     print("SWITCHING ROCK ZONE")
                     currentLongRockZone = "Right"
                     playRockJumpSound()

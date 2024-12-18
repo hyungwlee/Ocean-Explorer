@@ -151,6 +151,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var isActionInProgress = false // Flag to indicate if a movement is in progress
     
     var playerNextPosition: CGPoint = .zero
+    var playerNextX: CGFloat = -100000
     
     // Game state variable
     var isGameOver = false
@@ -235,7 +236,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
-                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Tutorial"))
+                lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 8.0, laneType: "Lava"))
                 yPositionLanes = yPosition
                 i += 1
             }
@@ -254,9 +255,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let leftStart = CGPoint(x: -size.width, y: yPosition)
                 let rightStart = CGPoint(x: size.width, y: yPosition)
                 if i == 6 {
-                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Jellyfish"))
+                    lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: 9.0, laneType: "Lava"))
                 } else {
-                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Shark"))
+                    lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: 7.0, laneType: "Lava"))
                 }
                 yPositionLanes = yPosition
                 i += 1
@@ -665,30 +666,42 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Sync player movement with rock while they are on it
         if let rock = currentRock {
-            box.position.x = rock.position.x // Follow the rock horizontally
-            playerNextPosition.x = rock.position.x
+            if isPlayerOnLavaLane(playerPositionY: box.position.y) {
+                box.position.x = rock.position.x // Follow the rock horizontally
+                playerNextPosition.x = rock.position.x
+            } else {
+                currentRock = nil
+            }
         }
         
         if let rock = currentRock2 {
-            if currentRockZone == "Left" {
-                box.position.x = rock.position.x - rock.size.width * 0.2
-                playerNextPosition.x = rock.position.x - rock.size.width * 0.2
+            if isPlayerOnLavaLane(playerPositionY: box.position.y) {
+                if currentRockZone == "Left" {
+                    box.position.x = rock.position.x - rock.size.width * 0.2
+                    playerNextPosition.x = rock.position.x - rock.size.width * 0.2
+                } else {
+                    box.position.x = rock.position.x + rock.size.width * 0.2
+                    playerNextPosition.x = rock.position.x + rock.size.width * 0.2
+                }
             } else {
-                box.position.x = rock.position.x + rock.size.width * 0.2
-                playerNextPosition.x = rock.position.x + rock.size.width * 0.2
+                currentRock2 = nil
             }
         }
         
         if let rock = currentRock3 {
-            if currentLongRockZone == "Left" {
-                box.position.x = rock.leftSnapZone.x
-                playerNextPosition.x = rock.leftSnapZone.x
-            } else if currentLongRockZone == "Center" {
-                box.position.x = rock.centerSnapZone.x
-                playerNextPosition.x = rock.centerSnapZone.x
+            if isPlayerOnLavaLane(playerPositionY: box.position.y) {
+                if currentLongRockZone == "Left" {
+                    box.position.x = rock.leftSnapZone.x
+                    playerNextPosition.x = rock.leftSnapZone.x
+                } else if currentLongRockZone == "Center" {
+                    box.position.x = rock.centerSnapZone.x
+                    playerNextPosition.x = rock.centerSnapZone.x
+                } else {
+                    box.position.x = rock.rightSnapZone.x
+                    playerNextPosition.x = rock.rightSnapZone.x
+                }
             } else {
-                box.position.x = rock.rightSnapZone.x
-                playerNextPosition.x = rock.rightSnapZone.x
+                currentRock3 = nil
             }
         }
         
@@ -1065,9 +1078,200 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box, !isInputLocked, !isGameOver else { return }
         // Haptic feedback for each movement
       //  softImpactFeedback.impactOccurred()
+        if playerNextX != -100000 {
+            playerNextPosition.x = playerNextX
+            playerNextX = -100000
+        }
+ 
+        currentRock = nil
+        currentRock2 = nil
+        currentRock3 = nil
+        isPlayerOnRock = false
         
+        var didMoveToRock = false
+        
+        for node in children {
+            
+            if let rock = node as? OERockNode {
+                                    
+                let dx = rock.velocity * CGFloat(0.15)
+                let rockPositionX = rock.position.x + dx
+                
+                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                    isPlayerOnRock = true
+                    let nextPosition = CGPoint(x: rockPositionX, y: self.playerNextPosition.y + self.cellHeight)
+                    self.playerNextPosition = nextPosition
+                    self.isPlayerOnRock = true
+                    box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                    self.updateScore()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        self.currentRock = rock
+                        self.handleLavaContact()
+                        self.playRockJumpSound()
+                    }
+                    didMoveToRock = true
+                    return
+                }
+            }
+            
+            if let rock = node as? OERockNode2 {
+                                    
+                let dx = rock.velocity * CGFloat(0.15)
+                let rockPositionX = rock.position.x + dx
+                
+                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                    isPlayerOnRock = true
+                    print("ROCK2 IDENTIFIED")
+                    let playerX = box.position.x
+                    let rockX = rockPositionX
+                    let snapToLeft = abs(playerX - (rockX - rock.size.width / 4)) < abs(playerX - (rockX + rock.size.width / 4))
+                    
+                    if snapToLeft {
+                        currentRockZone = "Left"
+                        let nextPosition = CGPoint(x: rockPositionX - rock.size.width * 0.2, y: self.playerNextPosition.y + self.cellHeight)
+                        self.playerNextPosition = nextPosition
+                        print("MOVING TO LEFT ZONE")
+                        self.isPlayerOnRock = true
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        self.updateScore()
+                        didMoveToRock = true
+                        handleLavaContact()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            self.currentRock2 = rock
+                            self.handleLavaContact()
+                            self.playRockJumpSound()
+                        }
+                        return
+                    } else {
+                        currentRockZone = "Right"
+                        let nextPosition = CGPoint(x: rockPositionX + rock.size.width * 0.2, y: self.playerNextPosition.y + self.cellHeight)
+                        self.playerNextPosition = nextPosition
+                        print("MOVING TO RIGHT ZONE")
+                        self.isPlayerOnRock = true
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        self.updateScore()
+                        didMoveToRock = true
+                        handleLavaContact()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            self.currentRock2 = rock
+                            self.handleLavaContact()
+                            self.playRockJumpSound()
+                        }
+                        return
+                    }
+                }
+            }
+            
+            if let rock = node as? OERockNode3 {
+                                    
+                let dx = rock.velocity * CGFloat(0.15)
+                let rockPositionX = rock.position.x + dx
+                
+                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                    isPlayerOnRock = true
 
+                    let playerX = box.position.x
+                    
+                    let leftDistance = abs(playerX - rockPositionX - rock.size.width * 0.25)
+                    let centerDistance = abs(playerX - rockPositionX)
+                    let rightDistance = abs(playerX - rockPositionX + rock.size.width * 0.25)
 
+                    // Find the closest zone
+                    if leftDistance < centerDistance && leftDistance < rightDistance {
+                        currentLongRockZone = "Right"
+                        print("MOVING TO Right ZONE")
+                        let nextPosition = CGPoint(x: rockPositionX + rock.size.width * 0.25, y: playerNextPosition.y + self.cellHeight)
+                        self.playerNextPosition = nextPosition
+                        isPlayerOnRock = true
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        self.updateScore()
+                        didMoveToRock = true
+                        handleLavaContact()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            self.currentRock3 = rock
+                            self.handleLavaContact()
+                            self.playRockJumpSound()
+                        }
+                        return
+                    } else if centerDistance < rightDistance {
+                        currentLongRockZone = "Center"
+                        print("MOVING TO CENTER ZONE")
+                        let nextPosition = CGPoint(x: rockPositionX, y: playerNextPosition.y + self.cellHeight)
+                        self.playerNextPosition = nextPosition
+                        isPlayerOnRock = true
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        self.updateScore()
+                        didMoveToRock = true
+                        handleLavaContact()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            self.currentRock3 = rock
+                            self.handleLavaContact()
+                            self.playRockJumpSound()
+                        }
+                        return
+                    } else {
+                        currentLongRockZone = "Left"
+                        print("MOVING TO LEFT ZONE")
+                        let nextPosition = CGPoint(x: rockPositionX - rock.size.width * 0.25, y: playerNextPosition.y + self.cellHeight)
+                        self.playerNextPosition = nextPosition
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        self.updateScore()
+                        didMoveToRock = true
+                        isPlayerOnRock = true
+                        handleLavaContact()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            self.currentRock3 = rock
+                            self.handleLavaContact()
+                            self.playRockJumpSound()
+                        }
+                        return
+                    }
+                }
+                
+            }
+        }
+            
+        print(didMoveToRock)
+        print(isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight))
+        if !didMoveToRock && isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                self.playBurnedSound()
+                self.gameOver(reason: "You burned to death underwater!")
+            }
+        }
+                
+        for i in 0..<lanes.count {
+            if box.position.y > lanes[i].startPosition.y - 10 && box.position.y < lanes[i].startPosition.y + 10 {
+                print("CURRENT LANE FOUND")
+                if lanes[i].laneType == "Lava" && lanes[i+1].laneType != "Lava" {
+                    print("NEXT LANE IDENTIFIED-NOT LAVA")
+                    if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
+                        let nextPosition = CGPoint(x: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2, y: playerNextPosition.y + cellHeight)
+                        playerNextPosition = nextPosition
+                        playerNextX = playerNextPosition.x
+                        box.hop(to: nextPosition, inQueue: playerNextPosition, up: "Up")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            self.handleLavaContact()
+                        }
+                        updateScore()
+                        isPlayerOnRock = false
+                        return
+                    } else {
+                        let nextPosition = CGPoint(x: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2, y: playerNextPosition.y + cellHeight)
+                        playerNextPosition = nextPosition
+                        playerNextX = playerNextPosition.x
+                        box.hop(to: nextPosition, inQueue: playerNextPosition, up: "Up")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            self.handleLavaContact()
+                        }
+                        updateScore()
+                        isPlayerOnRock = false
+                        return
+                    }
+                }
+            }
+        }
+        print("I MADE IT")
         let nextPosition = CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)
         if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y + cellHeight)) {
             playerNextPosition.y += cellHeight
@@ -1079,13 +1283,21 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // If an action is already in progress, queue the next tap position
             print("QUEUING MOVEMENT")
             tapQueue.append(playerNextPosition)
-            box.hop(to: nextPosition, inQueue: playerNextPosition, up: true)
+            box.hop(to: nextPosition, inQueue: playerNextPosition, up: "Up")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                self.handleLavaContact()
+            }
             updateScore()
-
+            handleLavaContact()
         }
     }
     
     @objc func handleSwipe(_ sender: UISwipeGestureRecognizer) {
+        
+        if playerNextX != -100000 {
+            playerNextPosition.x = playerNextX
+            playerNextX = -100000
+        }
         
         var hitSeaweed = false
         if isActionInProgress {
@@ -1100,6 +1312,189 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         case .down:
     
+            currentRock = nil
+            currentRock2 = nil
+            currentRock3 = nil
+            isPlayerOnRock = false
+            
+            if playerNextX != -100000 {
+                playerNextPosition.x = playerNextX
+                playerNextX = -100000
+            }
+     
+            var didMoveToRock = false
+            
+            for node in children {
+                
+                if let rock = node as? OERockNode {
+                                            
+                    let dx = rock.velocity * CGFloat(0.15)
+                    let rockPositionX = rock.position.x + dx
+                    
+                    if box.position.y - self.cellHeight > rock.position.y - 5 && box.position.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                        isPlayerOnRock = true
+
+                        let nextPosition = CGPoint(x: rockPositionX, y: self.playerNextPosition.y - self.cellHeight)
+                        self.playerNextPosition = nextPosition
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        self.isPlayerOnRock = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            self.currentRock = rock
+                            self.handleLavaContact()
+                            self.playRockJumpSound()
+                        }
+                        didMoveToRock = true
+                        return
+                    }
+                }
+                
+                if let rock = node as? OERockNode2 {
+                                            
+                    let dx = rock.velocity * CGFloat(0.15)
+                    let rockPositionX = rock.position.x + dx
+                    
+                    if box.position.y - self.cellHeight > rock.position.y - 5 && box.position.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                        isPlayerOnRock = true
+
+                        print("ROCK2 IDENTIFIED")
+                        let playerX = box.position.x
+                        let rockX = rockPositionX
+                        let snapToLeft = abs(playerX - (rockX - rock.size.width / 4)) < abs(playerX - (rockX + rock.size.width / 4))
+                        
+                        if snapToLeft {
+                            currentRockZone = "Left"
+                            let nextPosition = CGPoint(x: rockPositionX - rock.size.width * 0.2, y: self.playerNextPosition.y - self.cellHeight)
+                            self.playerNextPosition = nextPosition
+                            print("MOVING TO LEFT ZONE")
+                            box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                            didMoveToRock = true
+                            isPlayerOnRock = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                self.currentRock2 = rock
+                                self.handleLavaContact()
+                                self.playRockJumpSound()
+                            }
+                            return
+                        } else {
+                            currentRockZone = "Right"
+                            let nextPosition = CGPoint(x: rockPositionX + rock.size.width * 0.2, y: self.playerNextPosition.y - self.cellHeight)
+                            self.playerNextPosition = nextPosition
+                            print("MOVING TO RIGHT ZONE")
+                            box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                            didMoveToRock = true
+                            isPlayerOnRock = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                self.currentRock2 = rock
+                                self.handleLavaContact()
+                                self.playRockJumpSound()
+                            }
+                            return
+                        }
+                    }
+                }
+                
+                if let rock = node as? OERockNode3 {
+                                            
+                    let dx = rock.velocity * CGFloat(0.15)
+                    let rockPositionX = rock.position.x + dx
+                    
+                    if box.position.y - self.cellHeight > rock.position.y - 5 && box.position.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                        isPlayerOnRock = true
+
+                        let playerX = box.position.x
+                        
+                        let leftDistance = abs(playerX - rockPositionX - rock.size.width * 0.25)
+                        let centerDistance = abs(playerX - rockPositionX)
+                        let rightDistance = abs(playerX - rockPositionX + rock.size.width * 0.25)
+
+                        // Find the closest zone
+                        if leftDistance < centerDistance && leftDistance < rightDistance {
+                            currentLongRockZone = "Right"
+                            print("MOVING TO RIGHT ZONE")
+                            let nextPosition = CGPoint(x: rockPositionX + rock.size.width * 0.25, y: playerNextPosition.y - self.cellHeight)
+                            self.playerNextPosition = nextPosition
+                            box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                            didMoveToRock = true
+                            isPlayerOnRock = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                self.currentRock3 = rock
+                                self.handleLavaContact()
+                                self.playRockJumpSound()
+                            }
+                            return
+                        } else if centerDistance < rightDistance {
+                            currentLongRockZone = "Center"
+                            print("MOVING TO CENTER ZONE")
+                            let nextPosition = CGPoint(x: rockPositionX, y: playerNextPosition.y - self.cellHeight)
+                            self.playerNextPosition = nextPosition
+                            box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                            didMoveToRock = true
+                            isPlayerOnRock = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                self.currentRock3 = rock
+                                self.handleLavaContact()
+                                self.playRockJumpSound()
+                            }
+                            return
+                        } else {
+                            currentLongRockZone = "Left"
+                            print("MOVING TO LEFT ZONE")
+                            let nextPosition = CGPoint(x: rockPositionX - rock.size.width * 0.25, y: playerNextPosition.y - self.cellHeight)
+                            self.playerNextPosition = nextPosition
+                            box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                            didMoveToRock = true
+                            isPlayerOnRock = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                self.currentRock3 = rock
+                                self.handleLavaContact()
+                                self.playRockJumpSound()
+                            }
+                            return
+                        }
+                    }
+                    
+                }
+            }
+            
+            print(didMoveToRock)
+            print(isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight))
+            if !didMoveToRock && isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    self.playBurnedSound()
+                    self.gameOver(reason: "You burned to death underwater!")
+                }
+            }
+            
+            if didMoveToRock {
+                playRockJumpSound()
+            }
+            
+            for i in 0..<lanes.count {
+                if box.position.y > lanes[i].startPosition.y - 10 && box.position.y < lanes[i].startPosition.y + 10 {
+                    print("CURRENT LANE FOUND")
+                    if lanes[i].laneType == "Lava" && lanes[i-1].laneType != "Lava" {
+                        print("NEXT LANE IDENTIFIED-NOT LAVA")
+                        if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
+                            let nextPosition = CGPoint(x: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2, y: playerNextPosition.y - cellHeight)
+                            playerNextPosition = nextPosition
+                            playerNextX = playerNextPosition.x
+                            box.hop(to: nextPosition, inQueue: playerNextPosition, up: "Down")
+                            isPlayerOnRock = false
+                            return
+                        } else {
+                            let nextPosition = CGPoint(x: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2, y: playerNextPosition.y - cellHeight)
+                            playerNextPosition = nextPosition
+                            playerNextX = playerNextPosition.x
+                            box.hop(to: nextPosition, inQueue: playerNextPosition, up: "Down")
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                                self.handleLavaContact()
+                            }
+                            isPlayerOnRock = false
+                            return
+                        }
+                    }
+                }
+            }
             nextPosition = CGPoint(x: box.position.x, y: playerNextPosition.y - cellHeight)
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y - cellHeight)) {
                 playerNextPosition.y -= cellHeight
@@ -1108,6 +1503,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 hitSeaweed = true
             }
             score -= 1
+            handleLavaContact()
         case .left:
           
             nextPosition = CGPoint(x: playerNextPosition.x - cellWidth, y: box.position.y)
@@ -1116,7 +1512,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if targetColumn == -4 {
                 return // Stop movement
             }
-            
+
             if !handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x - cellWidth, y: playerNextPosition.y)) && !box.getIsMoving() && !isPlayerOnRock {
                 print(isActionInProgress)
                 print("MOVING LEFT")
@@ -1127,17 +1523,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
 
             if currentRock2 != nil && currentRockZone == "Right" {
+                print("SWITCHING ROCK ZONE")
                 currentRockZone = "Left"
                 playRockJumpSound()
                 return
             }
             if currentRock3 != nil {
                 if currentLongRockZone == "Right" {
+                    print("SWITCHING ROCK ZONE")
                     currentLongRockZone = "Center"
                     playRockJumpSound()
                     return
                 }
                 else if currentLongRockZone == "Center" {
+                    print("SWITCHING ROCK ZONE")
                     currentLongRockZone = "Left"
                     playRockJumpSound()
                     return
@@ -1160,17 +1559,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 hitSeaweed = true
             }
             if currentRock2 != nil && currentRockZone == "Left" {
+                print("SWITCHING ROCK ZONE")
                 currentRockZone = "Right"
                 playRockJumpSound()
                 return
             }
             if currentRock3 != nil {
                 if currentLongRockZone == "Left" {
+                    print("SWITCHING ROCK ZONE")
                     currentLongRockZone = "Center"
                     playRockJumpSound()
                     return
                 }
                 else if currentLongRockZone == "Center" {
+                    print("SWITCHING ROCK ZONE")
                     currentLongRockZone = "Right"
                     playRockJumpSound()
                     return
@@ -1181,7 +1583,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
         if !hitSeaweed {
-                box.hop(to: nextPosition, inQueue: nextPosition, up: false)
+                box.hop(to: nextPosition, inQueue: nextPosition, up: "Down")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    self.handleLavaContact()
+                }
+                handleLavaContact()
             }
         
     }
@@ -1279,16 +1685,19 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func spawnRock(in lane: Lane) {
         let rockType = Int.random(in: 0...2)
         if rockType == 0 {
-            let rock = OERockNode(height: cellHeight + cellHeight / 4)
+            let rock = OERockNode(height: cellHeight)
             addChild(rock)
+            rock.name = "rock"
             rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
         } else if rockType == 1{
-            let rock = OERockNode2(height: cellHeight + cellHeight / 4)
+            let rock = OERockNode2(height: cellHeight)
             addChild(rock)
+            rock.name = "rock2"
             rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
         } else {
-            let rock = OERockNode3(height: cellHeight + cellHeight / 4)
+            let rock = OERockNode3(height: cellHeight)
             addChild(rock)
+            rock.name = "rock3"
             rock.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
         }
     }
@@ -2211,20 +2620,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock ? contact.bodyA : contact.bodyB
             if let rock = rockBody.node as? OERockNode {
                 
-                isPlayerOnRock = true
+                handleLavaContact()
+                
                 print("PLAYER ON ROCK")
                 if isPlayerOnLava() {
                     print("PLAYER ON LAVA")
                     heavyImpactFeedback.impactOccurred()
                     handleLavaContact()
                 }
-                
-                currentRock = rock
-                
-                // Correctly place the player on top of the rock
-                box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
-                print("LANDED ON ROCK1-PLAYING SOUND")
-                playRockJumpSound()
+
+               
             }
         }
         
@@ -2233,31 +2638,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             (bodyA.categoryBitMask == PhysicsCategory.rock2 && bodyB.categoryBitMask == PhysicsCategory.box) {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock2 ? contact.bodyA : contact.bodyB
             if let rock = rockBody.node as? OERockNode2 {
-                isPlayerOnRock = true
+                
+                handleLavaContact()
+
                 print("PLAYER ON ROCK")
+                
                 if isPlayerOnLava() {
                     print("PLAYER ON LAVA")
                     handleLavaContact()
                 }
-                
-                currentRock2 = rock
 
-                // Correctly place the player on top of the rock
-                box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
-                print("LANED ON ROCK2-PLAYING SOUND")
-                playRockJumpSound()
-
-                // Determine the closest snap zone
-                let playerX = box?.position.x ?? 0
-                let rockX = rock.position.x
-                let snapToLeft = abs(playerX - (rockX - rock.size.width / 4)) < abs(playerX - (rockX + rock.size.width / 4))
                 
-                // Snap player to the left or right
-                if snapToLeft {
-                    currentRockZone = "Left"
-                } else {
-                    currentRockZone = "Right"
-                }
 
             }
             
@@ -2268,35 +2659,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             (bodyA.categoryBitMask == PhysicsCategory.rock3 && bodyB.categoryBitMask == PhysicsCategory.box) {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock3 ? contact.bodyA : contact.bodyB
             if let rock = rockBody.node as? OERockNode3 {
-                isPlayerOnRock = true
+                
+                handleLavaContact()
+
                 print("PLAYER ON ROCK")
                 if isPlayerOnLava() {
                     print("PLAYER ON LAVA")
                     handleLavaContact()
                 }
-                
-                currentRock3 = rock
+             
 
-                // Correctly place the player on top of the rock
-                box?.position.y = rock.position.y + (rock.size.height / 2) + (box?.size.height ?? 0) / 2
-                print("LANDED ON ROCK3-PLAYING SOUND")
-                playRockJumpSound()
-
-                // Calculate distances to each snap zone
-                let playerX = box?.position.x ?? 0
-                
-                let leftDistance = abs(playerX - rock.leftSnapZone.x)
-                let centerDistance = abs(playerX - rock.centerSnapZone.x)
-                let rightDistance = abs(playerX - rock.rightSnapZone.x)
-
-                // Find the closest zone
-                if leftDistance < centerDistance && leftDistance < rightDistance {
-                    currentLongRockZone = "Left"
-                } else if centerDistance < rightDistance {
-                    currentLongRockZone = "Center"
-                } else {
-                    currentLongRockZone = "Right"
-                }
             }
         }
         
@@ -2324,7 +2696,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let playerPosition = box.position.y
         // Check if the player's position overlaps the lava area
         for lavaPosition in lavaYPositions {
-            if playerPosition > lavaPosition - 5 && playerPosition < lavaPosition + 5 && !isPlayerOnRock {
+            if playerPosition > lavaPosition - 10 && playerPosition < lavaPosition + 10 && !isPlayerOnRock {
                 return true
             }
         }
@@ -2357,12 +2729,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
         
+        guard let box = box else { return }
+
         // check if the player dies due to lava
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if !self.isGameOver && !self.isPlayerOnRock {
+            if !self.isGameOver && !box.getIsMoving() && !self.isPlayerOnRock && self.isPlayerOnLava() && !self.isPlayerInContactWithRock() && !self.isPlayerInContactWithRock2() && !self.isPlayerInContactWithRock3() {
                 // Play the "burned" sound only if the player dies
                 self.playBurnedSound()
-                
+                print(box.getIsMoving())
+                print(self.isPlayerOnRock)
+                print(self.isPlayerOnLava())
+                print(self.isPlayerInContactWithRock())
+                print(self.isPlayerInContactWithRock2())
+                print(self.isPlayerInContactWithRock3())
+
                 print("PLAYER NOT ON ROCK")
                 self.gameOver(reason: "You burned to death underwater!")
             }
@@ -2558,16 +2938,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if collision == (PhysicsCategory.box | PhysicsCategory.rock) {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock ? contact.bodyA : contact.bodyB
             if currentRock == rockBody.node as? OERockNode {
-                currentRock = nil
-                if !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
-                    isPlayerOnRock = false
-                }
+              
+                self.isPlayerOnRock = false
                 print("PLAYER HAS LEFT ROCK")
-                guard let box = box else { return }
-                
+
+            }
+                /*
                 for lane in lanes {
-                    if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
+                    if box.position.y > lane.startPosition.y - 10 && box.position.y < lane.startPosition.y + 10 {
+                        print("CURRENT LANE FOUND")
                         if lane.laneType != "Lava" {
+                            print("CURRENT LANE IDENTIFIED-NOT LAVA")
                             if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
                                 snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
                             } else {
@@ -2576,22 +2957,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                         }
                     }
                 }
-            }
+                */
         }
+        
         
         if collision == (PhysicsCategory.box | PhysicsCategory.rock2) {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock2 ? contact.bodyA : contact.bodyB
             if currentRock2 == rockBody.node as? OERockNode2 {
-                currentRock2 = nil
-                if !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
-                    isPlayerOnRock = false
-                }
-                print("PLAYER HAS LEFT LONG ROCK")
-                guard let box = box else { return }
+          
+                   
+                print("PLAYER ON ROCK SET TO FALSE")
+                self.isPlayerOnRock = false
+                    
                 
+                print("PLAYER HAS LEFT LONG ROCK")
+
+                
+                /*
                 for lane in lanes {
-                    if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
+                    if box.position.y > lane.startPosition.y - 10 && box.position.y < lane.startPosition.y + 10 {
+                        print("CURRENT LANE FOUND")
                         if lane.laneType != "Lava" {
+                            print("CURRENT LANE IDENTIFIED-NOT LAVA")
                             if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
                                 snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
                             } else {
@@ -2600,22 +2987,28 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                         }
                     }
                 }
+                */
             }
         }
         
         if collision == (PhysicsCategory.box | PhysicsCategory.rock3) {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock3 ? contact.bodyA : contact.bodyB
             if currentRock3 == rockBody.node as? OERockNode3 {
-                currentRock3 = nil
-                if !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
-                    isPlayerOnRock = false
-                }
-                print("PLAYER HAS LEFT VERY LONG ROCK")
-                guard let box = box else { return }
+            
                 
+                print("PLAYER ON ROCK SET TO FALSE")
+                self.isPlayerOnRock = false
+                    
+                
+                print("PLAYER HAS LEFT VERY LONG ROCK")
+
+                
+                /*
                 for lane in lanes {
-                    if box.position.y > lane.startPosition.y - 5 && box.position.y < lane.startPosition.y + 5 {
+                    if box.position.y > lane.startPosition.y - 10 && box.position.y < lane.startPosition.y + 10 {
+                        print("CURRENT LANE FOUND")
                         if lane.laneType != "Lava" {
+                            print("CURRENT LANE IDENTIFIED-NOT LAVA")
                             if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
                                 snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
                             } else {
@@ -2624,70 +3017,66 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                         }
                     }
                 }
+                */
             }
         }
     }
     
     func isPlayerInContactWithRock() -> Bool {
         guard let box = box else { return false }
-
-        // Get all rock nodes in the scene
-        let rocks = self.children.compactMap { $0 as? SKSpriteNode }.filter { $0.physicsBody?.categoryBitMask == PhysicsCategory.rock }
+        
+        if box.getIsMoving() { return false }
 
         // Check if the player's frame intersects with any rock's frame
-        for rock in rocks {
-            if box.frame.intersects(rock.frame) {
-                print("PLAYER ON ROCK CONFIRMED")
+        for node in children {
+            
+            if let rock = node as? OERockNode {
                 
-                return true
+                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rock.position.x - rock.size.width * 0.65 && box.position.x < rock.position.x + rock.size.width * 0.65 {
+                    return true
+                }
             }
         }
-
         return false
     }
     
     func isPlayerInContactWithRock2() -> Bool {
         guard let box = box else { return false }
-
-        // Get all rock2 nodes in the scene
-        let rocks = self.children.compactMap { $0 as? SKSpriteNode }.filter { $0.physicsBody?.categoryBitMask == PhysicsCategory.rock2 }
+        
+        if box.getIsMoving() { return false }
 
         // Check if the player's frame intersects with any rock's frame
-        for rock in rocks {
-            if box.frame.intersects(rock.frame) {
-                print("PLAYER ON ROCK CONFIRMED")
+        for node in children {
+            
+            if let rock = node as? OERockNode2 {
                 
-                return true
+                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rock.position.x - rock.size.width * 0.65 && box.position.x < rock.position.x + rock.size.width * 0.65 {
+                    return true
+                }
             }
         }
-
         return false
     }
     
     func isPlayerInContactWithRock3() -> Bool {
         guard let box = box else { return false }
-
-        // Get all rock3 nodes in the scene
-        let rocks = self.children.compactMap { $0 as? SKSpriteNode }.filter { $0.physicsBody?.categoryBitMask == PhysicsCategory.rock3 }
-
+        
+        if box.getIsMoving() { return false }
+        
         // Check if the player's frame intersects with any rock's frame
-        for rock in rocks {
-            if box.frame.intersects(rock.frame) {
-                print("PLAYER ON ROCK CONFIRMED")
-
-                return true
+        for node in children {
+            
+            if let rock = node as? OERockNode3 {
+                
+                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rock.position.x - rock.size.width * 0.65 && box.position.x < rock.position.x + rock.size.width * 0.65 {
+                    return true
+                }
             }
         }
-
         return false
     }
 
-    func snapToGrid(position: CGFloat) {
-        
-        guard let box = box else { return }
-        box.snapToGrid(xPosition: position)
-        playerNextPosition.x = position
-    }
+   
     
     func showStartOverlay() {
         // Create semi-transparent black background

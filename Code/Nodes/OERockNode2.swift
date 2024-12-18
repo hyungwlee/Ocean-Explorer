@@ -12,7 +12,8 @@ class OERockNode2: SKSpriteNode {
     
     var rockSpeed: CGFloat = 0
     var direction: CGVector = .zero
-    
+    var velocity: CGFloat = 0
+
     init(height: CGFloat) {
         
         let texture = SKTexture(imageNamed: "Rock2")
@@ -36,6 +37,8 @@ class OERockNode2: SKSpriteNode {
         self.position = start
         self.rockSpeed = speed
         
+        self.velocity = (end.x - start.x) / speed
+
         if end.x > start.x {
             self.direction = CGVector(dx: 1, dy: 0)
         } else {

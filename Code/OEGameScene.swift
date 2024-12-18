@@ -2516,6 +2516,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     */
     
     func dissolveCharacter(_ characterNode: SKSpriteNode) {
+        
+        guard let box = box else { return }
+        
+        box.stopMoving()
+        
         // Disable the character's physics to prevent further interactions
         characterNode.physicsBody?.isDynamic = false
         
@@ -2675,7 +2680,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if isPlayerOnLava() {
             if let boxNode = box {
                 heavyImpactFeedback.impactOccurred()
-                dissolveCharacter(boxNode)
             }
         }
         

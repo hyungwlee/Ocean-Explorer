@@ -1889,6 +1889,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 // If Lava then empty then don't spawn any seaweed
                 if prevLane?.laneType == "Lava" {
+                    spawnCoral(in: lane)
+                    // Set prevLane
+                    prevLane = lane
                     continue
                 }
                 let spawn = SKAction.run { [weak self] in

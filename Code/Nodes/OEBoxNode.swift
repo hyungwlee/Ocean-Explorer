@@ -13,7 +13,8 @@ class OEBoxNode: SKSpriteNode {
     private let gridSize: CGSize
     private var lastClickTime: TimeInterval = 0
     private var isMoving = false
-
+    
+    private var doneMoving = false
     private var movementQueue: [CGPoint] = []
     
     init(gridSize: CGSize) {
@@ -71,7 +72,16 @@ class OEBoxNode: SKSpriteNode {
         return isMoving
     }
     
+    func stopMoving() {
+        movementQueue.removeAll()
+        doneMoving = true
+    }
+    
     func hop(to position: CGPoint, inQueue: CGPoint, up: String) {
+        
+        if doneMoving {
+            return
+        }
         
         print("MOVING TO POSITION: \(position)")
         /*

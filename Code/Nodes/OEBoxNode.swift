@@ -75,6 +75,7 @@ class OEBoxNode: SKSpriteNode {
     func stopMoving() {
         movementQueue.removeAll()
         doneMoving = true
+        self.removeAllActions()
     }
     
     func hop(to position: CGPoint, inQueue: CGPoint, up: String) {

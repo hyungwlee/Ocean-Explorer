@@ -122,6 +122,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // To keep track of seaweed positions
     var seaweedPositions: Set<CGPoint> = []
     
+    // To lock the tapping at the end of the game
+    var isInputLocked = false
+    
     // Score properties
     var score = 0
     var scoreDisplayed = 0
@@ -1071,7 +1074,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     @objc func handleTap() {
-        guard let box, !isGameOver else { return }
+        
+        guard let box, !isInputLocked, !isGameOver else { return }
         // Haptic feedback for each movement
       //  softImpactFeedback.impactOccurred()
         if playerNextX != -100000 {
@@ -2545,6 +2549,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if !isGameOver {
                 // Dissolve the main character
                 if let boxNode = box {
+                    handleEnemyContact()
                     heavyImpactFeedback.impactOccurred()
                     dissolveCharacter(boxNode)
                 }
@@ -2557,14 +2562,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     enemyNode = bodyB.node!
                 }
                 enemyNode.physicsBody?.isDynamic = false
-                
-                // Play the contact sound effect
-                playEnemyContactSound()
-                
-                // Trigger game over (after the dissolve)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.gameOver(reason: "A sea creature stopped your adventure!")
-                }
             }
         }
         
@@ -2714,6 +2711,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
         return false
+    }
+    
+    func handleEnemyContact() {
+        
+        // Trigger game over (after the dissolve)
+        if !self.isGameOver {
+            // Play the contact sound effect
+            self.playEnemyContactSound()
+            self.gameOver(reason: "A sea creature stopped your adventure!")
+        }
     }
 
     func handleLavaContact() {
@@ -3102,10 +3109,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         startLabel.fontName = "Arial-BoldMT" // Use bold font
         startLabel.position = CGPoint(x: 0, y: 40) // Centered on screen
         cameraNode.addChild(startLabel)
+        
+        // Lock input for 1.5 seconds
+        isInputLocked = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.isInputLocked = false
+        }
     }
     
     func gameOver(reason: String) {
         isGameOver = true
+        guard !isInputLocked else { return } // Prevent multiple taps triggering game over
+        isInputLocked = true // Lock input
+        
+        
         mediumHapticActive = false // Ensures haptic stops in case you die whilst on low air
 
         cameraNode.removeAllActions() // Stop camera movement
@@ -3125,96 +3142,100 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
             self.playGameOverSound()
         }
-        
+
         // Show the game over overlay after a delay to allow the player to fall
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            // Create a background sprite for the end screen using the ocean image
-            let backgroundSprite = SKSpriteNode(imageNamed: "gameOver")
-            backgroundSprite.position = CGPoint(x: 0, y: 0) // Centered on screen
-            backgroundSprite.zPosition = 1100 // Ensure it is behind the text but above other nodes
-            backgroundSprite.size = self.size // Adjust to fill the screen
-            self.cameraNode.addChild(backgroundSprite)
-
-            // Add the game logo
-            let logoTexture = SKTexture(imageNamed: "Logo1")
-            let logoSprite = SKSpriteNode(texture: logoTexture)
-            logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
-            logoSprite.zPosition = 1101 // Make logo be the top visible layer
-            logoSprite.xScale = 0.35 // Scale width
-            logoSprite.yScale = 0.35 // Scale height
-            
-            self.cameraNode.addChild(logoSprite)
-
-            // Save the current score
-            let finalScore = self.score
-
-            // Display Final Score
-            let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
-            finalScoreLabel.fontSize = 38
-            finalScoreLabel.fontColor = .white
-            finalScoreLabel.zPosition = 1101 // Make text be the top visible layer
-            finalScoreLabel.fontName = "Helvetica Neue Bold" // Use bold font
-            finalScoreLabel.position = CGPoint(x: 0, y: 40) // Positioned just below the reason text
-            self.cameraNode.addChild(finalScoreLabel)
-            
-            // Display the reason for game over
-            let reasonLabel = SKLabelNode(text: reason)
-            reasonLabel.fontSize = 19
-            reasonLabel.fontColor = .white
-            reasonLabel.zPosition = 1101 // Ensure top visibility
-            reasonLabel.fontName = "Helvetica Neue Bold" // Use bold font
-            reasonLabel.position = CGPoint(x: 0, y: 90) // Centered on screen
-            self.cameraNode.addChild(reasonLabel)
-            
-            // Display asset based on reason
-            let reasonAsset: SKSpriteNode
-            switch reason {
-            case "You burned to death underwater!":
-                reasonAsset = SKSpriteNode(imageNamed: "endGameBurned")
-            case "A sea creature stopped your adventure!":
-                reasonAsset = SKSpriteNode(imageNamed: "endGameContact")
-            case "You Ran Out of Air and Drowned":
-                reasonAsset = SKSpriteNode(imageNamed: "endGameDrowned")
-            case "You were swept away by the rocks!":
-                reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
-            case "You sank into the depths and disappeared!":
-                reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
-            default:
-                reasonAsset = SKSpriteNode() // Fallback to an empty node
-            }
-            
-            // Position the reason asset below the final score
-            reasonAsset.position = CGPoint(x: 0, y: -50)
-            reasonAsset.zPosition = 1101
-            reasonAsset.xScale = 1.0 // Adjust scale as needed
-            reasonAsset.yScale = 1.0
-            self.cameraNode.addChild(reasonAsset)
-
-            // Display "Tap to Restart" message
-            let restartLabel = SKLabelNode(text: "Tap to Restart")
-            restartLabel.fontSize = 20
-            restartLabel.fontColor = .white
-            restartLabel.zPosition = 1101 // Make text be the top visible layer
-            restartLabel.fontName = "Arial-BoldMT" // Use bold font
-            restartLabel.position = CGPoint(x: 0, y: -350) // Positioned below the final score
-            self.cameraNode.addChild(restartLabel)
-
-            // Create a blink action with a 2-second interval
-            let fadeOut = SKAction.fadeOut(withDuration: 1.0) // Fade out over 1.0 seconds
-            let fadeIn = SKAction.fadeIn(withDuration: 1.0)   // Fade in over 1.0 seconds
-            let blinkSequence = SKAction.sequence([fadeOut, fadeIn]) // Create a sequence of fade-out and fade-in
-            let blinkForever = SKAction.repeatForever(blinkSequence) // Repeat the sequence forever
-
-            // Apply the blink action to the label
-            restartLabel.run(blinkForever)
-
-            // Pause the scene to stop further actions
-            self.isPaused = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+            self.showGameOverScreen(reason: reason) // Extracted overlay logic into its own function
+            self.isInputLocked = false // Unlock input once game over overlay is shown
         }
     }
 
     
+    func showGameOverScreen(reason: String) {
+        // Create a background sprite for the end screen using the ocean image
+        let backgroundSprite = SKSpriteNode(imageNamed: "gameOver")
+        backgroundSprite.position = CGPoint(x: 0, y: 0) // Centered on screen
+        backgroundSprite.zPosition = 1100 // Ensure it is behind the text but above other nodes
+        backgroundSprite.size = self.size // Adjust to fill the screen
+        self.cameraNode.addChild(backgroundSprite)
+
+        // Add the game logo
+        let logoTexture = SKTexture(imageNamed: "Logo1")
+        let logoSprite = SKSpriteNode(texture: logoTexture)
+        logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
+        logoSprite.zPosition = 1101
+        logoSprite.xScale = 0.35
+        logoSprite.yScale = 0.35
+        self.cameraNode.addChild(logoSprite)
+
+        // Save the current score
+        let finalScore = self.score
+
+        // Display Final Score
+        let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")
+        finalScoreLabel.fontSize = 38
+        finalScoreLabel.fontColor = .white
+        finalScoreLabel.zPosition = 1101
+        finalScoreLabel.fontName = "Helvetica Neue Bold"
+        finalScoreLabel.position = CGPoint(x: 0, y: 40)
+        self.cameraNode.addChild(finalScoreLabel)
+        
+        // Display the reason for game over
+        let reasonLabel = SKLabelNode(text: reason)
+        reasonLabel.fontSize = 19
+        reasonLabel.fontColor = .white
+        reasonLabel.zPosition = 1101
+        reasonLabel.fontName = "Helvetica Neue Bold"
+        reasonLabel.position = CGPoint(x: 0, y: 90)
+        self.cameraNode.addChild(reasonLabel)
+        
+        // Display asset based on reason
+        let reasonAsset: SKSpriteNode
+        switch reason {
+        case "You burned to death underwater!":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameBurned")
+        case "A sea creature stopped your adventure!":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameContact")
+        case "You Ran Out of Air and Drowned":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameDrowned")
+        case "You were swept away by the rocks!":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+        case "You sank into the depths and disappeared!":
+            reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+        default:
+            reasonAsset = SKSpriteNode()
+        }
+        
+        reasonAsset.position = CGPoint(x: 0, y: -50)
+        reasonAsset.zPosition = 1101
+        self.cameraNode.addChild(reasonAsset)
+
+        // Display "Tap to Restart" message
+        let restartLabel = SKLabelNode(text: "Tap to Restart")
+        restartLabel.fontSize = 20
+        restartLabel.fontColor = .white
+        restartLabel.zPosition = 1101
+        restartLabel.fontName = "Arial-BoldMT"
+        restartLabel.position = CGPoint(x: 0, y: -350)
+        self.cameraNode.addChild(restartLabel)
+
+        // Create a blink action
+        let fadeOut = SKAction.fadeOut(withDuration: 1.0)
+        let fadeIn = SKAction.fadeIn(withDuration: 1.0)
+        let blinkSequence = SKAction.sequence([fadeOut, fadeIn])
+        let blinkForever = SKAction.repeatForever(blinkSequence)
+
+        restartLabel.run(blinkForever)
+
+        // Pause the scene
+        self.isPaused = true
+    }
+
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard !isInputLocked else { return } // Ignore input if locked
+        
+        
         if isGameOver{
             restartGame()
         }
@@ -3230,12 +3251,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.childNode(withName: "startLabel")?.removeFromParent()
         
     }
+    
     func startGame() {
         hasGameStarted = true
         
         playBackgroundMusic() //play background music
         
-        score = 1 // Ensure score is greater than 0 to start
+        score = 0 // Ensure score is greater than 0 to start
         // Start camera movement and air countdown
         setupAirDisplay()
         airCountDown()

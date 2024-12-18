@@ -13,7 +13,8 @@ class OEBoxNode: SKSpriteNode {
     private let gridSize: CGSize
     private var lastClickTime: TimeInterval = 0
     private var isMoving = false
-
+    
+    private var doneMoving = false
     private var movementQueue: [CGPoint] = []
     
     init(gridSize: CGSize) {
@@ -61,8 +62,8 @@ class OEBoxNode: SKSpriteNode {
         lastClickTime = currentTime
     }
     
-    func snapToGrid(xPosition: CGFloat) {
-        let moveAction = SKAction.move(to: CGPoint(x: xPosition, y: self.position.y), duration: 0.01)
+    func snapToGrid(position: CGPoint) {
+        let moveAction = SKAction.move(to: position, duration: 0.01)
         self.run(moveAction)
     }
     
@@ -71,15 +72,20 @@ class OEBoxNode: SKSpriteNode {
         return isMoving
     }
     
-    func hop(to position: CGPoint, inQueue: CGPoint, up: Bool) {
+    func stopMoving() {
+        movementQueue.removeAll()
+        doneMoving = true
+    }
+    
+    func hop(to position: CGPoint, inQueue: CGPoint, up: String) {
         
-        if !up && isMoving {
+        if doneMoving {
             return
         }
-        else if isMoving {
-            movementQueue.append(inQueue)
-        } else {
-            
+        
+        print("MOVING TO POSITION: \(position)")
+        /*
+        if up == "Priority" {
             isMoving = true
             let scaleDown = SKAction.scale(to: 0.8, duration: 0.05)
             let scaleUp = SKAction.scale(to: 1.2, duration: 0.05)
@@ -91,7 +97,31 @@ class OEBoxNode: SKSpriteNode {
                 self.isMoving = false
                 if let nextPosition = self.movementQueue.first {
                     self.movementQueue.removeFirst()
-                    self.hop(to: nextPosition, inQueue: nextPosition, up: true)
+                    self.hop(to: nextPosition, inQueue: nextPosition, up: "Up")
+                }
+            }
+        }
+        */
+        
+        if up != "Up" && isMoving {
+            return
+        }
+        else if isMoving {
+            movementQueue.append(inQueue)
+        } else {
+            print("COMMENCING MOVE")
+            isMoving = true
+            let scaleDown = SKAction.scale(to: 0.8, duration: 0.05)
+            let scaleUp = SKAction.scale(to: 1.2, duration: 0.05)
+            let scaleDownBack = SKAction.scale(to: 1, duration: 0.05)
+            
+            let move = SKAction.move(to: position, duration: 0.15)
+            let hopAction = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
+            self.run(SKAction.group([hopAction, move])) {
+                self.isMoving = false
+                if let nextPosition = self.movementQueue.first {
+                    self.movementQueue.removeFirst()
+                    self.hop(to: nextPosition, inQueue: nextPosition, up: "Up")
                 }
             }
         }

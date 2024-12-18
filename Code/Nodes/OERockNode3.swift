@@ -12,7 +12,8 @@ class OERockNode3: SKSpriteNode {
     
     var rockSpeed: CGFloat = 0
     var direction: CGVector = .zero
-    
+    var velocity: CGFloat = 0
+
     var leftSnapZone: CGPoint {
         return CGPoint(x: self.position.x - self.size.width * 0.25, y: self.position.y)
     }
@@ -47,6 +48,8 @@ class OERockNode3: SKSpriteNode {
     func startMoving(from start: CGPoint, to end: CGPoint, speed: CGFloat) {
         self.position = start
         self.rockSpeed = speed
+
+        self.velocity = (end.x - start.x) / speed
 
         if end.x > start.x {
             self.direction = CGVector(dx: 1, dy: 0)

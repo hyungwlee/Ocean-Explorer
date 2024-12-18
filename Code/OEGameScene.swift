@@ -1097,7 +1097,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let dx = rock.velocity * CGFloat(0.15)
                 let rockPositionX = rock.position.x + dx
                 
-                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                if playerNextPosition.y + self.cellHeight > rock.position.y - 5 && playerNextPosition.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
                     isPlayerOnRock = true
                     let nextPosition = CGPoint(x: rockPositionX, y: self.playerNextPosition.y + self.cellHeight)
                     self.playerNextPosition = nextPosition
@@ -1119,7 +1119,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let dx = rock.velocity * CGFloat(0.15)
                 let rockPositionX = rock.position.x + dx
                 
-                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                if playerNextPosition.y + self.cellHeight > rock.position.y - 5 && playerNextPosition.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
                     isPlayerOnRock = true
                     print("ROCK2 IDENTIFIED")
                     let playerX = box.position.x
@@ -1167,7 +1167,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 let dx = rock.velocity * CGFloat(0.15)
                 let rockPositionX = rock.position.x + dx
                 
-                if box.position.y + self.cellHeight > rock.position.y - 5 && box.position.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                if playerNextPosition.y + self.cellHeight > rock.position.y - 5 && playerNextPosition.y + self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
                     isPlayerOnRock = true
 
                     let playerX = box.position.x
@@ -1230,16 +1230,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
             }
         }
-            
+        
+        
         print(didMoveToRock)
-        print(isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight))
-        if !didMoveToRock && isPlayerOnLavaLane(playerPositionY: box.position.y + cellHeight) {
+        print(isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight))
+        if !didMoveToRock && isPlayerOnLavaLane(playerPositionY: playerNextPosition.y + cellHeight) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 self.playBurnedSound()
+                self.dissolveCharacter(box)
                 self.gameOver(reason: "You burned to death underwater!")
             }
         }
-                
+        
         for i in 0..<lanes.count {
             if box.position.y > lanes[i].startPosition.y - 10 && box.position.y < lanes[i].startPosition.y + 10 {
                 print("CURRENT LANE FOUND")
@@ -1331,7 +1333,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     let dx = rock.velocity * CGFloat(0.15)
                     let rockPositionX = rock.position.x + dx
                     
-                    if box.position.y - self.cellHeight > rock.position.y - 5 && box.position.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                    if playerNextPosition.y - self.cellHeight > rock.position.y - 5 && playerNextPosition.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
                         isPlayerOnRock = true
 
                         let nextPosition = CGPoint(x: rockPositionX, y: self.playerNextPosition.y - self.cellHeight)
@@ -1353,7 +1355,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     let dx = rock.velocity * CGFloat(0.15)
                     let rockPositionX = rock.position.x + dx
                     
-                    if box.position.y - self.cellHeight > rock.position.y - 5 && box.position.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                    if playerNextPosition.y - self.cellHeight > rock.position.y - 5 && playerNextPosition.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
                         isPlayerOnRock = true
 
                         print("ROCK2 IDENTIFIED")
@@ -1398,7 +1400,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     let dx = rock.velocity * CGFloat(0.15)
                     let rockPositionX = rock.position.x + dx
                     
-                    if box.position.y - self.cellHeight > rock.position.y - 5 && box.position.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
+                    if playerNextPosition.y - self.cellHeight > rock.position.y - 5 && playerNextPosition.y - self.cellHeight < rock.position.y + 5 && box.position.x > rockPositionX - rock.size.width * 0.65 && box.position.x < rockPositionX + rock.size.width * 0.65 {
                         isPlayerOnRock = true
 
                         let playerX = box.position.x
@@ -1456,11 +1458,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
             
+            
             print(didMoveToRock)
-            print(isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight))
-            if !didMoveToRock && isPlayerOnLavaLane(playerPositionY: box.position.y - cellHeight) {
+            print(isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight))
+            if !didMoveToRock && isPlayerOnLavaLane(playerPositionY: playerNextPosition.y - cellHeight) {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                     self.playBurnedSound()
+                    self.dissolveCharacter(box)
                     self.gameOver(reason: "You burned to death underwater!")
                 }
             }
@@ -2688,9 +2692,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     (bodyA.categoryBitMask == PhysicsCategory.lava && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isPlayerOnRock {
                 handleLavaContact()
-                if let boxNode = box {
-                    dissolveCharacter(boxNode)
-                }
             }
         }
     }
@@ -2748,6 +2749,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 print(self.isPlayerInContactWithRock3())
 
                 print("PLAYER NOT ON ROCK")
+                self.dissolveCharacter(box)
                 self.gameOver(reason: "You burned to death underwater!")
             }
         }

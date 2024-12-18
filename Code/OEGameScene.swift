@@ -1338,22 +1338,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func spawnCoral(in lane: Lane) {
-        
-        let coralR : SKSpriteNode
-        let coralL : SKSpriteNode
-        
-        coralL = OECoralNode(size: CGSize(width: 48, height: 50))
-        coralR = OECoralNode(size: CGSize(width: 48, height: 50))
-        
+        let coralR: SKSpriteNode
+        let coralL: SKSpriteNode
+
+        coralL = OECoralNode(size: CGSize(width: 60, height: 72))
+        coralR = OECoralNode(size: CGSize(width: 60, height: 72))
+
         addChild(coralR)
         addChild(coralL)
-        
-        let leftCoralX = (CGFloat(-5) + 0.5) * cellWidth
-        let rightCoralX = (CGFloat(4) + 0.5) * cellWidth
-        
+
+        // Adjust positions slightly
+        let leftCoralX = (CGFloat(-5) + 0.5) * cellWidth - 12 // Move left coral more to the left
+        let rightCoralX = (CGFloat(4) + 0.5) * cellWidth + 12 // Move right coral more to the right
+
         coralL.position = CGPoint(x: leftCoralX, y: lane.startPosition.y)
         coralR.position = CGPoint(x: rightCoralX, y: lane.startPosition.y)
     }
+
     
     
     func warn(in lane: Lane, completion: @escaping () -> Void) {

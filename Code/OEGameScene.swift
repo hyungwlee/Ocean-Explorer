@@ -1062,8 +1062,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     @objc func handleTap() {
         
-        guard !isInputLocked, !isGameOver, let box else { return }
-        print("YOOOOOOOOO")
+        guard let box, !isInputLocked, !isGameOver else { return }
         // Haptic feedback for each movement
       //  softImpactFeedback.impactOccurred()
         

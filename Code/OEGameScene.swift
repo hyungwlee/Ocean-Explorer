@@ -175,6 +175,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
     var playerMovementAudio: SystemSoundID = 0
     var heartbeatSound: SystemSoundID = 0
+    var rockSound: SystemSoundID = 0
 
     
     init(context: OEGameContext, size: CGSize) {
@@ -200,6 +201,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 print("could not create system sound")
                 print("osstatus2: \(osstatus2)")
             }
+        
+        // FOR ROCK JUMP SOUND
+            guard let url = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") else {
+                print("Rockjump sound file not found.")
+                return
+            }
+
+            let osstatus3 = AudioServicesCreateSystemSoundID(url as CFURL, &rockSound)
+            if osstatus3 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus3: \(osstatus3)")
+            }
+        
         
         guard let url = Bundle.main.url(forResource: "heartbeat", withExtension: "mp3") else {
                 return
@@ -1730,7 +1743,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if Bool.random() {
                 seaweed = OESeaweedNode(size: CGSize(width: 48, height: 52))
             } else {
-                seaweed = OESeaweedNode2(size: CGSize(width: 48, height: 52))
+                seaweed = OESeaweedNode2(size: CGSize(width: 45, height: 50))
             }
             
             // Add the seaweed to the scene
@@ -1754,29 +1767,30 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func spawnCoral(in lane: Lane) {
-        
-        let coralR : SKSpriteNode
-        let coralL : SKSpriteNode
-        
-        coralL = OECoralNode(size: CGSize(width: 48, height: 50))
-        coralR = OECoralNode(size: CGSize(width: 48, height: 50))
-        
+        let coralR: SKSpriteNode
+        let coralL: SKSpriteNode
+
+        coralL = OECoralNode(size: CGSize(width: 60, height: 72))
+        coralR = OECoralNode(size: CGSize(width: 60, height: 72))
+
         addChild(coralR)
         addChild(coralL)
-        
-        let leftCoralX = (CGFloat(-5) + 0.5) * cellWidth
-        let rightCoralX = (CGFloat(4) + 0.5) * cellWidth
-        
+
+        // Adjust positions slightly
+        let leftCoralX = (CGFloat(-5) + 0.5) * cellWidth - 12 // Move left coral more to the left
+        let rightCoralX = (CGFloat(4) + 0.5) * cellWidth + 12 // Move right coral more to the right
+
         coralL.position = CGPoint(x: leftCoralX, y: lane.startPosition.y)
         coralR.position = CGPoint(x: rightCoralX, y: lane.startPosition.y)
     }
+
     
     
     func warn(in lane: Lane, completion: @escaping () -> Void) {
         
         let warningLabel = SKSpriteNode(imageNamed: "EelWarning")
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
-        warningLabel.size = CGSize(width: warningLabel.size.width * 0.85, height: warningLabel.size.height * 0.70)
+        warningLabel.size = CGSize(width: warningLabel.size.width * 0.85, height: warningLabel.size.height * 0.68)
         addChild(warningLabel)
         let fadeOut = SKAction.fadeOut(withDuration: 0.25)
         let fadeIn = SKAction.fadeIn(withDuration: 0.25)
@@ -2275,6 +2289,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
         airIconTicks = SKSpriteNode(imageNamed: "AirMeterTicks")
+        airIconTicks.alpha = 0.15
         airIconBackground.size = CGSize(width: 30, height: 175) // Increased size
         airIconFill.size = CGSize(width: 30, height: 175)
         airIconTicks.size = CGSize(width: 55, height: 198)
@@ -2307,7 +2322,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create and configure the air label
         airLabel = SKLabelNode(fontNamed: "Helvetica Neue Bold")
         airLabel.fontSize = 23 // Increased font size
-        airLabel.fontColor = UIColor.black.withAlphaComponent(0.50) // Slightly transparent text
+        airLabel.fontColor = UIColor.black.withAlphaComponent(0.65) // Slightly transparent text
         airLabel.zPosition = 1000
 
         // Position the air label at the center of the airIconBackground
@@ -2835,7 +2850,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         AudioServicesPlaySystemSound(heartbeatSound)
     }
 
-
+/*
     func playRockJumpSound() {
         if let soundURL = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") {
             do {
@@ -2848,6 +2863,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             print("Rockjump sound file not found.")
         }
+    }
+  */
+    
+    func playRockJumpSound() {
+        AudioServicesPlaySystemSound(rockSound)
     }
     
     func playMoveSound() {

@@ -35,13 +35,15 @@ class OELavaNode: SKSpriteNode {
             SKTexture(imageNamed: "LAVA2"),
             SKTexture(imageNamed: "LAVA3"),
             SKTexture(imageNamed: "LAVA4"),
+            SKTexture(imageNamed: "LAVA5"),
+            SKTexture(imageNamed: "LAVA6"),
         ]
         
         // Create animation action
-        let animation = SKAction.animate(with: textures, timePerFrame: 0.30)
+        let animation = SKAction.animate(with: textures, timePerFrame: 0.75)
         
         // Add a pause at the end of the animation
-        let pause = SKAction.wait(forDuration: 0.50) // Adjust the duration of the pause as needed
+        let pause = SKAction.wait(forDuration: 0.00) // Adjust the duration of the pause as needed
         
         // Create a sequence of animation followed by pause
         let animationSequence = SKAction.sequence([animation, pause])

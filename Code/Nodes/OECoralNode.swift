@@ -7,6 +7,9 @@ class OECoralNode: SKSpriteNode {
         let texture = SKTexture(imageNamed: "Coral") // Initial coral texture
         super.init(texture: texture, color: .clear, size: size)
         
+        // Set transparency
+        self.alpha = 0.60 // Adjust value between 0.0 (fully transparent) and 1.0 (fully opaque)
+        
         // Configure physics body
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.isDynamic = false // Stationary

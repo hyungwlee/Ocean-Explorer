@@ -175,6 +175,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var backgroundMusicPlayer: AVAudioPlayer? // Background music audio player
     var playerMovementAudio: SystemSoundID = 0
     var heartbeatSound: SystemSoundID = 0
+    var rockSound: SystemSoundID = 0
 
     
     init(context: OEGameContext, size: CGSize) {
@@ -200,6 +201,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 print("could not create system sound")
                 print("osstatus2: \(osstatus2)")
             }
+        
+        // FOR ROCK JUMP SOUND
+            guard let url = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") else {
+                print("Rockjump sound file not found.")
+                return
+            }
+
+            let osstatus3 = AudioServicesCreateSystemSoundID(url as CFURL, &rockSound)
+            if osstatus3 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus3: \(osstatus3)")
+            }
+        
         
         guard let url = Bundle.main.url(forResource: "heartbeat", withExtension: "mp3") else {
                 return
@@ -1777,7 +1790,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         let warningLabel = SKSpriteNode(imageNamed: "EelWarning")
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
-        warningLabel.size = CGSize(width: warningLabel.size.width * 0.85, height: warningLabel.size.height * 0.70)
+        warningLabel.size = CGSize(width: warningLabel.size.width * 0.85, height: warningLabel.size.height * 0.68)
         addChild(warningLabel)
         let fadeOut = SKAction.fadeOut(withDuration: 0.25)
         let fadeIn = SKAction.fadeIn(withDuration: 0.25)
@@ -2837,7 +2850,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         AudioServicesPlaySystemSound(heartbeatSound)
     }
 
-
+/*
     func playRockJumpSound() {
         if let soundURL = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") {
             do {
@@ -2850,6 +2863,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             print("Rockjump sound file not found.")
         }
+    }
+  */
+    
+    func playRockJumpSound() {
+        AudioServicesPlaySystemSound(rockSound)
     }
     
     func playMoveSound() {

@@ -1243,7 +1243,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         for i in 0..<lanes.count {
-            if box.position.y > lanes[i].startPosition.y - 10 && box.position.y < lanes[i].startPosition.y + 10 {
+            if playerNextPosition.y > lanes[i].startPosition.y - 10 && playerNextPosition.y < lanes[i].startPosition.y + 10 {
                 print("CURRENT LANE FOUND")
                 if lanes[i].laneType == "Lava" && lanes[i+1].laneType != "Lava" {
                     print("NEXT LANE IDENTIFIED-NOT LAVA")
@@ -1474,7 +1474,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             for i in 0..<lanes.count {
-                if box.position.y > lanes[i].startPosition.y - 10 && box.position.y < lanes[i].startPosition.y + 10 {
+                if playerNextPosition.y > lanes[i].startPosition.y - 10 && playerNextPosition.y < lanes[i].startPosition.y + 10 {
                     print("CURRENT LANE FOUND")
                     if lanes[i].laneType == "Lava" && lanes[i-1].laneType != "Lava" {
                         print("NEXT LANE IDENTIFIED-NOT LAVA")

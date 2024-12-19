@@ -2564,13 +2564,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Function to decrease air by 1 (called in aircountdown) // Air Meter Animation for Low Air
     func decreaseAir() {
         guard !isGameOver else { return }
-
         // Decrease the air amount immediately
         airAmount -= 1
         airLabel.text = "\(airAmount)"
-        // Update the meter right after
+        
+        // Smoothly update the meter fill
         let targetScaleFactor = calculateScaleFactor(airAmount: airAmount)
-        airIconFill.yScale = targetScaleFactor
+        smoothUpdateMeterFill(to: targetScaleFactor, duration: 1.0) // Adjust duration for smooth transition
 
         if airAmount < 11 && !red {
             // Keep the air label text unchanged but make it transparent
@@ -2607,14 +2607,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             // Stop pulsating the O2 icon
             o2Icon?.removeAction(forKey: "pulsateO2")
         }
-
+        
         // Trigger haptic feedback when air gets critically low
         if airAmount < 8 {
             if !mediumHapticActive { // Prevents multiple haptic generators
                 mediumHapticActive = true
                 startMediumHapticFeedback()
             }
-            
+
             startWarningFlash() // Start flashing the warning icon
             playHeartbeatSound()
 
@@ -2630,6 +2630,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             gameOver(reason: "You Ran Out of Air and Drowned")
         }
     }
+
+
+    func smoothUpdateMeterFill(to targetScale: CGFloat, duration: TimeInterval) {
+        let scaleAction = SKAction.scaleY(to: targetScale, duration: duration)
+        airIconFill.run(scaleAction)
+    }
+
 
     
 
@@ -2650,17 +2657,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     // Function to increase air by a specific amount
     func increaseAir(by amount: Int) {
         guard !isGameOver else { return }
-        
+
         airAmount += amount
         if airAmount > 30 {
             airAmount = 30 // Cap the air at 30
         }
-        // Update air meter
+        // Instantly update air meter
         let scaleFactor = calculateScaleFactor(airAmount: airAmount)
         airIconFill.yScale = scaleFactor
-        
+
         airLabel.text = "\(airAmount)"
     }
+
     
     /*
     func spawnTemporaryArrow() {

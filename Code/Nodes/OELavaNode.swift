@@ -40,7 +40,7 @@ class OELavaNode: SKSpriteNode {
         ]
         
         // Create animation action
-        let animation = SKAction.animate(with: textures, timePerFrame: 0.75)
+        let animation = SKAction.animate(with: textures, timePerFrame: 0.5)
         
         // Add a pause at the end of the animation
         let pause = SKAction.wait(forDuration: 0.00) // Adjust the duration of the pause as needed

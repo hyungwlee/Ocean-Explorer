@@ -13,6 +13,8 @@ class OESeaweedNode2: SKSpriteNode {
         self.physicsBody?.categoryBitMask = PhysicsCategory.seaweed
         self.physicsBody?.contactTestBitMask = PhysicsCategory.box
         self.physicsBody?.collisionBitMask = PhysicsCategory.box
+        
+        self.zPosition = 0
     }
     
     required init?(coder aDecoder: NSCoder) {

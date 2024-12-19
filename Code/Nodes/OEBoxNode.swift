@@ -17,10 +17,15 @@ class OEBoxNode: SKSpriteNode {
     private var doneMoving = false
     private var movementQueue: [CGPoint] = []
     
+    private var score: Int
+    private var isUp = "none"
+    
     init(gridSize: CGSize) {
         self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Smiley")
-      
+        
+        score = 0
+        
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.4, height: texture.size().height * 0.4))
         self.zPosition = 2
 
@@ -72,6 +77,10 @@ class OEBoxNode: SKSpriteNode {
         return isMoving
     }
     
+    func getScore() -> Int {
+        return score
+    }
+    
     func stopMoving() {
         movementQueue.removeAll()
         doneMoving = true
@@ -110,6 +119,15 @@ class OEBoxNode: SKSpriteNode {
         else if isMoving {
             movementQueue.append(inQueue)
         } else {
+            
+            if position.y > self.position.y + 2 {
+                isUp = "up"
+            } else if position.y < self.position.y - 2{
+                isUp = "down"
+            } else {
+                isUp = "none"
+            }
+            
             print("COMMENCING MOVE")
             isMoving = true
             let scaleDown = SKAction.scale(to: 0.8, duration: 0.05)
@@ -120,6 +138,11 @@ class OEBoxNode: SKSpriteNode {
             let hopAction = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
             self.run(SKAction.group([hopAction, move])) {
                 self.isMoving = false
+                if self.isUp == "up" {
+                    self.score = self.score + 1
+                } else if self.isUp == "down" {
+                    self.score -= 1
+                }
                 if let nextPosition = self.movementQueue.first {
                     self.movementQueue.removeFirst()
                     self.hop(to: nextPosition, inQueue: nextPosition, up: "Up")

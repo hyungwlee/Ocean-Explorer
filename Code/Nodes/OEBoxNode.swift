@@ -138,9 +138,7 @@ class OEBoxNode: SKSpriteNode {
             let hopAction = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
             self.run(SKAction.group([hopAction, move])) {
                 self.isMoving = false
-                print(self.isUp)
                 if self.isUp == "up" {
-                    print("ADDING TO SCORE")
                     self.score = self.score + 1
                 } else if self.isUp == "down" {
                     self.score -= 1

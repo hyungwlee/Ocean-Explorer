@@ -1928,29 +1928,29 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func startSpawning(lanes: [Lane]) {
         
-        for lane in lanes {
+        for i in 0..<lanes.count {
             
-            if lane.laneType == "Empty" {
-                colorLane(in: lane)
+            if lanes[i].laneType == "Empty" {
+                colorLane(in: lanes[i])
                 
                 // If Lava then empty then don't spawn any seaweed
                 if prevLane?.laneType == "Lava" {
-                    spawnCoral(in: lane)
+                    spawnCoral(in: lanes[i])
                     // Set prevLane
-                    prevLane = lane
+                    prevLane = lanes[i]
                     continue
                 }
                 let spawn = SKAction.run { [weak self] in
-                    self?.spawnSeaweed(in: lane)
-                    self?.spawnCoral(in: lane)
+                    self?.spawnSeaweed(in: lanes[i])
+                    self?.spawnCoral(in: lanes[i])
                 }
                 run(spawn)
             }
             
-            if lane.laneType == "Tutorial" {
+            if lanes[i].laneType == "Tutorial" {
                 let wait = SKAction.wait(forDuration: 5.0)
                 let spawn = SKAction.run { [weak self] in
-                    self?.spawnEnemy(in: lane)
+                    self?.spawnEnemy(in: lanes[i])
                 }
                 let sequence = SKAction.sequence([spawn, wait])
                 let repeatAction = SKAction.repeatForever(sequence)
@@ -1958,13 +1958,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
             
-            if lane.laneType == "Eel" {
-                colorLane(in: lane)
+            if lanes[i].laneType == "Eel" {
+                colorLane(in: lanes[i])
                 let wait = SKAction.wait(forDuration: CGFloat.random(in: 7...10))
                 let warn = SKAction.run { [weak self] in
-                    self?.warn(in: lane) {
+                    self?.warn(in: lanes[i]) {
                         // Trigger spawn after warning is completed
-                        self?.spawnEel(in: lane)
+                        self?.spawnEel(in: lanes[i])
                     }
                 }
                 let sequence = SKAction.sequence([wait, warn])
@@ -1973,10 +1973,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
             
-            if lane.laneType == "Pufferfish" {
+            if lanes[i].laneType == "Pufferfish" {
                 let wait = SKAction.wait(forDuration: 4.0)
                 let spawn = SKAction.run { [weak self] in
-                    self?.spawnPufferfish(in: lane)
+                    self?.spawnPufferfish(in: lanes[i])
                 }
                 let sequence = SKAction.sequence([spawn, wait])
                 let repeatAction = SKAction.repeatForever(sequence)
@@ -1984,14 +1984,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
             
-            if lane.laneType == "Spike" {
+            if lanes[i].laneType == "Spike" {
                 let wait = SKAction.wait(forDuration: 4.25, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     let enemyType = Int.random(in: 0..<8)
                     if enemyType == 7 {
-                        self?.spawnPufferfish(in: lane)
+                        self?.spawnPufferfish(in: lanes[i])
                     } else {
-                        self?.spawnEnemy(in: lane)
+                        self?.spawnEnemy(in: lanes[i])
                     }
                 }
                 let sequence = SKAction.sequence([spawn, wait])
@@ -2000,10 +2000,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
             
-            if lane.laneType == "Jellyfish" {
+            if lanes[i].laneType == "Jellyfish" {
                 let wait = SKAction.wait(forDuration: 4, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
-                    self?.spawnJellyfish(in: lane)
+                    self?.spawnJellyfish(in: lanes[i])
                 }
                 let sequence = SKAction.sequence([spawn, wait])
                 let repeatAction = SKAction.repeatForever(sequence)
@@ -2011,10 +2011,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
             
-            if lane.laneType == "Shark" {
+            if lanes[i].laneType == "Shark" {
                 let wait = SKAction.wait(forDuration: 4.5, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
-                    self?.spawnLongEnemy(in: lane)
+                    self?.spawnLongEnemy(in: lanes[i])
                 }
                 let sequence = SKAction.sequence([spawn, wait])
                 let repeatAction = SKAction.repeatForever(sequence)
@@ -2022,41 +2022,52 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 run(repeatAction)
             }
             
-            if lane.laneType == "Lava" {
+            if lanes[i].laneType == "Lava" {
                 
                 /*
                 if prevLane?.laneType != "Lava" {
                     
-                    print("SPAWNING BANK")
                     let lavaBank = SKSpriteNode(imageNamed: "LavaBank")
-                    lavaBank.position = CGPoint(x: 0.0, y: lane.startPosition.y - 25)
+                    lavaBank.position = CGPoint(x: 0.0, y: lanes[i].startPosition.y - 25)
                     lavaBank.size = CGSize(width: lavaBank.size.width, height: lavaBank.size.height)
-                    lavaBank.zPosition = 2
+                    lavaBank.zPosition = 1.5
+                    lavaBank.alpha = 0.5
                     addChild(lavaBank)
                 }
                 */
-             
-                
-                spawnLava(in: lane)
-                lavaYPositions.append(lane.startPosition.y)
+                spawnLava(in: lanes[i])
+                lavaYPositions.append(lanes[i].startPosition.y)
                 var waitTime: CGFloat = 0.0
-                if lane.speed > 11 {
+                if lanes[i].speed > 11 {
                     waitTime = CGFloat.random(in: 4..<4.5)
                 } else {
                     waitTime = CGFloat.random(in: 1.5..<2.25)
                 }
                 let wait = SKAction.wait(forDuration: waitTime)
                 let spawn = SKAction.run { [weak self] in
-                    self?.spawnRock(in: lane)
+                    self?.spawnRock(in: lanes[i])
                 }
                 let sequence = SKAction.sequence([spawn, wait])
                 let repeatAction = SKAction.repeatForever(sequence)
                 
                 run(repeatAction)
             }
-            
+            /*
+            if lanes[i].laneType != "Lava" && prevLane?.laneType == "Lava" {
+                
+                guard let prevLane = prevLane else { return }
+                let lavaBank = SKSpriteNode(imageNamed: "LavaBank")
+                lavaBank.size = CGSize(width: lavaBank.size.width, height: lavaBank.size.height)
+                lavaBank.position = CGPoint(x: 0.0, y: lanes[i].startPosition.y - 30)
+                lavaBank.zPosition = 5
+                lavaBank.yScale = -1
+                lavaBank.alpha = 0.5
+                addChild(lavaBank)
+                
+            }
+            */
             // Set prevLane
-            prevLane = lane
+            prevLane = lanes[i]
         }
     }
     

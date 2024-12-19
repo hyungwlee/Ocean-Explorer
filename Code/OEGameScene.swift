@@ -632,10 +632,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     let goldColor = UIColor(red: 255/255.0, green: 223/255.0, blue: 87/255.0, alpha: 1.0) // Lighter gold
     
     func updateScore() {
-        score += 1
+        guard let box = box else { return }
+        score = box.getScore()
         if score >= scoreDisplayed + 1 {
             scoreDisplayed += 1
         }
+        
         
         // Update font colors and effects based on score milestones
         if score % 100 == 0 {
@@ -706,6 +708,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         guard let box = box else { return }
         
         super.update(currentTime)
+        
+        score = box.getScore()
+        
+        updateScore()
         
         if !isPlayerOnRock && isPlayerOnLava() && !isPlayerInContactWithRock() && !isPlayerInContactWithRock2() && !isPlayerInContactWithRock3() {
             handleLavaContact()
@@ -1558,7 +1564,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             } else {
                 hitSeaweed = true
             }
-            score -= 1
             handleLavaContact()
         case .left:
           
@@ -3350,7 +3355,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         self.cameraNode.addChild(logoSprite)
 
         // Save the current score
-        let finalScore = self.score
+        let finalScore = self.scoreDisplayed
 
         // Display Final Score
         let finalScoreLabel = SKLabelNode(text: "Score: \(finalScore)")

@@ -15,7 +15,7 @@ class OEEnemyNode3: SKSpriteNode {
     init(gridSize: CGSize) {
         self.gridSize = gridSize
         let texture = SKTexture(imageNamed: "Eel")
-        super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width, height: texture.size().height))
+        super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.90, height: texture.size().height * 0.90))
         
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.affectedByGravity = false // Disable gravity for the enemy

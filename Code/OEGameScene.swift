@@ -176,6 +176,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var playerMovementAudio: SystemSoundID = 0
     var heartbeatSound: SystemSoundID = 0
     var rockSound: SystemSoundID = 0
+    var bubbleSound: SystemSoundID = 0
+    var shellPickup: SystemSoundID = 0
+    var falling: SystemSoundID = 0
 
     
     init(context: OEGameContext, size: CGSize) {
@@ -192,7 +195,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Initially slow rock speed
         currentRockSpeed = "Slow"
  
-        
+        // FOR MOVE SOUND
         guard let url = Bundle.main.url(forResource: "move", withExtension: "mp3") else {
                 return
             }
@@ -200,6 +203,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if osstatus2 != noErr { // or kAudioServicesNoError. same thing.
                 print("could not create system sound")
                 print("osstatus2: \(osstatus2)")
+            }
+        
+        // FOR BUBBLE SOUND
+        guard let url = Bundle.main.url(forResource: "bubble", withExtension: "mp3") else {
+                print("Bubble sound file not found.")
+                return
+            }
+        
+            let osstatus4 = AudioServicesCreateSystemSoundID(url as CFURL, &bubbleSound)
+            if osstatus4 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus4: \(osstatus4)")
             }
         
         // FOR ROCK JUMP SOUND
@@ -213,7 +227,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 print("Could not create system sound. osstatus3: \(osstatus3)")
             }
         
+        // FOR SHELL PICKUP SOUND
+        guard let url = Bundle.main.url(forResource: "shellPickup", withExtension: "mp3") else {
+                print("Shell pickup sound file not found.")
+                return
+            }
+            let osstatus6 = AudioServicesCreateSystemSoundID(url as CFURL, &shellPickup)
+            if osstatus6 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus6: \(osstatus6)")
+            }
         
+        // FOR HEARTBEAT SOUND
         guard let url = Bundle.main.url(forResource: "heartbeat", withExtension: "mp3") else {
                 return
             }
@@ -221,6 +245,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if osstatus != noErr { // or kAudioServicesNoError. same thing.
                     print("could not create system sound")
                     print("osstatus: \(osstatus)")
+            }
+        
+        // FOR FALLING SOUND
+        guard let url = Bundle.main.url(forResource: "falling", withExtension: "mp3") else {
+                print("Falling sound file not found.")
+                return
+            }
+
+            let osstatus7 = AudioServicesCreateSystemSoundID(url as CFURL, &falling)
+            if osstatus7 != noErr {
+                print("Could not create system sound. osstatus7: \(osstatus7)")
             }
         
         self.anchorPoint = CGPoint(x: 0.5, y: 0.5)
@@ -2249,7 +2284,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Slow down the camera movement
         slowDownCamera()
     }
-    
+
     func spawnBubble() {
         // Determine if the bubble should be a GoldBubble
         let isGoldBubble = Int.random(in: 0..<100) < 10 // Adjust as needed for spawn rate
@@ -2932,6 +2967,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func playShellPickupSound() {
+        
+        AudioServicesPlaySystemSound(shellPickup)
+    }
+    
+    /*
+    func playShellPickupSound() {
         if let soundURL = Bundle.main.url(forResource: "shellPickup", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
@@ -2943,6 +2984,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Shell pickup sound file not found.")
         }
     }
+    */
 
     // Call this method to play the sound
     func playHeartbeatSound() {
@@ -2975,6 +3017,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func playBubbleSound() {
+     
+        AudioServicesPlaySystemSound(bubbleSound)
+    }
+        
+    /* old one
+    func playBubbleSound() {
         if let soundURL = Bundle.main.url(forResource: "bubble", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
@@ -2987,6 +3035,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Bubble sound file not found.")
         }
     }
+     */
 
     func playEnemyContactSound() {
         if let soundURL = Bundle.main.url(forResource: "contact", withExtension: "mp3") {
@@ -3017,6 +3066,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func playFellSound()
+    {
+        AudioServicesPlaySystemSound(falling)
+    }
+    
+    /*
     func playFellSound() {
         if let soundURL = Bundle.main.url(forResource: "falling", withExtension: "mp3") {
             do {
@@ -3029,6 +3084,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Fell sound file not found.")
         }
     }
+     */
     
     func handleSeaweedContact(nextPosition: CGPoint) -> Bool {
         

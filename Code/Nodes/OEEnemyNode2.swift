@@ -25,7 +25,7 @@ class OEEnemyNode2: SKSpriteNode {
 
         self.gridSize = gridSize
         self.flipped = flipped
-        let texture = SKTexture(imageNamed: "Pufferfish")
+        let texture = SKTexture(imageNamed: "Pufferfish1")
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.385, height: texture.size().height * 0.385))
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.affectedByGravity = false // Disable gravity for the enemy
@@ -104,5 +104,12 @@ class OEEnemyNode2: SKSpriteNode {
         let sequence = SKAction.sequence([moveAction, removeAction])
         
         run(sequence)
+    }
+    
+    func animate() {
+        let frameCount = 2
+        let frames = (1...frameCount).map {frameNumber in SKTexture(imageNamed: "Pufferfish\(frameNumber)")}
+        let animate = SKAction.animate(with: frames, timePerFrame: 0.5)
+        run(SKAction.repeatForever(animate))
     }
 }

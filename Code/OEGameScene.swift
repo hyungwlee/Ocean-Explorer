@@ -1327,6 +1327,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         case .down:
     
+            if handleSeaweedContact(nextPosition: CGPoint(x: playerNextPosition.x, y: playerNextPosition.y - cellHeight)) {
+                return
+            }
+            
             currentRock = nil
             currentRock2 = nil
             currentRock3 = nil
@@ -1731,6 +1735,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let enemy = OEEnemyNode(gridSize: gridSize)
         addChild(enemy)
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed + CGFloat.random(in: -0.5...1))
+        enemy.animate()
     }
     
     func spawnJellyfish(in lane: Lane) {
@@ -1761,6 +1766,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             enemy.xScale = -1
         }
         enemy.startMoving(from: lane.startPosition, to: lane.endPosition, speed: lane.speed)
+        enemy.animate()
     }
     
     func spawnEel(in lane: Lane) {
@@ -1977,6 +1983,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lane.laneType == "Lava" {
+                
+                /*
+                if prevLane?.laneType != "Lava" {
+                    
+                    print("SPAWNING BANK")
+                    let lavaBank = SKSpriteNode(imageNamed: "LavaBank")
+                    lavaBank.position = CGPoint(x: 0.0, y: lane.startPosition.y - 25)
+                    lavaBank.size = CGSize(width: lavaBank.size.width, height: lavaBank.size.height)
+                    lavaBank.zPosition = 2
+                    addChild(lavaBank)
+                }
+                */
+             
+                
                 spawnLava(in: lane)
                 lavaYPositions.append(lane.startPosition.y)
                 var waitTime: CGFloat = 0.0
@@ -2024,8 +2044,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             laneColor.fillColor = .white
             laneColor.fillTexture = SKTexture(imageNamed: "eelLane")
             laneColor.fillTexture?.filteringMode = .nearest
-        } else {
-            laneColor.fillColor = .red
         }
         
         laneColor.strokeColor = .clear // Remove the border
@@ -2416,7 +2434,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
     
         // Create and configure the warning icon
-        warningIcon = SKSpriteNode(imageNamed: "Warning") // Replace with your actual warning asset name
+        warningIcon = SKSpriteNode(imageNamed: "Warning")
         if let warningIcon = warningIcon {
             let scorePosition = scoreLabel.position
             warningIcon.size = CGSize(width: 170, height: 60) // Adjust size as needed

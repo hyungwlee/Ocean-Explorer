@@ -14,7 +14,7 @@ class OEEnemyNode: SKSpriteNode {
     
     init(gridSize: CGSize) {
         self.gridSize = gridSize
-        let texture = SKTexture(imageNamed: "Enemy")
+        let texture = SKTexture(imageNamed: "Enemy1")
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.40, height: texture.size().height * 0.40))
         
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
@@ -37,5 +37,12 @@ class OEEnemyNode: SKSpriteNode {
         let sequence = SKAction.sequence([moveAction, removeAction])
         
         run(sequence)
+    }
+    
+    func animate() {
+        let frameCount = 2
+        let frames = (1...frameCount).map {frameNumber in SKTexture(imageNamed: "Enemy\(frameNumber)")}
+        let animate = SKAction.animate(with: frames, timePerFrame: 0.5)
+        run(SKAction.repeatForever(animate))
     }
 }

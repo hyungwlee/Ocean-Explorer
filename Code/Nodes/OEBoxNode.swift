@@ -81,6 +81,10 @@ class OEBoxNode: SKSpriteNode {
         return score
     }
     
+    func getMovementQueueLength() -> Int {
+        return movementQueue.count
+    }
+    
     func stopMoving() {
         movementQueue.removeAll()
         doneMoving = true

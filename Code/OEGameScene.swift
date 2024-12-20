@@ -2144,13 +2144,49 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         // Check lane type and ensure it's not "Eel" or "Lava" and make sure shell not spawning on seaweed
         var shellLaneType = currentLaneType(position: shell.position)?.lowercased()
-        while shellLaneType == "eel" || shellLaneType == "lava" || seaweedPositions.contains(shell.position) {
+        while shellLaneType == "eel" || shellLaneType == "lava" || seaweedPositions.contains(shell.position) || isOverlappingBubble(at: shell.position) {
             randomRow += 1
             randomColumn = playableColumnRange.randomElement()!
             shell.position = positionFor(row: randomRow, column: randomColumn)
             shellLaneType = currentLaneType(position: shell.position)?.lowercased()
         }
         addChild(shell)
+    }
+    
+    func isOverlappingBubble(at position: CGPoint) -> Bool {
+        // Create a temporary physics body for the shell's spawn area
+        let spawnArea = SKPhysicsBody(rectangleOf: CGSize(width: 40, height: 40)) // Match shell size
+        spawnArea.categoryBitMask = PhysicsCategory.shell
+        spawnArea.collisionBitMask = PhysicsCategory.none
+        spawnArea.contactTestBitMask = PhysicsCategory.bubble // Check for overlap with bubbles
+        spawnArea.isDynamic = false
+
+        for node in children {
+            if let physicsBody = node.physicsBody,
+               physicsBody.categoryBitMask == PhysicsCategory.bubble,
+               node.frame.intersects(CGRect(origin: position, size: CGSize(width: 40, height: 40))) {
+                return true
+            }
+        }
+        return false
+    }
+
+    func isOverlappingShell(at position: CGPoint) -> Bool {
+        // Create a temporary physics body for the shell's spawn area
+        let spawnArea = SKPhysicsBody(rectangleOf: CGSize(width: 42, height: 42)) // Match shell size
+        spawnArea.categoryBitMask = PhysicsCategory.bubble
+        spawnArea.collisionBitMask = PhysicsCategory.none
+        spawnArea.contactTestBitMask = PhysicsCategory.shell // Check for overlap with bubbles
+        spawnArea.isDynamic = false
+
+        for node in children {
+            if let physicsBody = node.physicsBody,
+               physicsBody.categoryBitMask == PhysicsCategory.shell,
+               node.frame.intersects(CGRect(origin: position, size: CGSize(width: 42, height: 42))) {
+                return true
+            }
+        }
+        return false
     }
     
     // Function to add shells periodically
@@ -2371,7 +2407,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             // Check if bubble is on the lava or eel lane and make sure it doesn't spawn on seaweed
             var bubbleLaneType = currentLaneType(position: bubble.position)?.lowercased()
-            while bubbleLaneType == "eel" || bubbleLaneType == "lava" || seaweedPositions.contains(bubble.position) {
+            while bubbleLaneType == "eel" || bubbleLaneType == "lava" || seaweedPositions.contains(bubble.position) || isOverlappingShell(at: bubble.position) {
                 randomRow += 1
                 randomColumn = playableColumnRange.randomElement()!
                 bubble.position = positionFor(row: randomRow, column: randomColumn)
@@ -2795,6 +2831,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             didBeginShellContact(contact)
             mediumImpactFeedback.impactOccurred()
         }
+        
+        
         
         // Handle contact with rocks
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.rock) ||

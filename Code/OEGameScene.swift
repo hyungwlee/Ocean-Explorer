@@ -3849,6 +3849,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         restartLabel.run(blinkForever)
 
+        // Pause the scene
+        self.isPaused = true
+
+        
     }
 
     

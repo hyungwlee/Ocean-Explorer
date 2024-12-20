@@ -3133,6 +3133,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         AudioServicesPlaySystemSound(falling)
     }
     
+    func stopAllSounds() {
+        
+    }
+    
     /*
     func playFellSound() {
         if let soundURL = Bundle.main.url(forResource: "falling", withExtension: "mp3") {
@@ -3346,16 +3350,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Display "Tap to Begin" message
         let startLabel = SKLabelNode(text: "Tap to Begin")
         startLabel.name = "startLabel"
-        startLabel.fontSize = 38
+        startLabel.fontSize = 50
         startLabel.fontColor = .white
         startLabel.zPosition = 1002 // Ensure top visibility
         startLabel.fontName = "Arial-BoldMT" // Use bold font
         startLabel.position = CGPoint(x: 0, y: 40) // Centered on screen
         cameraNode.addChild(startLabel)
         
+        // Create a blink action
+        let fadeOut = SKAction.fadeOut(withDuration: 1.0)
+        let fadeIn = SKAction.fadeIn(withDuration: 1.0)
+        let blinkSequence = SKAction.sequence([fadeOut, fadeIn])
+        let blinkForever = SKAction.repeatForever(blinkSequence)
+        
+        startLabel.run(blinkForever)
+        
         // Lock input for 1.5 seconds
         isInputLocked = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             self.isInputLocked = false
         }
     }
@@ -3455,11 +3467,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Display "Tap to Restart" message
         let restartLabel = SKLabelNode(text: "Tap to Restart")
-        restartLabel.fontSize = 20
+        restartLabel.fontSize = 45
         restartLabel.fontColor = .white
         restartLabel.zPosition = 1101
         restartLabel.fontName = "Arial-BoldMT"
-        restartLabel.position = CGPoint(x: 0, y: -350)
+        restartLabel.position = CGPoint(x: 0, y: -200)
         self.cameraNode.addChild(restartLabel)
 
         // Create a blink action
@@ -3470,8 +3482,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         restartLabel.run(blinkForever)
 
-        // Pause the scene
-        self.isPaused = true
     }
 
     

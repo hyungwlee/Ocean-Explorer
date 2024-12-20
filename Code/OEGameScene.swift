@@ -92,6 +92,34 @@ let softImpactFeedback = UIImpactFeedbackGenerator(style: .soft) // For medium f
 // let mediumImpactFeedback = UIImpactFeedbackGenerator(style: .medium) // For medium feedback
 let heavyImpactFeedback = UIImpactFeedbackGenerator(style: .heavy)  // For heavy feedback (e.g., death)
 
+// haptics for rumble
+func quickRumbleEffect() {
+    // Use multiple generators for varying intensities
+    let lightGenerator = UIImpactFeedbackGenerator(style: .light)
+    let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
+    let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
+    
+    lightGenerator.prepare()
+    mediumGenerator.prepare()
+    heavyGenerator.prepare()
+    
+    // Sequence of impacts to simulate a rumble
+    let sequence: [(UIImpactFeedbackGenerator, Double)] = [
+        (heavyGenerator, 0.0),  // Start with heavy
+        (mediumGenerator, 0.05), // Medium after 50ms
+        (lightGenerator, 0.1),  // Light after 100ms
+        (heavyGenerator, 0.15), // Heavy after 150ms
+        (mediumGenerator, 0.2), // Medium after 200ms
+        (lightGenerator, 0.25)  // Light after 250ms
+    ]
+    
+    for (generator, delay) in sequence {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            generator.impactOccurred()
+        }
+    }
+}
+
     
 @available(iOS 18.0, *)
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
@@ -644,34 +672,40 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func updateScore() {
         guard let box = box else { return }
         score = box.getScore()
+
+        // Trigger the popup effect when the score is a multiple of 10
+        if score % 10 == 0 && score != scoreDisplayed {
+            scoreLabel.removeAction(forKey: "popOut") // Remove any ongoing pop-out action
+            scoreLabel.run(createPopOutAction(), withKey: "popOut")
+        }
+
+        // Update displayed score
         if score >= scoreDisplayed + 1 {
             scoreDisplayed += 1
         }
-        
-        
-        // Update font colors and effects based on score milestones
+
+        // Update font colors and effects
         if score % 100 == 0 {
-            scoreLabel.fontColor = .red // Gold color
-        } else if score % 10 == 0 {
-            scoreLabel.run(createPopOutAction()) // Apply the popping effect on multiples of 10
+            scoreLabel.fontColor = .red // Highlight for multiples of 100
         } else {
             scoreLabel.fontColor = .white
             shadowLabel.fontColor = .black.withAlphaComponent(0.5) // Default shadow color
         }
-        
+
         // Update the text for both labels
         let updatedText = "\(max(score, scoreDisplayed))"
         scoreLabel.text = updatedText
         shadowLabel.text = updatedText
     }
 
+
     
     func createPopOutAction() -> SKAction {
-        let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
-        let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
-        let sequence = SKAction.sequence([scaleUp, scaleDown])
-        return sequence
+        let scaleUp = SKAction.scale(to: 1.45, duration: 0.10)  // Increase to 1.5 scale, slightly slower
+        let scaleDown = SKAction.scale(to: 1.0, duration: 0.10) // Return to normal size
+        return SKAction.sequence([scaleUp, scaleDown])
     }
+
     
     func updateHighestRowDrawn() {
         highestRowDrawn += numberOfRows
@@ -2821,13 +2855,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     if let boxNode = box {
                         shockCharacter(boxNode)
                         handleEnemyContact()
-                        heavyImpactFeedback.impactOccurred()
-                    }
+                        quickRumbleEffect()                    }
                 }
                 else {
                     if let boxNode = box {
                         handleEnemyContact()
-                        heavyImpactFeedback.impactOccurred()
+                        quickRumbleEffect()
                         dissolveCharacter(boxNode)
                     }
                 }
@@ -2900,7 +2933,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 print("PLAYER ON ROCK")
                 if isPlayerOnLava() {
                     print("PLAYER ON LAVA")
-                    heavyImpactFeedback.impactOccurred()
+                    quickRumbleEffect()
                     handleLavaContact()
                 }
 
@@ -2949,7 +2982,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         if isPlayerOnLava() {
             if let boxNode = box {
-                heavyImpactFeedback.impactOccurred()
+                quickRumbleEffect()
             }
         }
         
@@ -3405,11 +3438,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Display "Tap to Begin" message
         let startLabel = SKLabelNode(text: "Tap to Begin")
         startLabel.name = "startLabel"
-        startLabel.fontSize = 50
+        startLabel.fontSize = 35
+        startLabel.alpha = 0.70
         startLabel.fontColor = .white
         startLabel.zPosition = 1002 // Ensure top visibility
         startLabel.fontName = "Arial-BoldMT" // Use bold font
-        startLabel.position = CGPoint(x: 0, y: 40) // Centered on screen
+        startLabel.position = CGPoint(x: 0, y: -10) // Centered on screen
         cameraNode.addChild(startLabel)
         
         // Create a blink action
@@ -3420,9 +3454,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         startLabel.run(blinkForever)
         
-        // Lock input for 1.5 seconds
+        // Lock input for xx seconds
         isInputLocked = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.80) {
             self.isInputLocked = false
         }
     }
@@ -3522,11 +3556,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Display "Tap to Restart" message
         let restartLabel = SKLabelNode(text: "Tap to Restart")
-        restartLabel.fontSize = 45
+        restartLabel.fontSize = 25
         restartLabel.fontColor = .white
+        restartLabel.alpha = 0.80
         restartLabel.zPosition = 1101
         restartLabel.fontName = "Arial-BoldMT"
-        restartLabel.position = CGPoint(x: 0, y: -200)
+        restartLabel.position = CGPoint(x: 0, y: -300)
         self.cameraNode.addChild(restartLabel)
 
         // Create a blink action

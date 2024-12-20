@@ -31,6 +31,7 @@
 		85C1D3242CE54FC50025A3F1 /* OEEnemyNode3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3232CE54FC10025A3F1 /* OEEnemyNode3.swift */; };
 		85C1D3262CEABD830025A3F1 /* OEEnemyNode4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3252CEABD7B0025A3F1 /* OEEnemyNode4.swift */; };
 		85C1D3282CF45B5F0025A3F1 /* OEEnemyNode5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C1D3272CF45B5A0025A3F1 /* OEEnemyNode5.swift */; };
+		9801D7682D1530C000576C95 /* OEShockedNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9801D7672D1530C000576C95 /* OEShockedNode.swift */; };
 		9881C08F2D10DB840028E137 /* OESeaweedNode2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9881C08E2D10DB840028E137 /* OESeaweedNode2.swift */; };
 		9881C0912D10E1E90028E137 /* OEProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9881C0902D10E1DC0028E137 /* OEProtocol.swift */; };
 		9881C0932D11351E0028E137 /* OECoralNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9881C0922D11351E0028E137 /* OECoralNode.swift */; };
@@ -109,6 +110,7 @@
 		85C1D3232CE54FC10025A3F1 /* OEEnemyNode3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode3.swift; sourceTree = "<group>"; };
 		85C1D3252CEABD7B0025A3F1 /* OEEnemyNode4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode4.swift; sourceTree = "<group>"; };
 		85C1D3272CF45B5A0025A3F1 /* OEEnemyNode5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEEnemyNode5.swift; sourceTree = "<group>"; };
+		9801D7672D1530C000576C95 /* OEShockedNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEShockedNode.swift; sourceTree = "<group>"; };
 		9881C08E2D10DB840028E137 /* OESeaweedNode2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OESeaweedNode2.swift; sourceTree = "<group>"; };
 		9881C0902D10E1DC0028E137 /* OEProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OEProtocol.swift; sourceTree = "<group>"; };
 		9881C0922D11351E0028E137 /* OECoralNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OECoralNode.swift; sourceTree = "<group>"; };
@@ -273,6 +275,7 @@
 				9895623A2D025CB1000BA60A /* OESeaweedNode.swift */,
 				9881C08E2D10DB840028E137 /* OESeaweedNode2.swift */,
 				9881C0922D11351E0028E137 /* OECoralNode.swift */,
+				9801D7672D1530C000576C95 /* OEShockedNode.swift */,
 				859006712CFEDB8C005859C6 /* OERockNode.swift */,
 				8590066F2CFED6F6005859C6 /* OELavaNode.swift */,
 				85C1D3272CF45B5A0025A3F1 /* OEEnemyNode5.swift */,
@@ -489,6 +492,7 @@
 				0F3B8B4C2CCF5E4A00775DC7 /* Dependencies.swift in Sources */,
 				9881C0912D10E1E90028E137 /* OEProtocol.swift in Sources */,
 				0F28EAE12CCDA52400F16CB4 /* ContentView.swift in Sources */,
+				9801D7682D1530C000576C95 /* OEShockedNode.swift in Sources */,
 				0F28EADF2CCDA52400F16CB4 /* Ocean_ExplorerApp.swift in Sources */,
 				0F6191E32CD08EF300149AB6 /* OELayoutInfo.swift in Sources */,
 				0F3B8B4A2CCF5E4A00775DC7 /* GameModeType.swift in Sources */,

@@ -1421,6 +1421,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         var nextPosition: CGPoint
         // softImpactFeedback.impactOccurred() // HAPTICS for swiping left/right
         switch sender.direction {
+            
+            
 
         case .down:
     
@@ -2811,7 +2813,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         box.stopMoving()
         box.removeFromParent()
- 
+
         let shockedPlayer  = OEShockedNode(size: gridSize)
         shockedPlayer.position = characterNode.position
         addChild(shockedPlayer)
@@ -2820,6 +2822,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Disable the character's physics to prevent further interactions
         characterNode.physicsBody?.isDynamic = false
         
+        // Trigger the game over with a specific message
+        gameOver(reason: "An eel gave you a shocking surprise!")
     }
         
           
@@ -2850,7 +2854,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     enemyNode = bodyB.node!
                 }
                 
-                // Additional logic for OEEnemyNode3-specific behavior
+                // Additional logic for OEEnemyNode3-specific behavior EEL
                 if let enemyNode3 = enemyNode as? OEEnemyNode3 {
                     if let boxNode = box {
                         shockCharacter(boxNode)
@@ -3546,6 +3550,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
         case "You sank into the depths and disappeared!":
             reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+        case "An eel gave you a shocking surprise!":
+            reasonAsset = SKSpriteNode(imageNamed: "gameoverEel")
         default:
             reasonAsset = SKSpriteNode()
         }

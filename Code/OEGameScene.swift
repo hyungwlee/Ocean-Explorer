@@ -30,7 +30,7 @@ struct Lane {
     let startPosition: CGPoint
     let endPosition: CGPoint
     let direction: CGVector
-    let speed: CGFloat
+    var speed: CGFloat
     let laneType: String // Empty, Spike, Tutorial, Eel, Pufferfish, Shark, Jellyfish, or Lava
 }
 
@@ -503,6 +503,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
              i += 1
              }
              */
+        }
+        
+        for i in 1..<lanes.count {
+            if lanes[i - 1].laneType == "Lava" && lanes[i].laneType != "Lava" {
+                if lanes[i - 1].speed > 12 {
+                    lanes[i].speed = CGFloat.random(in: 6...7)
+                } else {
+                    lanes[i].speed = CGFloat.random(in: 10...13)
+                }
+            }
         }
     }
     
@@ -1084,9 +1094,21 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
              i += 1
              }
              */
+            
         }
+        
         // Update global lanes with new Lanes
         lanes.append(contentsOf: newLanes)
+        
+        for i in (lanes.count - newLanes.count)..<lanes.count {
+            if lanes[i - 1].laneType == "Lava" && lanes[i].laneType != "Lava" {
+                if lanes[i - 1].speed > 12 {
+                    lanes[i].speed = CGFloat.random(in: 6.5...9)
+                } else {
+                    lanes[i].speed = CGFloat.random(in: 10...13)
+                }
+            }
+        }
         
         // Start spawning lanes
         startSpawning(lanes: newLanes)
@@ -1985,6 +2007,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lanes[i].laneType == "Spike" {
+                
                 let wait = SKAction.wait(forDuration: 4.25, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     let enemyType = Int.random(in: 0..<8)
@@ -2001,6 +2024,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lanes[i].laneType == "Jellyfish" {
+                
                 let wait = SKAction.wait(forDuration: 4, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnJellyfish(in: lanes[i])
@@ -2012,6 +2036,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lanes[i].laneType == "Shark" {
+                
                 let wait = SKAction.wait(forDuration: 4.5, withRange: 2)
                 let spawn = SKAction.run { [weak self] in
                     self?.spawnLongEnemy(in: lanes[i])

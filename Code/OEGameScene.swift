@@ -23,7 +23,7 @@ struct PhysicsCategory {
     static let seaweed: UInt32 = 0b10000000 // 128
     static let rock2: UInt32 = 0b100000000 // 256
     static let rock3: UInt32 = 0b1000000000 // 532
-    static let coral: UInt32 = 0b100000000000 //
+    static let coral: UInt32 = 0b100000000000 
 }
 
 struct Lane {
@@ -2747,6 +2747,23 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         characterNode.run(SKAction.sequence([dissolveAction, removeNode]))
     }
     
+    func shockCharacter(_ characterNode: SKSpriteNode) {
+        guard let box = box else { return }
+        
+        box.stopMoving()
+        box.removeFromParent()
+ 
+        let shockedPlayer  = OEShockedNode(size: gridSize)
+        shockedPlayer.position = characterNode.position
+        addChild(shockedPlayer)
+        shockedPlayer.animate()
+        
+        // Disable the character's physics to prevent further interactions
+        characterNode.physicsBody?.isDynamic = false
+        
+    }
+        
+          
     func dissolveEnemy(_ enemy: SKNode, after delay: TimeInterval = 0.0) {
         let dissolveAction = SKAction.sequence([
             SKAction.wait(forDuration: delay),
@@ -2765,20 +2782,33 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
             if !isGameOver {
-                // Dissolve the main character
-                if let boxNode = box {
-                    handleEnemyContact()
-                    heavyImpactFeedback.impactOccurred()
-                    dissolveCharacter(boxNode)
-                }
                 
-                // Freeze the enemy
+                // Check if the enemy involved is an OEEnemyNode3
                 let enemyNode: SKNode
                 if bodyA.categoryBitMask == PhysicsCategory.enemy {
                     enemyNode = bodyA.node!
                 } else {
                     enemyNode = bodyB.node!
                 }
+                
+                // Additional logic for OEEnemyNode3-specific behavior
+                if let enemyNode3 = enemyNode as? OEEnemyNode3 {
+                    if let boxNode = box {
+                        shockCharacter(boxNode)
+                        handleEnemyContact()
+                        heavyImpactFeedback.impactOccurred()
+                    }
+                }
+                else {
+                    if let boxNode = box {
+                        handleEnemyContact()
+                        heavyImpactFeedback.impactOccurred()
+                        dissolveCharacter(boxNode)
+                    }
+                }
+                
+                
+                // Freeze the enemy
                 enemyNode.physicsBody?.isDynamic = false
             }
         }

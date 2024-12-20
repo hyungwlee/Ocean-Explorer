@@ -1,23 +1,31 @@
 import Foundation
 import SpriteKit
 
-class OECoralNode: SKSpriteNode {
+class OEShockedNode: SKSpriteNode {
     
     init(size: CGSize) {
-        let texture = SKTexture(imageNamed: "Coral") // Initial coral texture
-        super.init(texture: texture, color: .clear, size: size)
+        let textureShocked = SKTexture(imageNamed: "Shocked") // Initial coral texture
+        let textureDog = SKTexture(imageNamed: "Dog") // Initial coral texture
         
-        // Set transparency
-        self.alpha = 0.60 // Adjust value between 0.0 (fully transparent) and 1.0 (fully opaque)
+        super.init(texture: textureShocked, color: .clear, size: CGSize(width: textureShocked.size().width * 0.4, height: textureShocked.size().height * 0.4))
         
-        // Configure physics body
-        self.physicsBody = SKPhysicsBody(rectangleOf: size)
-        self.physicsBody?.isDynamic = false // Stationary
-        self.physicsBody?.categoryBitMask = PhysicsCategory.coral
-        self.physicsBody?.contactTestBitMask = PhysicsCategory.box
-        self.physicsBody?.collisionBitMask = PhysicsCategory.box
         
-        self.zPosition = 0
+        self.zPosition = 2
+    }
+    
+    func animate() {
+        // Load seaweed textures
+        let textures = [
+            SKTexture(imageNamed: "Shocked"),
+            SKTexture(imageNamed: "Dog"),
+        ]
+        
+        // Create animation action
+        let animation = SKAction.animate(with: textures, timePerFrame: 0.20)
+        let repeatAnimation = SKAction.repeatForever(animation)
+        
+        // Run the animation
+        self.run(repeatAnimation)
     }
     
     required init?(coder aDecoder: NSCoder) {

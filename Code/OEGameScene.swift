@@ -1136,7 +1136,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             playerNextPosition.x = playerNextX
             playerNextX = -100000
         }
- 
+        
         currentRock = nil
         currentRock2 = nil
         currentRock3 = nil
@@ -1156,7 +1156,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                     let nextPosition = CGPoint(x: rockPositionX, y: self.playerNextPosition.y + self.cellHeight)
                     self.playerNextPosition = nextPosition
                     self.isPlayerOnRock = true
-                    box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                    box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Up")
                     self.updateScore()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         self.currentRock = rock
@@ -1186,7 +1186,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                         self.playerNextPosition = nextPosition
                         print("MOVING TO LEFT ZONE")
                         self.isPlayerOnRock = true
-                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Up")
                         self.updateScore()
                         didMoveToRock = true
                         handleLavaContact()
@@ -1202,7 +1202,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                         self.playerNextPosition = nextPosition
                         print("MOVING TO RIGHT ZONE")
                         self.isPlayerOnRock = true
-                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Up")
                         self.updateScore()
                         didMoveToRock = true
                         handleLavaContact()
@@ -1237,7 +1237,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                         let nextPosition = CGPoint(x: rockPositionX + rock.size.width * 0.25, y: playerNextPosition.y + self.cellHeight)
                         self.playerNextPosition = nextPosition
                         isPlayerOnRock = true
-                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Up")
                         self.updateScore()
                         didMoveToRock = true
                         handleLavaContact()
@@ -1253,7 +1253,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                         let nextPosition = CGPoint(x: rockPositionX, y: playerNextPosition.y + self.cellHeight)
                         self.playerNextPosition = nextPosition
                         isPlayerOnRock = true
-                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Up")
                         self.updateScore()
                         didMoveToRock = true
                         handleLavaContact()
@@ -1268,7 +1268,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                         print("MOVING TO LEFT ZONE")
                         let nextPosition = CGPoint(x: rockPositionX - rock.size.width * 0.25, y: playerNextPosition.y + self.cellHeight)
                         self.playerNextPosition = nextPosition
-                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Rock")
+                        box.hop(to: nextPosition, inQueue: self.playerNextPosition, up: "Up")
                         self.updateScore()
                         didMoveToRock = true
                         isPlayerOnRock = true

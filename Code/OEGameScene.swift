@@ -820,10 +820,18 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Update background tiles
         updateBackgroundTiles()
         
+        let screenBottom = (camera?.position.y ?? 0) - size.height
+        
         // Check for proximity to player for each pufferfish enemy
         for child in children {
             if let pufferfish = child as? OEEnemyNode2 {
                 pufferfish.checkProximityToPlayer(playerPosition: box.position)
+            }
+            
+            let nodePositionInScene = child.convert(child.position, to: self)
+
+            if nodePositionInScene.y < screenBottom && child.name != "lane" {
+                child.removeFromParent()
             }
         }
         
@@ -2403,7 +2411,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let textureName = sandTextureToggle ? "SAND" : "SAND2"
             laneColor.fillTexture = SKTexture(imageNamed: textureName)
             laneColor.fillTexture?.filteringMode = .nearest
-            
+
             sandTextureToggle.toggle() // Switch to the other texture for next lane
         } else if lane.laneType == "Eel" {
             laneColor.fillColor = .white
@@ -2411,6 +2419,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             laneColor.fillTexture?.filteringMode = .nearest
         }
         
+        laneColor.name = "lane"
         laneColor.strokeColor = .clear // Remove the border
         laneColor.alpha = 0.50
         laneColor.zPosition = 0
@@ -3097,6 +3106,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Handle contact with enemies
         if (bodyA.categoryBitMask == PhysicsCategory.box && bodyB.categoryBitMask == PhysicsCategory.enemy) ||
            (bodyA.categoryBitMask == PhysicsCategory.enemy && bodyB.categoryBitMask == PhysicsCategory.box) {
+            
             if !isGameOver {
                 
                 // Check if the enemy involved is an OEEnemyNode3
@@ -3126,6 +3136,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 // Freeze the enemy
                 enemyNode.physicsBody?.isDynamic = false
             }
+            
         }
         
         // Handle contact with bubbles

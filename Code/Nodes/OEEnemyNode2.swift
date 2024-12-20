@@ -27,7 +27,7 @@ class OEEnemyNode2: SKSpriteNode {
         self.flipped = flipped
 
         let texture = SKTexture(imageNamed: "Pufferfish1")
-        super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.475, height: texture.size().height * 0.5))
+        super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.4, height: texture.size().height * 0.4))
 
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
         self.physicsBody?.affectedByGravity = false // Disable gravity for the enemy
@@ -75,7 +75,7 @@ class OEEnemyNode2: SKSpriteNode {
     func puff() {
         isPuffed = true
         
-        var puffUp = SKAction.scale(to: CGFloat(2.00), duration: 0.4)
+        var puffUp = SKAction.scale(to: CGFloat(2.25), duration: 0.4)
         if flipped {
             let puffUpX = SKAction.scaleX(to: CGFloat(-2.0), duration: 0.4)
             let puffUpY = SKAction.scaleY(to: CGFloat(2.0), duration: 0.4)

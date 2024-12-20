@@ -43,6 +43,7 @@ class OEEnemyNode: SKSpriteNode {
         let frameCount = 2
         let frames = (1...frameCount).map {frameNumber in SKTexture(imageNamed: "Enemy\(frameNumber)")}
         let animate = SKAction.animate(with: frames, timePerFrame: 0.5)
+        
         run(SKAction.repeatForever(animate))
     }
 }

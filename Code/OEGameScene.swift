@@ -121,7 +121,7 @@ func quickRumbleEffect() {
 }
 
     
-@available(iOS 18.0, *)
+@available(iOS 17.0, *)
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
     weak var context: OEGameContext?
     var box: OEBoxNode?

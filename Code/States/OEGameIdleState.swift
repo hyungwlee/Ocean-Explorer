@@ -9,7 +9,7 @@ import Foundation
 import GameplayKit
 
 
-@available(iOS 18.0, *)
+@available(iOS 17.0, *)
 class OEGameIdleState: GKState {
     weak var scene: OEGameScene?
     weak var context: OEGameContext?

@@ -2926,6 +2926,53 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
+    // Animation when collecting gold bubble
+    func animateGoldBubble() {
+        let goldBubble = SKSpriteNode(imageNamed: "GoldBubble")
+        goldBubble.size = CGSize(width: 40, height: 40) // Initial size
+        goldBubble.alpha = 0 // Start fully transparent
+        
+        // Adjust position more to the left and slightly upwards
+        goldBubble.position = CGPoint(x: airLabel.position.x, y: airLabel.position.y - 78)
+        goldBubble.zPosition = airLabel.zPosition + 1
+        
+        // Define fade-in and enlarge action
+        let fadeInAction = SKAction.fadeAlpha(to: 1.0, duration: 0.5) // Fade in over 0.5 seconds
+        let enlargeAction = SKAction.scale(to: 1.5, duration: 0.5) // Enlarge over 0.5 seconds
+        
+        // Pulsating effect (enlarge and shrink repeatedly)
+        let scaleUp = SKAction.scale(to: 1.6, duration: 0.3)
+        let scaleDown = SKAction.scale(to: 1.4, duration: 0.3)
+        let pulsate = SKAction.sequence([scaleUp, scaleDown])
+        let repeatPulsate = SKAction.repeatForever(pulsate)
+        
+        // Run pulsating action
+        goldBubble.run(repeatPulsate, withKey: "pulsateAction")
+        
+        // Wait at the top for a set duration before fading out
+        let waitAction = SKAction.wait(forDuration: 2.5) // Duration at the top with pulsating effect
+        let fadeOutAction = SKAction.fadeOut(withDuration: 1.0) // Fade out over 1 second
+        
+        // Stop pulsating before fading out
+        let stopPulsating = SKAction.run {
+            goldBubble.removeAction(forKey: "pulsateAction") // Stop pulsating
+        }
+        let removeAction = SKAction.removeFromParent() // Remove from scene after fade-out
+        
+        // Sequence of actions
+        let sequenceAction = SKAction.sequence([
+            fadeInAction,  // Fade in
+            enlargeAction, // Enlarge
+            waitAction,    // Wait while pulsating
+            stopPulsating, // Stop pulsating
+            fadeOutAction, // Fade out
+            removeAction   // Remove the shell node
+            ])
+        
+        goldBubble.run(sequenceAction)
+        cameraNode.addChild(goldBubble)
+    }
+    
     // Continuously decreases air during game
     func airCountDown() {
         guard hasGameStarted else { return } // Ensure countdown starts only if game has started
@@ -3239,6 +3286,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             
             // Remove the GoldBubble from the scene
             goldBubbleNode.removeFromParent()
+            
+            animateGoldBubble()
         }
         
         // Handle contact with shells

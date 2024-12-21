@@ -2794,19 +2794,26 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         meterShadow?.removeFromParent()
         warningIcon?.removeFromParent()
 
+        // Calculate new width for the air meter (20% wider)
+        let originalWidth: CGFloat = 30
+        let newWidth = originalWidth * 1.25 // Increase width by xx
+
+        // Offset for shifting the meter to the left
+        let meterXOffset: CGFloat = -35 // Move xx points to the left
+
         // Create and configure the air icon
         airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
         airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
         airIconTicks = SKSpriteNode(imageNamed: "AirMeterTicks")
         airIconTicks.alpha = 0.15
-        airIconBackground.size = CGSize(width: 30, height: 175) // Increased size
-        airIconFill.size = CGSize(width: 30, height: 175)
-        airIconTicks.size = CGSize(width: 55, height: 198)
+        airIconBackground.size = CGSize(width: newWidth, height: 175)
+        airIconFill.size = CGSize(width: newWidth, height: 175)
+        airIconTicks.size = CGSize(width: newWidth * 1.833, height: 198) // Adjust tick width proportionally (55 / 30)
 
-        // Adjust positions for moving the meter
-        airIconBackground.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
-        airIconFill.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 185)
-        airIconTicks.position = CGPoint(x: size.width / 2 - 50, y: size.height / 2 - 98)
+        // Adjust positions for moving the meter and shifting to the left
+        airIconBackground.position = CGPoint(x: size.width / 2 - 50 + meterXOffset, y: size.height / 2 - 98)
+        airIconFill.position = CGPoint(x: size.width / 2 - 50 + meterXOffset, y: size.height / 2 - 185)
+        airIconTicks.position = CGPoint(x: size.width / 2 - 50 + meterXOffset, y: size.height / 2 - 98)
 
         airIconBackground.zPosition = 90
         airIconTicks.zPosition = 95
@@ -2820,7 +2827,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create and configure the shadow for the air meter
         let shadowOffset = CGPoint(x: 3, y: -3) // Adjust offset as desired
         meterShadow = SKSpriteNode(imageNamed: "meterShadow") // Replace with your actual shadow asset name
-        meterShadow?.size = CGSize(width: 30, height: 175) // Adjust size to fit behind the air meter
+        meterShadow?.size = CGSize(width: newWidth, height: 175) // Adjust width
         meterShadow?.position = CGPoint(x: airIconBackground.position.x + shadowOffset.x, y: airIconBackground.position.y + shadowOffset.y)
         meterShadow?.zPosition = 80 // Place it behind the air meter
         meterShadow?.alpha = 0.45 // Make it semi-transparent for a realistic shadow effect
@@ -2841,8 +2848,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         airLabel.text = "\(airAmount)"
         cameraNode.addChild(airLabel)
-        
-    
+            
         // Create and configure the warning icon
         warningIcon = SKSpriteNode(imageNamed: "Warning")
         if let warningIcon = warningIcon {
@@ -2853,19 +2859,20 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             warningIcon.alpha = 0.90 // transparent value
             warningIcon.isHidden = true // Initially hide the warning icon
             cameraNode.addChild(warningIcon)
-            }
-        
-
+        }
+            
         // Add the O2 icon to the left of the air meter
         o2Icon = SKSpriteNode(imageNamed: "O2") // Replace with your actual asset name
         if let o2Icon = o2Icon {
-            o2Icon.size = CGSize(width: 52, height: 50) // Adjust size as needed
-            o2Icon.position = CGPoint(x: airIconBackground.position.x - 55, y: airIconBackground.position.y - 10)
+            let originalO2Size = CGSize(width: 52, height: 50)
+            let newO2Size = CGSize(width: originalO2Size.width * 1.0, height: originalO2Size.height * 1.0) // edit size
+            o2Icon.size = newO2Size
+            o2Icon.alpha = 0.75
+            o2Icon.position = CGPoint(x: airIconBackground.position.x + 0, y: airIconBackground.position.y - 80)
             o2Icon.zPosition = 100
             cameraNode.addChild(o2Icon)
         }
     }
-
 
     // Continuously decreases air during game
     func airCountDown() {

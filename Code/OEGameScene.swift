@@ -121,7 +121,7 @@ func quickRumbleEffect() {
 }
 
     
-@available(iOS 18.0, *)
+@available(iOS 17.0, *)
 class OEGameScene: SKScene, SKPhysicsContactDelegate {
     weak var context: OEGameContext?
     var box: OEBoxNode?
@@ -587,7 +587,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let reef = SKSpriteNode(imageNamed: "OEReef")
         
         // Adjust position as needed
-        reef.position = CGPoint(x: size.width / 350, y: reef.size.height / 20 - 100)
+        reef.position = CGPoint(x: size.width / 350, y: reef.size.height / 20 - size.height / 32)
         reef.zPosition = 10
         
         // Scale the width by increasing xScale

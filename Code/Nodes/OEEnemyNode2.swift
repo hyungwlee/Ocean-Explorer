@@ -34,6 +34,8 @@ class OEEnemyNode2: SKSpriteNode {
         self.physicsBody?.categoryBitMask = PhysicsCategory.enemy
         self.physicsBody?.collisionBitMask = PhysicsCategory.box
         self.physicsBody?.contactTestBitMask = PhysicsCategory.box
+        
+        self.zPosition = 1
     }
     
     required init?(coder aDecoder: NSCoder) {

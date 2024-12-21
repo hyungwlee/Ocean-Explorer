@@ -2919,7 +2919,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let originalO2Size = CGSize(width: 52, height: 50)
             let newO2Size = CGSize(width: originalO2Size.width * 1.0, height: originalO2Size.height * 1.0) // edit size
             o2Icon.size = newO2Size
-            o2Icon.alpha = 0.80
+            o2Icon.alpha = 0.75
             o2Icon.position = CGPoint(x: airIconBackground.position.x + 0, y: airIconBackground.position.y - 80)
             o2Icon.zPosition = 100
             cameraNode.addChild(o2Icon)

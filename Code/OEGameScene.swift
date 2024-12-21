@@ -207,6 +207,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var bubbleSound: SystemSoundID = 0
     var shellPickup: SystemSoundID = 0
     var falling: SystemSoundID = 0
+    var pufferfish: SystemSoundID = 0
 
     
     init(context: OEGameContext, size: CGSize) {
@@ -265,6 +266,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             if osstatus6 != noErr { // or kAudioServicesNoError
                 print("Could not create system sound. osstatus6: \(osstatus6)")
             }
+        
+        // FOR PUFFER
+        guard let url = Bundle.main.url(forResource: "pufferfish", withExtension: "mp3") else {
+                print("Shell pickup sound file not found.")
+                return
+            }
+            let osstatus8 = AudioServicesCreateSystemSoundID(url as CFURL, &pufferfish)
+            if osstatus8 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus8: \(osstatus8)")
+            }
+        
         
         // FOR HEARTBEAT SOUND
         guard let url = Bundle.main.url(forResource: "heartbeat", withExtension: "mp3") else {
@@ -3405,6 +3417,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         backgroundMusicPlayer = nil
     }
     
+    /*
     func playPufferfishInflateSound() {
         if let soundURL = Bundle.main.url(forResource: "pufferfish", withExtension: "mp3") {
             do {
@@ -3418,7 +3431,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Pufferfish sound file not found.")
         }
     }
-
+    */
+    
+    func playPufferfishInflateSound() // new puffer sound
+    {
+        AudioServicesPlaySystemSound(pufferfish)
+    
+    }
+    
     func playElectricitySound() {
         if let soundURL = Bundle.main.url(forResource: "electricity", withExtension: "mp3") {
             do {

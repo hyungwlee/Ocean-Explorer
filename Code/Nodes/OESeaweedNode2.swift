@@ -4,7 +4,7 @@ import SpriteKit
 class OESeaweedNode2: SKSpriteNode {
     
     init(size: CGSize) {
-        let texture = SKTexture(imageNamed: "Seaweed") // Initial seaweed texture
+        let texture = SKTexture(imageNamed: "OESeaweed") // Initial seaweed texture
         super.init(texture: texture, color: .clear, size: size)
         
         // Configure physics body
@@ -27,11 +27,11 @@ extension OESeaweedNode2: AnimatableSeaweed {
     func animate() {
         // Load seaweed textures
         let textures = [
-            SKTexture(imageNamed: "Seaweed2-0"),
-            SKTexture(imageNamed: "Seaweed2-1"),
-            SKTexture(imageNamed: "Seaweed2-2"),
-            SKTexture(imageNamed: "Seaweed2-3"),
-            SKTexture(imageNamed: "Seaweed2-4"),
+            SKTexture(imageNamed: "OESeaweed2-0"),
+            SKTexture(imageNamed: "OESeaweed2-1"),
+            SKTexture(imageNamed: "OESeaweed2-2"),
+            SKTexture(imageNamed: "OESeaweed2-3"),
+            SKTexture(imageNamed: "OESeaweed2-4"),
         ]
         
         // Define different animation orders

@@ -4,7 +4,7 @@ import SpriteKit
 class OECoralNode: SKSpriteNode {
     
     init(size: CGSize) {
-        let texture = SKTexture(imageNamed: "Coral") // Initial coral texture
+        let texture = SKTexture(imageNamed: "OECoral") // Initial coral texture
         super.init(texture: texture, color: .clear, size: size)
         
         // Set transparency

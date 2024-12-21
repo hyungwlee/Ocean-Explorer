@@ -11,7 +11,7 @@ import SpriteKit
 class OELavaNode: SKSpriteNode {
     
     init(size: CGSize) {
-        let texture = SKTexture(imageNamed: "Lava") // Initial lava texture
+        let texture = SKTexture(imageNamed: "OELava") // Initial lava texture
         super.init(texture: texture, color: .clear, size: size)
         
         self.zPosition = 0
@@ -31,12 +31,12 @@ class OELavaNode: SKSpriteNode {
     func animate() {
         // Load lava textures
         let textures = [
-            SKTexture(imageNamed: "Lava"),
-            SKTexture(imageNamed: "LAVA2"),
-            SKTexture(imageNamed: "LAVA3"),
-            SKTexture(imageNamed: "LAVA4"),
-            SKTexture(imageNamed: "LAVA5"),
-            SKTexture(imageNamed: "LAVA6"),
+            SKTexture(imageNamed: "OELava"),
+            SKTexture(imageNamed: "OELAVA2"),
+            SKTexture(imageNamed: "OELAVA3"),
+            SKTexture(imageNamed: "OELAVA4"),
+            SKTexture(imageNamed: "OELAVA5"),
+            SKTexture(imageNamed: "OELAVA6"),
         ]
         
         // Create animation action

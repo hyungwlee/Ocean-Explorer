@@ -208,6 +208,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var shellPickup: SystemSoundID = 0
     var falling: SystemSoundID = 0
     var pufferfish: SystemSoundID = 0
+    var achievement: SystemSoundID = 0
 
     
     init(context: OEGameContext, size: CGSize) {
@@ -277,6 +278,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 print("Could not create system sound. osstatus8: \(osstatus8)")
             }
         
+        
+        // FOR ACHIEVEMENT
+        guard let url = Bundle.main.url(forResource: "pufferfish", withExtension: "mp3") else {
+                print("Shell pickup sound file not found.")
+                return
+            }
+            let osstatus9 = AudioServicesCreateSystemSoundID(url as CFURL, &achievement)
+            if osstatus9 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus9: \(osstatus9)")
+            }
         
         // FOR HEARTBEAT SOUND
         guard let url = Bundle.main.url(forResource: "heartbeat", withExtension: "mp3") else {
@@ -642,8 +653,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         // Update font colors and effects
-        if score % 100 == 0 {
+        if score % 100 == 0 && score != 0 {
             scoreLabel.fontColor = .red // Highlight for multiples of 100
+            playAchievement()
         } else {
             scoreLabel.fontColor = .white
             shadowLabel.fontColor = .black.withAlphaComponent(0.5) // Default shadow color
@@ -3168,6 +3180,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func stopBackgroundMusic() { // method to stop background music
         backgroundMusicPlayer?.stop()
         backgroundMusicPlayer = nil
+    }
+    
+    
+    func playAchievement()
+    {
+        AudioServicesPlaySystemSound(achievement)
     }
     
     func playPufferfishInflateSound() // new puffer sound

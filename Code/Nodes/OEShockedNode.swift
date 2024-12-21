@@ -4,8 +4,7 @@ import SpriteKit
 class OEShockedNode: SKSpriteNode {
     
     init(size: CGSize) {
-        let textureShocked = SKTexture(imageNamed: "Shocked") // Initial coral texture
-        let textureDog = SKTexture(imageNamed: "Dog") // Initial coral texture
+        let textureShocked = SKTexture(imageNamed: "OEShocked")
         
         super.init(texture: textureShocked, color: .clear, size: CGSize(width: textureShocked.size().width * 0.4, height: textureShocked.size().height * 0.4))
         
@@ -16,8 +15,8 @@ class OEShockedNode: SKSpriteNode {
     func animate() {
         // Load seaweed textures
         let textures = [
-            SKTexture(imageNamed: "Shocked"),
-            SKTexture(imageNamed: "Dog"),
+            SKTexture(imageNamed: "OEShocked"),
+            SKTexture(imageNamed: "OEDog"),
         ]
         
         // Create animation action

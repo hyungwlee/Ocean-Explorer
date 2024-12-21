@@ -22,7 +22,7 @@ class OEBoxNode: SKSpriteNode {
     
     init(gridSize: CGSize) {
         self.gridSize = gridSize
-        let texture = SKTexture(imageNamed: "Smiley")
+        let texture = SKTexture(imageNamed: "OESmiley")
         
         score = 0
         
@@ -98,24 +98,6 @@ class OEBoxNode: SKSpriteNode {
         }
         
         print("MOVING TO POSITION: \(position)")
-        /*
-        if up == "Priority" {
-            isMoving = true
-            let scaleDown = SKAction.scale(to: 0.8, duration: 0.05)
-            let scaleUp = SKAction.scale(to: 1.2, duration: 0.05)
-            let scaleDownBack = SKAction.scale(to: 1, duration: 0.05)
-            
-            let move = SKAction.move(to: position, duration: 0.15)
-            let hopAction = SKAction.sequence([scaleDown, scaleUp, scaleDownBack])
-            self.run(SKAction.group([hopAction, move])) {
-                self.isMoving = false
-                if let nextPosition = self.movementQueue.first {
-                    self.movementQueue.removeFirst()
-                    self.hop(to: nextPosition, inQueue: nextPosition, up: "Up")
-                }
-            }
-        }
-        */
         
         if up != "Up" && isMoving {
             return

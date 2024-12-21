@@ -26,7 +26,7 @@ class OEEnemyNode2: SKSpriteNode {
         self.gridSize = gridSize
         self.flipped = flipped
 
-        let texture = SKTexture(imageNamed: "Pufferfish1")
+        let texture = SKTexture(imageNamed: "OEPufferfish1")
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.4, height: texture.size().height * 0.4))
 
         self.physicsBody = SKPhysicsBody(rectangleOf: size)
@@ -112,7 +112,7 @@ class OEEnemyNode2: SKSpriteNode {
     
     func animate() {
         let frameCount = 2
-        let frames = (1...frameCount).map {frameNumber in SKTexture(imageNamed: "Pufferfish\(frameNumber)")}
+        let frames = (1...frameCount).map {frameNumber in SKTexture(imageNamed: "OEPufferfish\(frameNumber)")}
         let animate = SKAction.animate(with: frames, timePerFrame: 0.5)
         run(SKAction.repeatForever(animate))
     }

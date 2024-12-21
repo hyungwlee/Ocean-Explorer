@@ -488,62 +488,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 lane += 1
                 firstLane = false
             }
-            /*
-             // Number of lanes in a row with enemies
-             let chanceOfEnemyRows = Int.random(in: 1...20)
-             var numberOfEnemyRows: Int = 0
-             
-             if chanceOfEnemyRows > 13 {
-             numberOfEnemyRows = 3
-             }
-             else if chanceOfEnemyRows > 4 {
-             numberOfEnemyRows = 2
-             }
-             else if chanceOfEnemyRows > 2 {
-             numberOfEnemyRows = 1
-             }
-             else if chanceOfEnemyRows == 2 {
-             numberOfEnemyRows = 4
-             }
-             else {
-             numberOfEnemyRows = 5
-             }
-             
-             for _ in i...i + numberOfEnemyRows {
-             let yPosition = laneHeight * CGFloat(i) + (laneHeight / 2)
-             let leftStart = CGPoint(x: -size.width, y: yPosition)
-             let rightStart = CGPoint(x: size.width, y: yPosition)
-             
-             // Random directions for lanes
-             laneDirection = Int.random(in: 0..<2)
-             
-             // Random chance for longer enemies
-             let enemySize: String
-             let enemySpeed: CGFloat
-             
-             let enemySizeChance = Int.random(in: 0...4)
-             if enemySizeChance == 0 {
-             enemySize = "Shark"
-             enemySpeed = CGFloat.random(in: 10..<13)
-             }
-             else if enemySizeChance == 1 {
-             enemySize = "Jellyfish"
-             enemySpeed = CGFloat.random(in: 8.5..<11.5)
-             }
-             else {
-             enemySize = "Spike"
-             enemySpeed = CGFloat.random(in: 7..<10)
-             }
-             
-             if laneDirection == 0 {
-             lanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: enemySpeed, laneType: enemySize))
-             } else {
-             lanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: enemySpeed, laneType: enemySize))
-             }
-             yPositionLanes = yPosition
-             i += 1
-             }
-             */
         }
         
         for i in 1..<lanes.count {
@@ -610,7 +554,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func addBackgroundTile(at position: CGPoint) {
-        let backgroundNode = SKSpriteNode(imageNamed: "Background")
+        let backgroundNode = SKSpriteNode(imageNamed: "OEBackground")
         backgroundNode.size = size
         backgroundNode.position = position
         backgroundNode.zPosition = -1
@@ -629,7 +573,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupReef() {
-        let reef = SKSpriteNode(imageNamed: "Reef")
+        let reef = SKSpriteNode(imageNamed: "OEReef")
         
         // Adjust position as needed
         reef.position = CGPoint(x: size.width / 350, y: reef.size.height / 20 - 100)
@@ -647,7 +591,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func prepareStartNodes() {
-        let center = CGPoint(x: 0, y: 0)
+        
         box = OEBoxNode(gridSize: gridSize)
         box?.position = positionFor(row: 0, column: 0)
         if let box = box {
@@ -859,7 +803,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func updateBackgroundTiles() {
-        guard let box else { return }
         
         let thresholdY = cameraNode.position.y + size.height / 2
         if let lastTile = backgroundTiles.last, lastTile.position.y < thresholdY {
@@ -883,79 +826,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         return CGPoint(x: x, y: y)
     }
     
-    /*
-     func drawGridLines() {
-     // Horizontal lines
-     for row in 0...numberOfRows {
-     let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
-     let startPoint = CGPoint(x: -size.width, y: yPosition)
-     let endPoint = CGPoint(x: size.width, y: yPosition)
-     
-     let horizontalLine = SKShapeNode()
-     let path = CGMutablePath()
-     path.move(to: startPoint)
-     path.addLine(to: endPoint)
-     horizontalLine.path = path
-     horizontalLine.strokeColor = .white  // Set color of grid lines
-     horizontalLine.lineWidth = 1.0
-     horizontalLine.alpha = 0.55 // OPACITY OF LINES
-     
-     addChild(horizontalLine)
-     }
-     
-     // Vertical lines
-     for column in 0...numberOfColumns {
-     let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
-     let startPoint = CGPoint(x: xPosition, y: -size.height)
-     let endPoint = CGPoint(x: xPosition, y: size.height)
-     
-     let verticalLine = SKShapeNode()
-     let path = CGMutablePath()
-     path.move(to: startPoint)
-     path.addLine(to: endPoint)
-     verticalLine.path = path
-     verticalLine.strokeColor = .white  // Set color of grid lines
-     verticalLine.lineWidth = 1.0
-     verticalLine.alpha = 0.55 // OPACITY OF LINES
-     
-     addChild(verticalLine)
-     }
-     }
-     
-     func drawNewGridRows() {
-     // Draw new horizontal lines for rows above the current grid
-     for row in (highestRowDrawn)...(highestRowDrawn + numberOfRows) {
-     let yPosition = CGFloat(row) * cellHeight - size.height / 2 - cellHeight / 2
-     let horizontalLine = SKShapeNode()
-     let path = CGMutablePath()
-     path.move(to: CGPoint(x: -size.width, y: yPosition))
-     path.addLine(to: CGPoint(x: size.width, y: yPosition))
-     horizontalLine.path = path
-     horizontalLine.strokeColor = .white
-     horizontalLine.lineWidth = 1.0
-     
-     addChild(horizontalLine)
-     }
-     
-     // Extend the vertical lines for the new height of the grid
-     for column in 0...numberOfColumns {
-     let xPosition = CGFloat(column) * cellWidth - size.width / 2 - cellWidth / 2
-     let startPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn) * cellHeight)
-     let endPoint = CGPoint(x: xPosition, y: CGFloat(highestRowDrawn + numberOfRows) * cellHeight)
-     
-     let verticalLine = SKShapeNode()
-     let path = CGMutablePath()
-     path.move(to: startPoint)
-     path.addLine(to: endPoint)
-     verticalLine.path = path
-     verticalLine.strokeColor = .white
-     verticalLine.lineWidth = 1.0
-     
-     addChild(verticalLine)
-     }
-     }
-     */
-    
+   
     func gridPosition(for position: CGPoint) -> (row: Int, column: Int) {
         let row = Int(position.y / cellHeight)
         let column = Int(position.x / cellWidth)
@@ -1084,67 +955,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 lane += 1
                 firstLane = false
             }
-            /*
-             // Number of lanes in a row with enemies
-             let chanceOfEnemyRows = Int.random(in: 1...20)
-             var numberOfEnemyRows: Int = 0
-             
-             if chanceOfEnemyRows > 13 {
-             numberOfEnemyRows = 3
-             }
-             else if chanceOfEnemyRows > 4 {
-             numberOfEnemyRows = 2
-             }
-             else if chanceOfEnemyRows > 2 {
-             numberOfEnemyRows = 1
-             }
-             else if chanceOfEnemyRows == 2 {
-             numberOfEnemyRows = 4
-             }
-             else {
-             numberOfEnemyRows = 5
-             }
-             
-             for _ in i...i + numberOfEnemyRows {
-             let newYPosition = yPosition + CGFloat(i + 1) * laneHeight
-             let leftStart = CGPoint(x: -size.width, y: newYPosition)
-             let rightStart = CGPoint(x: size.width, y: newYPosition)
-             
-             // 1/20 chance to spawn eel
-             let eelSpawn = Int.random(in: 0..<21)
-             let laneType: String
-             let laneSpeed: CGFloat
-             
-             if eelSpawn == 20 {
-             laneType = "Eel"
-             laneSpeed = 0.0
-             }
-             else if eelSpawn > 16 {
-             laneType = "Shark"
-             laneSpeed = CGFloat.random(in: 10..<13)
-             }
-             else if eelSpawn > 12 {
-             laneType = "Jellyfish"
-             laneSpeed = CGFloat.random(in: 8.5..<11.5)
-             }
-             else {
-             laneType = "Spike"
-             laneSpeed = CGFloat.random(in: 7..<10)
-             }
-             
-             // Random directions for lanes
-             laneDirection = Int.random(in: 0..<2)
-             
-             if laneDirection == 0 {
-             newLanes.append(Lane(startPosition: leftStart, endPosition: rightStart, direction: CGVector(dx: 1, dy: 0), speed: max(laneSpeed - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
-             } else {
-             newLanes.append(Lane(startPosition: rightStart, endPosition: leftStart, direction: CGVector(dx: -1, dy: 0), speed: max(laneSpeed - 2 * CGFloat(score) / 5, 3.0), laneType: laneType))
-             }
-             yPositionLanes = newYPosition
-             i += 1
-             }
-             */
-            
         }
         
         // Update global lanes with new Lanes
@@ -2097,46 +1907,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
-  /*
-    func moveBox(to position: CGPoint) {
-        guard let box else { return }
-        
-        //Check if player is running into seaweed with movement
-        if handleSeaweedContact(nextPosition:  position) {
-            // If true then return and do nothing
-            print("Ran into seaweed")
-            return
-        }
-        
-        // Set the flag to indicate movement in progress
-        isActionInProgress = true
-        
-        // Example movement logic using an animation
-
-        UIView.animate(withDuration: 0.15, animations: {
-            
-            print("HOPPING")
-        
-            box.hop(to: position)
-            
-
-        }) { [weak self] _ in
-            guard let self = self else { return }
-            
-            // If there are more actions in the queue, execute the next one
-            if let nextPosition = self.tapQueue.first {
-                self.tapQueue.removeFirst()
-                box.run(SKAction.wait(forDuration: 1))
-                self.moveBox(to: nextPosition)
-                // Update the score
-                updateScore()
-            } else {
-                self.isActionInProgress = false
-            }
-        }
-        
-    }
-    */
     func spawnEnemy(in lane: Lane) {
         let enemy = OEEnemyNode(gridSize: gridSize)
         addChild(enemy)
@@ -2278,7 +2048,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func warn(in lane: Lane, completion: @escaping () -> Void) {
         
-        let warningLabel = SKSpriteNode(imageNamed: "EelWarning")
+        let warningLabel = SKSpriteNode(imageNamed: "OEEelWarning")
         warningLabel.position = CGPoint(x: 0.0, y: lane.startPosition.y)
         warningLabel.size = CGSize(width: warningLabel.size.width * 0.85, height: warningLabel.size.height * 0.68)
         addChild(warningLabel)
@@ -2397,18 +2167,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             if lanes[i].laneType == "Lava" {
-                
-                /*
-                if prevLane?.laneType != "Lava" {
-                    
-                    let lavaBank = SKSpriteNode(imageNamed: "LavaBank")
-                    lavaBank.position = CGPoint(x: 0.0, y: lanes[i].startPosition.y - 25)
-                    lavaBank.size = CGSize(width: lavaBank.size.width, height: lavaBank.size.height)
-                    lavaBank.zPosition = 1.5
-                    lavaBank.alpha = 0.5
-                    addChild(lavaBank)
-                }
-                */
+       
                 spawnLava(in: lanes[i])
                 lavaYPositions.append(lanes[i].startPosition.y)
                 var waitTime: CGFloat = 0.0
@@ -2426,20 +2185,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 run(repeatAction)
             }
-            /*
-            if lanes[i].laneType != "Lava" && prevLane?.laneType == "Lava" {
-                
-                guard let prevLane = prevLane else { return }
-                let lavaBank = SKSpriteNode(imageNamed: "LavaBank")
-                lavaBank.size = CGSize(width: lavaBank.size.width, height: lavaBank.size.height)
-                lavaBank.position = CGPoint(x: 0.0, y: lanes[i].startPosition.y - 30)
-                lavaBank.zPosition = 5
-                lavaBank.yScale = -1
-                lavaBank.alpha = 0.5
-                addChild(lavaBank)
-                
-            }
-            */
+    
             // Set prevLane
             prevLane = lanes[i]
         }
@@ -2460,14 +2206,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if lane.laneType == "Empty" {
             laneColor.fillColor = .white
             // Alternate between SAND and SAND2
-            let textureName = sandTextureToggle ? "SAND" : "SAND2"
+            let textureName = sandTextureToggle ? "OESAND" : "OESAND2"
             laneColor.fillTexture = SKTexture(imageNamed: textureName)
             laneColor.fillTexture?.filteringMode = .nearest
 
             sandTextureToggle.toggle() // Switch to the other texture for next lane
         } else if lane.laneType == "Eel" {
             laneColor.fillColor = .white
-            laneColor.fillTexture = SKTexture(imageNamed: "eelLane")
+            laneColor.fillTexture = SKTexture(imageNamed: "OEeelLane")
             laneColor.fillTexture?.filteringMode = .nearest
         }
         
@@ -2481,7 +2227,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     // Function to spawn the shells randomly in grid spaces
     func spawnShell() {
-        let shell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
+        let shell = SKSpriteNode(imageNamed: "OEShell") // Use your shell asset
         shell.size = CGSize(width: 42, height: 42) // Adjust size as needed
         shell.alpha = 1 // Set the opacity (0.0 to 1.0, where 0.5 is 50% opacity)
         shell.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
@@ -2579,28 +2325,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let sequence = SKAction.sequence([initialDelay, shellSpawnAction])
         run(sequence, withKey: "spawnShells")
     }
-    /*
-     // Function to increase score by 5 when player collects a shell **HIDE FOR NOW
-     func increaseScoreFromShell() {
-     guard !isGameOver else { return }
-     
-     score += 5 // Increase score by 5
-     scoreLabel.text = "\(score)" // Update the score label
-     
-     // Change the score label color to yellow
-     let orangeAction = SKAction.colorize(with: .orange, colorBlendFactor: 1.0, duration: 0.0)
-     let waitAction = SKAction.wait(forDuration: 0.5) // X.X SECONDS LONG YELLOW STAYS UPON SHELL COLLECTED
-     // Change the score label color back to white
-     let whiteAction = SKAction.colorize(with: .white, colorBlendFactor: 1.0, duration: 1.0)
-     // Create a sequence of actions
-     let colorSequence = SKAction.sequence([orangeAction, waitAction, whiteAction])
-     
-     // Run the sequence on the score label
-     scoreLabel.run(colorSequence)
-     }
-     */
+   
     func shellAnimation() {
-        let newShell = SKSpriteNode(imageNamed: "Shell") // Use your shell asset
+        let newShell = SKSpriteNode(imageNamed: "OEShell") // Use your shell asset
         newShell.size = CGSize(width: 40, height: 40) // Initial size
         newShell.alpha = 0 // Start fully transparent
         
@@ -2719,13 +2446,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         // Create the bubble (GoldBubble or regular Bubble)
         let bubble: SKSpriteNode
         if isGoldBubble && firstBubble != nil {
-            bubble = SKSpriteNode(imageNamed: "GoldBubble") // GoldBubble asset
+            bubble = SKSpriteNode(imageNamed: "OEGoldBubble") // GoldBubble asset
             bubble.size = CGSize(width: 40, height: 40) // Larger for GoldBubble
             bubble.alpha = 0.90
             bubble.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
             bubble.physicsBody?.categoryBitMask = PhysicsCategory.GoldBubble // Ensure this is correct
         } else {
-            bubble = SKSpriteNode(imageNamed: "Bubble") // Regular bubble asset
+            bubble = SKSpriteNode(imageNamed: "OEBubble") // Regular bubble asset
             bubble.size = CGSize(width: 38, height: 38)
             bubble.alpha = 0.85
             bubble.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 1, height: 1))
@@ -2795,7 +2522,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func addArrowAndText(to bubble: SKSpriteNode) {
         // Create the arrow
-        arrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
+        arrow = SKSpriteNode(imageNamed: "OEArrow") // Use your arrow asset
         arrow?.size = CGSize(width: 40, height: 40) // Adjust size as needed
         arrow?.position = CGPoint(x: bubble.position.x - 30, y: bubble.position.y - 30) // Adjust position
         arrow?.zPosition = 1000
@@ -2854,9 +2581,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let meterXOffset: CGFloat = -35 // Move xx points to the left
 
         // Create and configure the air icon
-        airIconBackground = SKSpriteNode(imageNamed: "AirMeterBackground")
-        airIconFill = SKSpriteNode(imageNamed: "AirMeterFill")
-        airIconTicks = SKSpriteNode(imageNamed: "AirMeterTicks")
+        airIconBackground = SKSpriteNode(imageNamed: "OEAirMeterBackground")
+        airIconFill = SKSpriteNode(imageNamed: "OEAirMeterFill")
+        airIconTicks = SKSpriteNode(imageNamed: "OEAirMeterTicks")
         airIconTicks.alpha = 0.15
         airIconBackground.size = CGSize(width: newWidth, height: 175)
         airIconFill.size = CGSize(width: newWidth, height: 175)
@@ -2878,7 +2605,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         // Create and configure the shadow for the air meter
         let shadowOffset = CGPoint(x: 3, y: -3) // Adjust offset as desired
-        meterShadow = SKSpriteNode(imageNamed: "meterShadow") // Replace with your actual shadow asset name
+        meterShadow = SKSpriteNode(imageNamed: "OEmeterShadow") // Replace with your actual shadow asset name
         meterShadow?.size = CGSize(width: newWidth, height: 175) // Adjust width
         meterShadow?.position = CGPoint(x: airIconBackground.position.x + shadowOffset.x, y: airIconBackground.position.y + shadowOffset.y)
         meterShadow?.zPosition = 80 // Place it behind the air meter
@@ -2902,7 +2629,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.addChild(airLabel)
             
         // Create and configure the warning icon
-        warningIcon = SKSpriteNode(imageNamed: "Warning")
+        warningIcon = SKSpriteNode(imageNamed: "OEWarning")
         if let warningIcon = warningIcon {
             let scorePosition = scoreLabel.position
             warningIcon.size = CGSize(width: 170, height: 60) // Adjust size as needed
@@ -2914,7 +2641,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         }
             
         // Add the O2 icon to the left of the air meter
-        o2Icon = SKSpriteNode(imageNamed: "O2") // Replace with your actual asset name
+        o2Icon = SKSpriteNode(imageNamed: "OEO2") // Replace with your actual asset name
         if let o2Icon = o2Icon {
             let originalO2Size = CGSize(width: 52, height: 50)
             let newO2Size = CGSize(width: originalO2Size.width * 1.0, height: originalO2Size.height * 1.0) // edit size
@@ -2928,7 +2655,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
     // Animation when collecting gold bubble
     func animateGoldBubble() {
-        let goldBubble = SKSpriteNode(imageNamed: "GoldBubble")
+        let goldBubble = SKSpriteNode(imageNamed: "OEGoldBubble")
         goldBubble.size = CGSize(width: 40, height: 40) // Initial size
         goldBubble.alpha = 0 // Start fully transparent
         
@@ -3133,29 +2860,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
 
         airLabel.text = "\(airAmount)"
     }
-
-    
-    /*
-    func spawnTemporaryArrow() {
-        // Create the temporary arrow
-        let temporaryArrow = SKSpriteNode(imageNamed: "Arrow") // Use your arrow asset
-        temporaryArrow.size = CGSize(width: 50, height: 50) // Adjust size as needed
-        temporaryArrow.zPosition = 1000
-        temporaryArrow.position = CGPoint(x: airIcon.position.x - 50, y: airIcon.position.y - 50)
-        
-        // Add the arrow to the scene
-        cameraNode.addChild(temporaryArrow)
-        
-        // Create a fade-out action sequence to remove the arrow after a few seconds
-        let delay = SKAction.wait(forDuration: 4.5) // Arrow stays for 3 seconds
-        let fadeOut = SKAction.fadeOut(withDuration: 0.5)
-        let remove = SKAction.removeFromParent()
-        let sequence = SKAction.sequence([delay, fadeOut, remove])
-        
-        // Run the sequence on the arrow
-        temporaryArrow.run(sequence)
-    }
-    */
     
     func dissolveCharacter(_ characterNode: SKSpriteNode) {
         
@@ -3466,22 +3170,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         backgroundMusicPlayer = nil
     }
     
-    /*
-    func playPufferfishInflateSound() {
-        if let soundURL = Bundle.main.url(forResource: "pufferfish", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.volume = 0.75 // Set to maximum volume
-                audioPlayer?.play()
-            } catch {
-                print("Error playing pufferfish inflate sound: \(error.localizedDescription)")
-            }
-        } else {
-            print("Pufferfish sound file not found.")
-        }
-    }
-    */
-    
     func playPufferfishInflateSound() // new puffer sound
     {
         AudioServicesPlaySystemSound(pufferfish)
@@ -3521,41 +3209,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         AudioServicesPlaySystemSound(shellPickup)
     }
     
-    /*
-    func playShellPickupSound() {
-        if let soundURL = Bundle.main.url(forResource: "shellPickup", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.play()
-            } catch {
-                print("Error playing shellPickup sound: \(error.localizedDescription)")
-            }
-        } else {
-            print("Shell pickup sound file not found.")
-        }
-    }
-    */
-
     // Call this method to play the sound
     func playHeartbeatSound() {
         AudioServicesPlaySystemSound(heartbeatSound)
     }
-
-/*
-    func playRockJumpSound() {
-        if let soundURL = Bundle.main.url(forResource: "rockjump", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.volume = 0.75 // Set to maximum volume
-                audioPlayer?.play()
-            } catch {
-                print("Error playing rockjump sound: \(error.localizedDescription)")
-            }
-        } else {
-            print("Rockjump sound file not found.")
-        }
-    }
-  */
     
     func playRockJumpSound() {
         AudioServicesPlaySystemSound(rockSound)
@@ -3570,22 +3227,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
      
         AudioServicesPlaySystemSound(bubbleSound)
     }
-        
-    /* old one
-    func playBubbleSound() {
-        if let soundURL = Bundle.main.url(forResource: "bubble", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.volume = 0.90 // Set to maximum volume
-                audioPlayer?.play()
-            } catch {
-                print("Error playing sound: \(error.localizedDescription)")
-            }
-        } else {
-            print("Bubble sound file not found.")
-        }
-    }
-     */
 
     func playEnemyContactSound() {
         if let soundURL = Bundle.main.url(forResource: "contact", withExtension: "mp3") {
@@ -3624,21 +3265,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     func stopAllSounds() {
         
     }
-    
-    /*
-    func playFellSound() {
-        if let soundURL = Bundle.main.url(forResource: "falling", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.play()
-            } catch {
-                print("Error playing sound: \(error.localizedDescription)")
-            }
-        } else {
-            print("Fell sound file not found.")
-        }
-    }
-     */
     
     func handleSeaweedContact(nextPosition: CGPoint) -> Bool {
         
@@ -3688,21 +3314,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
            
 
             }
-                /*
-                for lane in lanes {
-                    if box.position.y > lane.startPosition.y - 10 && box.position.y < lane.startPosition.y + 10 {
-                        print("CURRENT LANE FOUND")
-                        if lane.laneType != "Lava" {
-                            print("CURRENT LANE IDENTIFIED-NOT LAVA")
-                            if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
-                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
-                            } else {
-                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
-                            }
-                        }
-                    }
-                }
-                */
         }
         
         
@@ -3710,26 +3321,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             let rockBody = contact.bodyA.categoryBitMask == PhysicsCategory.rock2 ? contact.bodyA : contact.bodyB
             if currentRock2 == rockBody.node as? OERockNode2 {
           
-                    
-                
                 print("PLAYER HAS LEFT LONG ROCK")
 
-                
-                /*
-                for lane in lanes {
-                    if box.position.y > lane.startPosition.y - 10 && box.position.y < lane.startPosition.y + 10 {
-                        print("CURRENT LANE FOUND")
-                        if lane.laneType != "Lava" {
-                            print("CURRENT LANE IDENTIFIED-NOT LAVA")
-                            if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
-                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
-                            } else {
-                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
-                            }
-                        }
-                    }
-                }
-                */
             }
         }
         
@@ -3741,22 +3334,6 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
                 
                 print("PLAYER HAS LEFT VERY LONG ROCK")
 
-                
-                /*
-                for lane in lanes {
-                    if box.position.y > lane.startPosition.y - 10 && box.position.y < lane.startPosition.y + 10 {
-                        print("CURRENT LANE FOUND")
-                        if lane.laneType != "Lava" {
-                            print("CURRENT LANE IDENTIFIED-NOT LAVA")
-                            if abs(box.position.x - round(box.position.x / cellWidth) * cellWidth + cellWidth / 2) > abs(box.position.x - round(box.position.x / cellWidth) * cellWidth - cellWidth / 2) {
-                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth + cellWidth / 2)
-                            } else {
-                                snapToGrid(position: round(box.position.x / cellWidth) * cellWidth - cellWidth / 2)
-                            }
-                        }
-                    }
-                }
-                */
             }
         }
     }
@@ -3828,7 +3405,7 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         cameraNode.addChild(backgroundBox)
 
         // Add the game logo
-        let logoTexture = SKTexture(imageNamed: "Logo1")
+        let logoTexture = SKTexture(imageNamed: "OELogo1")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.name = "logoSprite"
 
@@ -3901,14 +3478,14 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     func showGameOverScreen(reason: String) {
         // Create a background sprite for the end screen using the ocean image
-        let backgroundSprite = SKSpriteNode(imageNamed: "gameOver")
+        let backgroundSprite = SKSpriteNode(imageNamed: "OEgameOver")
         backgroundSprite.position = CGPoint(x: 0, y: 0) // Centered on screen
         backgroundSprite.zPosition = 1100 // Ensure it is behind the text but above other nodes
         backgroundSprite.size = self.size // Adjust to fill the screen
         self.cameraNode.addChild(backgroundSprite)
 
         // Add the game logo
-        let logoTexture = SKTexture(imageNamed: "Logo1")
+        let logoTexture = SKTexture(imageNamed: "OELogo1")
         let logoSprite = SKSpriteNode(texture: logoTexture)
         logoSprite.position = CGPoint(x: 0, y: 270) // Positioned above the reason text
         logoSprite.zPosition = 1101
@@ -3941,17 +3518,17 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         let reasonAsset: SKSpriteNode
         switch reason {
         case "You burned to death underwater!":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameBurned")
+            reasonAsset = SKSpriteNode(imageNamed: "OEendGameBurned")
         case "A sea creature stopped your adventure!":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameContact")
+            reasonAsset = SKSpriteNode(imageNamed: "OEendGameContact")
         case "You Ran Out of Air and Drowned":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameDrowned")
+            reasonAsset = SKSpriteNode(imageNamed: "OEendGameDrowned")
         case "You were swept away by the rocks!":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+            reasonAsset = SKSpriteNode(imageNamed: "OEendGameFell")
         case "You sank into the depths and disappeared!":
-            reasonAsset = SKSpriteNode(imageNamed: "endGameFell")
+            reasonAsset = SKSpriteNode(imageNamed: "OEendGameFell")
         case "An eel gave you a shocking surprise!":
-            reasonAsset = SKSpriteNode(imageNamed: "gameoverEel")
+            reasonAsset = SKSpriteNode(imageNamed: "OEgameoverEel")
         default:
             reasonAsset = SKSpriteNode()
         }

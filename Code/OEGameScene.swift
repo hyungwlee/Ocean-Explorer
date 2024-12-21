@@ -3176,19 +3176,24 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     
     }
     
+    var audioPlayers: [AVAudioPlayer] = [] // Array to hold multiple players
+
     func playElectricitySound() {
         if let soundURL = Bundle.main.url(forResource: "electricity", withExtension: "mp3") {
             do {
-                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-                audioPlayer?.play()
+                let newPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayers.append(newPlayer) // Add player to array
+                newPlayer.play()
+                
+                // Set a delegate to remove the player when it finishes
+                newPlayer.delegate = self
             } catch {
-                print("Error playing gameOver sound: \(error.localizedDescription)")
+                print("Error playing electricity sound: \(error.localizedDescription)")
             }
         } else {
             print("Electricity sound file not found.")
         }
     }
-
     
     func playGameOverSound() {
         if let soundURL = Bundle.main.url(forResource: "gameOver", withExtension: "mp3") {
@@ -3617,4 +3622,13 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         playBackgroundMusic()
     }
 
+}
+
+extension OEGameScene: AVAudioPlayerDelegate {
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        // Remove the player from the array when it finishes
+        if let index = audioPlayers.firstIndex(of: player) {
+            audioPlayers.remove(at: index)
+        }
+    }
 }

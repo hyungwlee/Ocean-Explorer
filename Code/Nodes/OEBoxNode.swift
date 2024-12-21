@@ -96,9 +96,7 @@ class OEBoxNode: SKSpriteNode {
         if doneMoving {
             return
         }
-        
-        print("MOVING TO POSITION: \(position)")
-        
+                
         if up != "Up" && isMoving {
             return
         }
@@ -114,7 +112,6 @@ class OEBoxNode: SKSpriteNode {
                 isUp = "none"
             }
             
-            print("COMMENCING MOVE")
             isMoving = true
             let scaleDown = SKAction.scale(to: 0.8, duration: 0.05)
             let scaleUp = SKAction.scale(to: 1.2, duration: 0.05)

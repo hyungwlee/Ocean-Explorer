@@ -20,12 +20,14 @@ class OEEnemyNode2: SKSpriteNode {
     var audioPlayer: AVAudioPlayer? // Audio player
     
     private var flipped: Bool
+    private var scale: CGFloat
     
-    init(gridSize: CGSize, flipped: Bool) {
+    init(gridSize: CGSize, flipped: Bool, scale: CGFloat) {
     
         self.gridSize = gridSize
         self.flipped = flipped
-
+        self.scale = scale
+        
         let texture = SKTexture(imageNamed: "OEPufferfish1")
         super.init(texture: texture, color: .clear, size: CGSize(width: texture.size().width * 0.4, height: texture.size().height * 0.4))
 
@@ -77,10 +79,10 @@ class OEEnemyNode2: SKSpriteNode {
     func puff() {
         isPuffed = true
         
-        var puffUp = SKAction.scale(to: CGFloat(2.25), duration: 0.4)
+        var puffUp = SKAction.scale(to: CGFloat(2.25 * scale), duration: 0.4)
         if flipped {
-            let puffUpX = SKAction.scaleX(to: CGFloat(-2.0), duration: 0.4)
-            let puffUpY = SKAction.scaleY(to: CGFloat(2.0), duration: 0.4)
+            let puffUpX = SKAction.scaleX(to: CGFloat(-2.25 * scale), duration: 0.4)
+            let puffUpY = SKAction.scaleY(to: CGFloat(2.25 * scale), duration: 0.4)
             puffUp = SKAction.group([puffUpX, puffUpY])
         }
         run(puffUp)
@@ -90,10 +92,10 @@ class OEEnemyNode2: SKSpriteNode {
     func deflate() {
         isPuffed = false
         
-        var deflate = SKAction.scale(to: CGFloat(1.0), duration: 1)
+        var deflate = SKAction.scale(to: CGFloat(1.0 * scale), duration: 1)
         if flipped {
-            let deflateX = SKAction.scaleX(to: CGFloat(-1.0), duration: 1)
-            let deflateY = SKAction.scaleY(to: CGFloat(1.0), duration: 1)
+            let deflateX = SKAction.scaleX(to: CGFloat(-1.0 * scale), duration: 1)
+            let deflateY = SKAction.scaleY(to: CGFloat(1.0 * scale), duration: 1)
             deflate = SKAction.group([deflateX, deflateY])
         }
         run(deflate)

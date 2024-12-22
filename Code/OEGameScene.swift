@@ -209,6 +209,9 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     var falling: SystemSoundID = 0
     var pufferfish: SystemSoundID = 0
     var achievement: SystemSoundID = 0
+    var gameOver: SystemSoundID = 0
+    var contact: SystemSoundID = 0
+    var burned: SystemSoundID = 0
 
     var spriteScale: CGFloat = 0
     
@@ -284,13 +287,43 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         
         
         // FOR ACHIEVEMENT
-        guard let url = Bundle.main.url(forResource: "pufferfish", withExtension: "mp3") else {
+        guard let url = Bundle.main.url(forResource: "achievement", withExtension: "mp3") else {
                 print("Shell pickup sound file not found.")
                 return
             }
             let osstatus9 = AudioServicesCreateSystemSoundID(url as CFURL, &achievement)
             if osstatus9 != noErr { // or kAudioServicesNoError
                 print("Could not create system sound. osstatus9: \(osstatus9)")
+            }
+        
+        // FOR gameOver
+        guard let url = Bundle.main.url(forResource: "gameOver", withExtension: "mp3") else {
+                print("Shell pickup sound file not found.")
+                return
+            }
+            let osstatus10 = AudioServicesCreateSystemSoundID(url as CFURL, &gameOver)
+            if osstatus10 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus10: \(osstatus10)")
+            }
+        
+        // FOR Contact SOund
+        guard let url = Bundle.main.url(forResource: "contact", withExtension: "mp3") else {
+                print("Shell pickup sound file not found.")
+                return
+            }
+            let osstatus11 = AudioServicesCreateSystemSoundID(url as CFURL, &contact)
+            if osstatus11 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus11: \(osstatus11)")
+            }
+        
+        // FOR Burned SOund
+        guard let url = Bundle.main.url(forResource: "burned", withExtension: "mp3") else {
+                print("Shell pickup sound file not found.")
+                return
+            }
+            let osstatus12 = AudioServicesCreateSystemSoundID(url as CFURL, &burned)
+            if osstatus12 != noErr { // or kAudioServicesNoError
+                print("Could not create system sound. osstatus12: \(osstatus12)")
             }
         
         // FOR HEARTBEAT SOUND
@@ -657,12 +690,16 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         if score % 10 == 0 && score != scoreDisplayed {
             scoreLabel.removeAction(forKey: "popOut") // Remove any ongoing pop-out action
             scoreLabel.run(createPopOutAction(), withKey: "popOut")
+
+            
+
         }
 
         // Update displayed score
         if score >= scoreDisplayed + 1 {
             scoreDisplayed += 1
         }
+
 
         // Update font colors and effects
         if score % 100 == 0 && score != 0 {
@@ -3183,7 +3220,8 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Electricity sound file not found.")
         }
     }
-    
+   
+    /*
     func playGameOverSound() {
         if let soundURL = Bundle.main.url(forResource: "gameOver", withExtension: "mp3") {
             do {
@@ -3197,6 +3235,12 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Game over sound file not found.")
         }
     }
+     */
+    
+    func playGameOverSound() {
+        AudioServicesPlaySystemSound(gameOver)
+    }
+    
     
     func playShellPickupSound() {
         
@@ -3223,6 +3267,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     func playEnemyContactSound() {
+        AudioServicesPlaySystemSound(contact)
+    }
+    
+    /*
+    func playEnemyContactSound() {
         if let soundURL = Bundle.main.url(forResource: "contact", withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
@@ -3235,8 +3284,10 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
             print("Contact sound file not found.")
         }
     }
+     */
 
     
+    /*
     // Function to play the burned sound
     func playBurnedSound() {
         if let soundURL = Bundle.main.url(forResource: "burned", withExtension: "mp3") {
@@ -3249,6 +3300,11 @@ class OEGameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             print("Burned sound file not found.")
         }
+    }
+    */
+    
+    func playBurnedSound() {
+        AudioServicesPlaySystemSound(burned)
     }
     
     func playFellSound()
